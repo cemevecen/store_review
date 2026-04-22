@@ -107,7 +107,7 @@ def main():
     if "analysis_rows" not in st.session_state:
         st.session_state.analysis_rows = []
 
-    st.markdown('<p class="section-title">Veri kaynağı</p>', unsafe_allow_html=True)
+    st.markdown('<p class="source-section-title">Veri kaynağı</p>', unsafe_allow_html=True)
     tab_store, tab_file, tab_text = st.tabs(
         ["Mağaza (ara / link)", "Dosya yükle", "Metin yapıştır"]
     )

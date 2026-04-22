@@ -29,29 +29,73 @@ APP_CSS = """
   font-weight: 500 !important;
 }
 
-/* Sekmeler */
-.stTabs [data-baseweb="tab-list"] {
-  gap: 4px;
-  background: rgba(255,255,255,0.65);
-  padding: 6px;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
+/* Veri kaynağı — sekme şeridi (segmented / tek vurgu) */
+[data-testid="stTabs"] {
+  margin-top: 2px;
 }
-.stTabs [data-baseweb="tab"] {
-  border-radius: 10px;
-  color: #334155 !important;
+[data-testid="stTabs"] [data-baseweb="tab-list"] {
+  display: flex !important;
+  width: 100% !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  background: linear-gradient(180deg, #eef2f7 0%, #e2e8f0 100%) !important;
+  padding: 8px !important;
+  border-radius: 16px !important;
+  border: 1px solid #d0d9e6 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }
-.stTabs [aria-selected="true"] {
-  background: #fff !important;
-  box-shadow: 0 1px 3px rgba(15,23,42,0.08);
+[data-testid="stTabs"] [data-baseweb="tab"] {
+  flex: 1 1 0 !important;
+  min-height: 48px !important;
+  margin: 0 !important;
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transition: background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
 }
-.stTabs [data-baseweb="tab"] p {
-  color: #475569 !important;
-  font-weight: 500;
+[data-testid="stTabs"] [data-baseweb="tab"]:hover {
+  background: rgba(255, 255, 255, 0.55) !important;
 }
-.stTabs [aria-selected="true"] p {
-  color: #c2410c !important;
+[data-testid="stTabs"] [data-baseweb="tab"][aria-selected="true"] {
+  background: #ffffff !important;
+  border: 1px solid #a5b4fc !important;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.14), 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+}
+[data-testid="stTabs"] [data-baseweb="tab"] p,
+[data-testid="stTabs"] [data-baseweb="tab"] span {
+  color: #64748b !important;
+  font-weight: 500 !important;
+  font-size: 0.88rem !important;
+  line-height: 1.35 !important;
+  text-align: center !important;
+}
+[data-testid="stTabs"] [data-baseweb="tab"][aria-selected="true"] p,
+[data-testid="stTabs"] [data-baseweb="tab"][aria-selected="true"] span {
+  color: #4338ca !important;
   font-weight: 600 !important;
+}
+/* BaseWeb seçili sekme alt çizgisi — kart vurgusu yeterli */
+[data-testid="stTabs"] [data-baseweb="tab-highlight"] {
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+}
+[data-testid="stTabs"] [data-baseweb="tab"] {
+  border-bottom: none !important;
+}
+[data-testid="stTabs"] [data-baseweb="tab-panel"] {
+  padding-top: 1.15rem !important;
+}
+
+.source-section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin: 0 0 12px 4px;
 }
 
 /* Giriş alanları — açık kutu, koyu metin */
