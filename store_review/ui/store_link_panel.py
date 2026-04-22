@@ -10,7 +10,6 @@ import html
 import streamlit as st
 
 from store_review.fetchers.app_discovery import (
-    ResolvedApp,
     looks_like_search_keyword,
     resolve_direct_input,
     search_app_store_itunes,
@@ -35,6 +34,14 @@ def _init_store_state() -> None:
     for k, v in defaults.items():
         if k not in st.session_state:
             st.session_state[k] = v
+
+
+def _apply_pending_sl_store_input() -> None:
+    """st.text_input(sl_store_input) oluşmadan önce çağrılmalı (Streamlit kuralı)."""
+    if "_pending_sl_store_input" not in st.session_state:
+        return
+    val = st.session_state.pop("_pending_sl_store_input")
+    st.session_state["sl_store_input"] = val
 
 
 def _inject_store_search_css() -> None:
@@ -130,6 +137,7 @@ RANGE_DAYS = {
 
 def render_store_link_tab() -> None:
     _init_store_state()
+    _apply_pending_sl_store_input()
     _inject_store_search_css()
 
     st.caption(
@@ -224,7 +232,7 @@ def render_store_link_tab() -> None:
                             st.session_state.sl_show_search = False
                             st.session_state.sl_search_results = []
                             st.session_state.sl_last_query = ""
-                            st.session_state["sl_store_input"] = aid
+                            st.session_state["_pending_sl_store_input"] = aid
                             st.rerun()
                 if len(results) > n_show:
                     if st.button("Daha fazla göster", key="sl_more"):
@@ -242,7 +250,7 @@ def render_store_link_tab() -> None:
             st.session_state.sl_search_results = []
             st.session_state.sl_last_query = ""
             st.session_state.sl_search_performed = False
-            st.session_state["sl_store_input"] = ""
+            st.session_state["_pending_sl_store_input"] = ""
             st.rerun()
 
     sid = st.session_state.sl_selected_id
