@@ -364,6 +364,11 @@ def _cmp_slot_effective_raw(slot: int) -> str:
     return (st.session_state.get(f"cmp_store_in_{slot}") or "").strip()
 
 
+def compare_tab_has_user_input() -> bool:
+    """Karşılaştır: en az bir slotta arama metni veya seçili uygulama var mı (havuz metrik şeridi için)."""
+    return bool(_cmp_slot_effective_raw(0) or _cmp_slot_effective_raw(1))
+
+
 def _render_compare_app_picker(slot: int, heading: str) -> None:
     """Mağaza sekmesiyle aynı: isim araması + Android/iOS + sonuç listesi + Seç; paket/ID/link doğrudan."""
     _apply_pending_cmp_store_in(slot)

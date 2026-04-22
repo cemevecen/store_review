@@ -30,6 +30,7 @@ from store_review.core.analyzer import analyze_batch, dedupe_reviews
 from store_review.fetchers.file_loader import load_reviews_from_dataframe
 from store_review.ui.analysis_results_dashboard import render_analysis_results_dashboard
 from store_review.ui.compare_panel import (
+    compare_tab_has_user_input,
     execute_compare_analysis,
     merge_compare_details_for_dashboard,
     render_compare_tab,
@@ -111,6 +112,23 @@ def _active_review_pool() -> list:
 
 def _on_data_source_change() -> None:
     st.session_state.analysis_rows = []
+
+
+def _havuz_metric_visible(src: str, pool_display_count: int) -> bool:
+    """Havuzdaki yorum kutusu: yalnız ilgili sekmede veri / taslak / uygulama girişi varken."""
+    if src == "Mağaza (ara / link)":
+        typed = (st.session_state.get("sl_store_input") or "").strip()
+        if typed or st.session_state.get("sl_selected_id"):
+            return True
+        return pool_display_count > 0
+    if src == "Dosya yükle":
+        return pool_display_count > 0
+    if src == "Metin yapıştır":
+        draft = (st.session_state.get("paste_reviews") or "").strip()
+        return bool(draft or pool_display_count > 0)
+    if src == "Karşılaştır":
+        return compare_tab_has_user_input() or pool_display_count > 0
+    return False
 
 
 def main():
@@ -254,11 +272,12 @@ def main():
         pool_display_count = sum(len(v) for v in detail_cmp.values())
     else:
         pool_display_count = len(pool)
-    st.markdown(
-        f'<div class="metric-strip"><div class="metric-strip-label">Havuzdaki yorum</div>'
-        f'<div class="metric-strip-value">{pool_display_count}</div></div>',
-        unsafe_allow_html=True,
-    )
+    if _havuz_metric_visible(src_cur, pool_display_count):
+        st.markdown(
+            f'<div class="metric-strip"><div class="metric-strip-label">Havuzdaki yorum</div>'
+            f'<div class="metric-strip-value">{pool_display_count}</div></div>',
+            unsafe_allow_html=True,
+        )
 
     if pool:
         raw_df = pd.DataFrame(pool)
