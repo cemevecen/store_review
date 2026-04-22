@@ -61,6 +61,11 @@ def _inject_store_search_css() -> None:
   letter-spacing:0.06em; margin:6px 0 10px;
 }
 .sl-row-icon img { width:40px; height:40px; border-radius:50%; object-fit:cover; display:block; }
+.sl-row-noicon {
+  width:40px; height:40px; border-radius:50%; background:#e2e8f0; color:#64748b;
+  display:flex; align-items:center; justify-content:center; font-size:0.62rem;
+  font-weight:700; letter-spacing:0.02em;
+}
 .sl-row-title { font-weight:700; color:#0f172a; font-size:0.9rem; line-height:1.25; }
 .sl-row-id { font-size:0.72rem; color:#94a3b8; margin-top:2px; word-break:break-all; }
 </style>
@@ -77,7 +82,7 @@ def _banner_play(app_id: str) -> None:
         title = info.get("title", app_id)
         icon = (info.get("icon") or "").strip()
         score = info.get("score")
-        sc = f"{score:.1f} ★" if isinstance(score, (int, float)) else "—"
+        sc = f"{score:.1f} / 5" if isinstance(score, (int, float)) else "—"
         col_a, col_b = st.columns([0.15, 0.85])
         with col_a:
             if icon.startswith("http"):
@@ -214,7 +219,7 @@ def render_store_link_tab() -> None:
                                 unsafe_allow_html=True,
                             )
                         else:
-                            st.markdown('<div style="font-size:1.6rem;">📱</div>', unsafe_allow_html=True)
+                            st.markdown('<div class="sl-row-noicon">app</div>', unsafe_allow_html=True)
                     with inf:
                         t_esc = html.escape(str(app.get("title", "—")))
                         id_esc = html.escape(str(app.get("appId", "")))

@@ -101,7 +101,6 @@ def _on_data_source_change() -> None:
 def main():
     st.set_page_config(
         page_title="AI Mağaza Yorumu Analizi",
-        page_icon="🧠",
         layout="centered",
         initial_sidebar_state="collapsed",
     )
@@ -111,7 +110,7 @@ def main():
         """
 <div class="hero-full-bleed">
   <div class="hero-card">
-    <h1 class="hero-title">🧠 AI Mağaza Yorumu Analizi</h1>
+    <h1 class="hero-title">AI Mağaza Yorumu Analizi</h1>
   </div>
 </div>
 """,
