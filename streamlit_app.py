@@ -25,7 +25,7 @@ from dotenv import load_dotenv
 load_dotenv(ROOT / ".env", override=True)
 
 from store_review.config.settings import Settings
-from store_review.config.theme import APP_CSS
+from store_review.config.theme import APP_CSS, APP_VERSION
 from store_review.core.ai_providers import DEFAULT_MODELS, RichAnalyzer, resolve_api_keys
 from store_review.core.analyzer import analyze_batch, dedupe_reviews
 from store_review.fetchers.app_store import get_app_store_reviews
@@ -81,14 +81,19 @@ def _inject_css():
 def main():
     st.set_page_config(
         page_title="Mağaza Yorumu Analizi",
-        layout="wide",
-        initial_sidebar_state="expanded",
+        layout="centered",
+        initial_sidebar_state="collapsed",
     )
     _inject_css()
 
-    st.markdown('<p class="header-title">Mağaza yorumu duygu analizi</p>', unsafe_allow_html=True)
     st.markdown(
-        '<p class="header-sub">Google Play & App Store · Heuristic (ücretsiz) veya Gemini / Groq / OpenAI</p>',
+        f"""
+<div class="hero-card">
+  <h1 class="hero-title">Mağaza Yorumu Analizi</h1>
+  <p class="hero-sub">Google Play ve App Store yorumları · Hızlı (heuristic) veya zengin analiz (Gemini / Groq / OpenAI)</p>
+  <p class="hero-version">Sürüm: {APP_VERSION}</p>
+</div>
+""",
         unsafe_allow_html=True,
     )
 
@@ -100,28 +105,32 @@ def main():
         _secrets_get,
     )
 
-    with st.sidebar:
-        st.subheader("API durumu")
-        st.write("Gemini:", "✓" if gk else "—")
-        st.write("Groq:", "✓" if gqk else "—")
-        st.write("OpenAI:", "✓" if ok else "—")
-        st.caption(".env veya Streamlit secrets içinde anahtarları tanımlayın.")
-        st.divider()
-        st.markdown("**Zengin analiz** için en az bir anahtar gerekir.")
+    with st.expander("API anahtarları ve durum", expanded=False):
+        st.caption(".env (yerel) veya Streamlit Cloud **Secrets** içinde tanımlayın.")
+        st.write("Gemini:", "tanımlı" if gk else "—")
+        st.write("Groq:", "tanımlı" if gqk else "—")
+        st.write("OpenAI:", "tanımlı" if ok else "—")
+        st.info("Zengin analiz için en az bir anahtar gerekir. Hızlı analiz tamamen ücretsizdir.")
 
     if "review_pool" not in st.session_state:
         st.session_state.review_pool = []
     if "analysis_rows" not in st.session_state:
         st.session_state.analysis_rows = []
 
+    st.markdown('<p class="section-title">Veri kaynağı</p>', unsafe_allow_html=True)
     tab_play, tab_ios, tab_file, tab_text = st.tabs(
-        ["Google Play", "App Store", "Dosya yükle", "Metin yapıştır"]
+        ["Mağaza linki · Play", "Mağaza linki · App Store", "Dosya yükle", "Metin yapıştır"]
     )
 
     with tab_play:
-        st.text_input("Play package veya mağaza URL", key="play_input", placeholder="com.whatsapp veya ...id=com.whatsapp")
-        d_play = st.number_input("Son X gün (Play)", min_value=1, max_value=365, value=30, key="play_days")
-        if st.button("Play yorumlarını çek", key="btn_play"):
+        st.caption("Play Store: paket adı (`com…`) veya mağaza URL’si.")
+        st.text_input(
+            "Uygulama paketi veya link",
+            key="play_input",
+            placeholder="com.whatsapp veya …id=com.whatsapp",
+        )
+        d_play = st.number_input("Son kaç güne ait yorumlar", min_value=1, max_value=365, value=30, key="play_days")
+        if st.button("Yorumları çek (Play)", use_container_width=True, key="btn_play"):
             pid = _parse_play_id(st.session_state.play_input)
             if not pid:
                 st.error("Geçerli bir uygulama kimliği veya URL girin.")
@@ -132,13 +141,19 @@ def main():
                     int(d_play),
                     _progress_callback=lambda x: prog.progress(min(float(x), 1.0)),
                 )
+                prog.empty()
                 st.success(f"{len(st.session_state.review_pool)} benzersiz yorum yüklendi.")
                 st.session_state.analysis_rows = []
 
     with tab_ios:
-        st.text_input("App Store sayısal id veya URL", key="ios_input", placeholder="284882215 veya .../id284882215...")
-        d_ios = st.number_input("Son X gün (iOS)", min_value=1, max_value=365, value=30, key="ios_days")
-        if st.button("App Store yorumlarını çek", key="btn_ios"):
+        st.caption("App Store: uygulama sayısal ID’si veya mağaza URL’si (`…/id123456789`).")
+        st.text_input(
+            "App Store ID veya link",
+            key="ios_input",
+            placeholder="284882215 veya …/id284882215…",
+        )
+        d_ios = st.number_input("Son kaç güne ait yorumlar (iOS)", min_value=1, max_value=365, value=30, key="ios_days")
+        if st.button("Yorumları çek (App Store)", use_container_width=True, key="btn_ios"):
             aid = _parse_ios_id(st.session_state.ios_input)
             if not aid:
                 st.error("Geçerli bir App Store id veya URL girin.")
@@ -149,11 +164,13 @@ def main():
                     _progress_callback=lambda x: prog.progress(min(float(x), 1.0)),
                     _days_limit=int(d_ios),
                 )
+                prog.empty()
                 st.success(f"{len(st.session_state.review_pool)} benzersiz yorum yüklendi.")
                 st.session_state.analysis_rows = []
 
     with tab_file:
-        up = st.file_uploader("CSV veya Excel", type=["csv", "xlsx"])
+        st.caption("CSV veya Excel; metin sütunu otomatik eşlenir (ör. Yorum, review, text).")
+        up = st.file_uploader("Dosya seç", type=["csv", "xlsx"])
         if up:
             try:
                 if up.name.lower().endswith(".csv"):
@@ -167,8 +184,9 @@ def main():
                 st.error(str(e))
 
     with tab_text:
-        ta = st.text_area("Her satır bir yorum", height=200, key="paste_reviews")
-        if st.button("Metni yükle", key="btn_paste"):
+        st.caption("Her satır bir kullanıcı yorumu olacak şekilde yapıştırın.")
+        ta = st.text_area("Yorumlar", height=200, key="paste_reviews", label_visibility="visible")
+        if st.button("Metni havuza yükle", use_container_width=True, key="btn_paste"):
             lines = [ln.strip() for ln in ta.splitlines() if ln.strip()]
             pool = []
             for i, ln in enumerate(lines):
@@ -191,52 +209,82 @@ def main():
     st.markdown('<div class="fancy-divider"></div>', unsafe_allow_html=True)
 
     pool = st.session_state.review_pool
-    st.metric("Havuzdaki yorum", len(pool))
+    st.markdown(
+        f'<div class="metric-strip"><div class="metric-strip-label">Havuzdaki yorum</div>'
+        f'<div class="metric-strip-value">{len(pool)}</div></div>',
+        unsafe_allow_html=True,
+    )
 
     if pool:
         raw_df = pd.DataFrame(pool)
-        with st.expander("Ham veriyi indir"):
+        with st.expander("Ham veriyi indir (analiz öncesi)", expanded=False):
             c1, c2 = st.columns(2)
             with c1:
                 st.download_button(
-                    "CSV",
+                    "CSV indir",
                     data=df_to_csv_bytes(raw_df),
                     file_name=f"reviews_raw_{datetime.now():%Y%m%d_%H%M}.csv",
                     mime="text/csv",
+                    use_container_width=True,
                 )
             with c2:
                 st.download_button(
-                    "Excel",
+                    "Excel indir",
                     data=df_to_excel_bytes(raw_df),
                     file_name=f"reviews_raw_{datetime.now():%Y%m%d_%H%M}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True,
                 )
 
-    c_m1, c_m2, c_m3 = st.columns(3)
-    with c_m1:
-        method = st.radio("Analiz", ["Hızlı (heuristic)", "Zengin (LLM)"], horizontal=True)
-    with c_m2:
-        depth = st.radio("Derinlik", ["Standart", "Gelişmiş"], horizontal=True, disabled=(method == "Hızlı (heuristic)"))
-    with c_m3:
+    st.markdown('<p class="section-title">Analiz ayarları</p>', unsafe_allow_html=True)
+
+    method = st.radio(
+        "Analiz yöntemi",
+        ["Hızlı (heuristic)", "Zengin (LLM)"],
+        horizontal=True,
+    )
+
+    if method == "Hızlı (heuristic)":
+        st.markdown(
+            '<div class="analysis-hint"><strong>Hızlı Analiz:</strong> '
+            "Çok dilli kelime listeleri ve kurallarla saniyeler içinde sonuç üretir; API anahtarı gerekmez.</div>",
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            '<div class="analysis-hint"><strong>Zengin Analiz:</strong> '
+            "Gemini / Groq / OpenAI ile yorum başına skor; en az bir API anahtarı gerekir. "
+            "Varsayılan en fazla <strong>500</strong> yorum işlenir.</div>",
+            unsafe_allow_html=True,
+        )
+
+    use_fast = method == "Hızlı (heuristic)"
+    col_d, col_p = st.columns(2)
+    with col_d:
+        depth = st.radio(
+            "Derinlik (yalnız zengin)",
+            ["Standart", "Gelişmiş"],
+            horizontal=True,
+            disabled=use_fast,
+        )
+    with col_p:
         provider = st.selectbox(
-            "Öncelikli sağlayıcı (Zengin)",
+            "Öncelikli sağlayıcı",
             ["Google Gemini", "Groq AI", "OpenAI"],
-            disabled=(method == "Hızlı (heuristic)"),
+            disabled=use_fast,
         )
 
     model = st.text_input(
         "Model adı",
         value=DEFAULT_MODELS.get(provider, ""),
-        disabled=(method == "Hızlı (heuristic)"),
-        help="Sağlayıcıya göre varsayılanı kullanabilir veya kendi modelinizi yazabilirsiniz.",
+        disabled=use_fast,
+        help="Boş bırakırsanız sağlayıcı varsayılanı kullanılır.",
     )
 
-    use_fast = method == "Hızlı (heuristic)"
     mode_idx = 0 if depth == "Standart" else 1
-
     rich = RichAnalyzer(gemini_key=gk, groq_key=gqk, openai_key=ok)
 
-    if st.button("Analizi başlat", type="primary"):
+    if st.button("ANALİZİ BAŞLAT", type="primary", use_container_width=True):
         prepared = _prepare_pool(pool)
         if not prepared:
             st.warning("Önce yorum yükleyin.")
@@ -268,7 +316,7 @@ def main():
 
     rows = st.session_state.analysis_rows
     if rows:
-        st.subheader("Sonuçlar")
+        st.markdown('<p class="section-title">Sonuçlar</p>', unsafe_allow_html=True)
         df = pd.DataFrame(rows)
         vc = df["Baskın Duygu"].value_counts()
         m1, m2, m3, m4 = st.columns(4)
@@ -278,22 +326,35 @@ def main():
 
         pie_df = vc.reset_index()
         pie_df.columns = ["duygu", "adet"]
-        fig = px.pie(pie_df, names="duygu", values="adet", hole=0.45, color="duygu", color_discrete_map={
-            "Olumlu": "#34D399",
-            "Olumsuz": "#F87171",
-            "İstek/Görüş": "#60A5FA",
-            "—": "#94A3B8",
-        })
+        fig = px.pie(
+            pie_df,
+            names="duygu",
+            values="adet",
+            hole=0.45,
+            color="duygu",
+            color_discrete_map={
+                "Olumlu": "#34D399",
+                "Olumsuz": "#F87171",
+                "İstek/Görüş": "#60A5FA",
+                "—": "#94A3B8",
+            },
+        )
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#334155"),
+        )
         st.plotly_chart(fig, use_container_width=True)
 
         st.dataframe(df, use_container_width=True, height=420)
 
         out_df = df.drop(columns=["Tarih"], errors="ignore") if "Tarih" in df.columns else df
         st.download_button(
-            "Sonuç CSV",
+            "Sonuçları CSV indir",
             data=df_to_csv_bytes(out_df),
             file_name=f"analiz_{datetime.now():%Y%m%d_%H%M}.csv",
             mime="text/csv",
+            use_container_width=True,
         )
 
 
