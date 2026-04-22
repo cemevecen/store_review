@@ -518,8 +518,8 @@ div[data-testid="stDataFrame"] {
   color: #64748b !important;
   font-weight: 600;
   margin-top: 0.15rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  text-transform: lowercase !important;
+  letter-spacing: 0.02em;
 }
 
 /* ---- Mobil / dar ekran (≤768px) — yatay sütunları dikey yığ, taşmayı kes ---- */
@@ -673,5 +673,54 @@ div[data-testid="stDataFrame"] {
     width: 40px !important;
     height: 40px !important;
   }
+}
+
+/*
+ * Küçük harf kuralı: arayüzün tamamı (buton, etiket, uyarı vb.).
+ * İstisna: mağaza / App Store’dan gelen uygulama adı ve paket satırları, grafikler, kullanıcı giriş alanları, SVG.
+ */
+[data-testid="stAppViewContainer"],
+[data-testid="stAppViewContainer"] *,
+[data-testid="stSidebar"],
+[data-testid="stSidebar"] *,
+[data-testid="stDecoration"],
+[data-testid="stDecoration"] *,
+[data-testid="stToolbar"],
+[data-testid="stToolbar"] * {
+  text-transform: lowercase !important;
+}
+
+.stTextInput input,
+.stNumberInput input,
+.stTextArea textarea,
+[data-testid="stTextArea"] textarea,
+textarea,
+[data-baseweb="input"] input,
+[data-baseweb="textarea"] textarea,
+[data-testid="stDateInput"] input,
+[data-testid="stDateInput"] button {
+  text-transform: none !important;
+}
+
+.sl-row-title,
+.sl-row-id,
+.sl-app-banner-title,
+.sl-app-banner-meta,
+.sl-app-banner-score,
+.cmp-selected-summary,
+.review-card-app,
+.st-key-cmp_review_segment [data-baseweb="segmented-control"],
+.st-key-cmp_review_segment [data-baseweb="segmented-control"] button,
+[data-testid="stPlotlyChart"],
+[data-testid="stPlotlyChart"] *,
+[data-testid="stJson"],
+[data-testid="stJson"] *,
+svg,
+svg *,
+pre,
+code,
+kbd,
+samp {
+  text-transform: none !important;
 }
 """
