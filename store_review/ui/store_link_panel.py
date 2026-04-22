@@ -68,8 +68,120 @@ def _inject_store_search_css() -> None:
 }
 .sl-row-title { font-weight:700; color:#0f172a; font-size:0.9rem; line-height:1.25; }
 .sl-row-id { font-size:0.72rem; color:#94a3b8; margin-top:2px; word-break:break-all; }
+.sl-app-banner {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin: 8px 0 14px 0;
+  box-shadow: 0 2px 14px rgba(15, 23, 42, 0.06);
+}
+.sl-app-banner-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.sl-app-banner-icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sl-app-banner-icon img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  display: block;
+}
+.sl-app-banner-body { flex: 1; min-width: 0; }
+.sl-app-banner-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.25;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.02em;
+}
+.sl-app-banner-meta {
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+}
+.sl-app-banner-rating {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sl-app-stars {
+  display: inline-flex;
+  gap: 2px;
+  letter-spacing: 0;
+}
+.sl-star-on { color: #f59e0b; font-size: 1rem; line-height: 1; }
+.sl-star-off { color: #e2e8f0; font-size: 1rem; line-height: 1; }
+.sl-app-banner-score {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+.sl-app-banner-score.muted { color: #94a3b8; font-weight: 600; }
 </style>
 """,
+        unsafe_allow_html=True,
+    )
+
+
+def _stars_html(rating: object) -> tuple[str, str]:
+    """5 yıldız satırı + sayısal metin (Türkçe ondalık)."""
+    if not isinstance(rating, (int, float)) or rating <= 0:
+        return (
+            '<span class="sl-app-stars">'
+            + "".join('<span class="sl-star-off">&#9733;</span>' for _ in range(5))
+            + "</span>",
+            '<span class="sl-app-banner-score muted">Puan yok</span>',
+        )
+    r = max(0.0, min(5.0, float(rating)))
+    n_on = int(round(r))
+    stars_inner = "".join(
+        f'<span class="{"sl-star-on" if i < n_on else "sl-star-off"}">&#9733;</span>' for i in range(5)
+    )
+    score_txt = f"{r:.1f}".replace(".", ",") + " / 5"
+    return (
+        f'<span class="sl-app-stars" aria-hidden="true">{stars_inner}</span>',
+        f'<span class="sl-app-banner-score">{html.escape(score_txt)}</span>',
+    )
+
+
+def _render_app_banner(
+    *,
+    title: str,
+    platform: str,
+    icon_url: str,
+    rating: object,
+    extra_meta: str | None = None,
+) -> None:
+    t_esc = html.escape(str(title))
+    p_esc = html.escape(str(platform))
+    extra = f'<div class="sl-app-banner-meta">{html.escape(extra_meta)}</div>' if extra_meta else ""
+    stars_h, score_h = _stars_html(rating)
+    icon_block = (
+        f'<div class="sl-app-banner-icon"><img src="{html.escape(icon_url, quote=True)}" alt="" referrerpolicy="no-referrer"/></div>'
+        if icon_url.startswith("http")
+        else '<div class="sl-app-banner-icon" style="font-size:0.65rem;font-weight:700;color:#64748b;text-align:center;line-height:1.1;">APP</div>'
+    )
+    st.markdown(
+        f'<div class="sl-app-banner"><div class="sl-app-banner-grid">{icon_block}'
+        f'<div class="sl-app-banner-body"><div class="sl-app-banner-title">{t_esc}</div>'
+        f'<div class="sl-app-banner-meta">{p_esc}</div>{extra}'
+        f'<div class="sl-app-banner-rating">{stars_h}{score_h}</div></div></div></div>',
         unsafe_allow_html=True,
     )
 
@@ -79,25 +191,38 @@ def _banner_play(app_id: str) -> None:
         from google_play_scraper import app as play_app
 
         info = play_app(app_id, lang="tr", country="tr")
-        title = info.get("title", app_id)
+        title = str(info.get("title", app_id))
         icon = (info.get("icon") or "").strip()
         score = info.get("score")
-        sc = f"{score:.1f} / 5" if isinstance(score, (int, float)) else "—"
-        col_a, col_b = st.columns([0.15, 0.85])
-        with col_a:
-            if icon.startswith("http"):
-                st.image(icon, width=56)
-        with col_b:
-            st.caption(f"{title} · Google Play · Mağaza puanı: {sc}")
+        genre = info.get("genre") or ""
+        if not genre and info.get("categories"):
+            c0 = info["categories"][0]
+            if isinstance(c0, dict):
+                genre = str(c0.get("name", ""))
+        _render_app_banner(
+            title=title,
+            platform="Google Play",
+            icon_url=icon,
+            rating=score,
+            extra_meta=genre if genre else None,
+        )
     except Exception:
-        st.caption(f"Seçili uygulama: {app_id} (Google Play)")
+        _render_app_banner(
+            title=f"Seçili: {app_id}",
+            platform="Google Play",
+            icon_url="",
+            rating=None,
+            extra_meta="Bilgi alınamadı",
+        )
 
 
 def _banner_ios(app_id: str) -> None:
     import requests
 
-    title = app_id
+    title = str(app_id)
     icon = ""
+    rating: object = None
+    genre = ""
     for cc in ("tr", "us", "gb"):
         try:
             r = requests.get(
@@ -108,17 +233,23 @@ def _banner_ios(app_id: str) -> None:
                 data = r.json().get("results") or []
                 if data:
                     a0 = data[0]
-                    title = a0.get("trackCensoredName") or a0.get("trackName") or app_id
+                    title = str(a0.get("trackCensoredName") or a0.get("trackName") or app_id)
                     icon = (a0.get("artworkUrl512") or a0.get("artworkUrl100") or "").strip()
+                    ar = a0.get("averageUserRating")
+                    rating = float(ar) if isinstance(ar, (int, float)) else None
+                    genre = str(a0.get("primaryGenreName") or "").strip()
                     break
         except Exception:
             continue
-    col_a, col_b = st.columns([0.15, 0.85])
-    with col_a:
-        if icon.startswith("http"):
-            st.image(icon, width=56)
-    with col_b:
-        st.caption(f"{title} · App Store · ID {app_id}")
+    extra_parts = [p for p in (genre, f"ID {app_id}") if p]
+    extra = " · ".join(extra_parts) if extra_parts else None
+    _render_app_banner(
+        title=title,
+        platform="App Store",
+        icon_url=icon,
+        rating=rating,
+        extra_meta=extra,
+    )
 
 
 RANGE_OPTIONS = [
