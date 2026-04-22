@@ -416,8 +416,7 @@ def render_store_link_tab() -> None:
             elif len(text) >= 2:
                 st.warning("Sonuç bulunamadı. Farklı anahtar kelime veya platform deneyin.")
 
-    r1, r2, r3 = st.columns(3)
-    with r1:
+    if text or st.session_state.sl_selected_id:
         if st.button("Seçimi sıfırla", key="sl_reset"):
             st.session_state.sl_selected_id = None
             st.session_state.sl_selected_platform = None
