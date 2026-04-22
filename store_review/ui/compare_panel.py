@@ -352,7 +352,7 @@ def render_compare_tab(
     m1, m2 = st.columns(2)
     with m1:
         cmp_method = st.radio(
-            "",
+            "Karşılaştırma analiz yöntemi",
             ["Hızlı (heuristic)", "Zengin (LLM)"],
             horizontal=True,
             key="cmp_method",

@@ -55,8 +55,9 @@ def _prepare_pool(rows: list[dict]) -> list[dict]:
     return out
 
 
-def _inject_css():
-    st.markdown(f"<style>{APP_CSS}</style>", unsafe_allow_html=True)
+def _inject_css() -> None:
+    """Stil yalnızca <style> olduğunda st.html event container'a gider (Streamlit 1.28+)."""
+    st.html(f"<style>{APP_CSS}</style>")
 
 
 SOURCE_OPTIONS = [
@@ -107,19 +108,25 @@ def main():
     )
     _inject_css()
 
-    with st.container(border=True, key="hero_header_shell", width="stretch"):
-        st.markdown(
-            '<h1 class="hero-title">AI Mağaza Yorumu Analizi</h1>',
-            unsafe_allow_html=True,
-        )
-        st.radio(
-            "",
-            SOURCE_OPTIONS,
-            horizontal=True,
-            label_visibility="collapsed",
-            key="main_data_source_tab",
-            on_change=_on_data_source_change,
-        )
+    with st.container(border=True, key="pg_masthead", width="stretch"):
+        col_brand, col_nav = st.columns([5, 7], gap="medium", vertical_alignment="center")
+        with col_brand:
+            st.markdown(
+                '<span class="hero-band-target" aria-hidden="true"></span>'
+                '<div class="hero-masthead-brand">'
+                '<h1 class="hero-title">AI Mağaza Yorumu Analizi</h1>'
+                "</div>",
+                unsafe_allow_html=True,
+            )
+        with col_nav:
+            st.radio(
+                "Veri kaynağı",
+                SOURCE_OPTIONS,
+                horizontal=True,
+                label_visibility="collapsed",
+                key="main_data_source_tab",
+                on_change=_on_data_source_change,
+            )
 
     env_settings = Settings.from_env()
     gk, gqk, ok = resolve_api_keys(
@@ -265,7 +272,7 @@ def main():
     st.markdown('<p class="section-title">Analiz ayarları</p>', unsafe_allow_html=True)
 
     method = st.radio(
-        "",
+        "Analiz yöntemi",
         ["Hızlı (heuristic)", "Zengin (LLM)"],
         horizontal=True,
         label_visibility="collapsed",

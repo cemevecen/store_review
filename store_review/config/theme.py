@@ -184,70 +184,277 @@ div[data-testid="stDataFrame"] {
   overflow: hidden;
 }
 
-/* Üst header — viewport genişliği + pastel (indigo / gök / şeftali) */
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-title) {
+/* Tam genişlik header taşması — Streamlit ana sütunu kırpmasın */
+[data-testid="stAppViewContainer"] .main,
+[data-testid="stAppViewContainer"] .main .block-container {
+  overflow-x: visible !important;
+}
+
+/*
+ * Masthead — Streamlit 1.55+ bordered st.container → data-testid="stVerticalBlock" + .st-key-*.
+ * Eski sürümler: stVerticalBlockBorderWrapper. Her kuralda dörtlü kök + aynı alt seçici tekrarlanır.
+ */
+[data-testid="stVerticalBlock"].st-key-pg_masthead,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand),
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) {
   width: 100vw !important;
+  min-width: 100vw !important;
   max-width: 100vw !important;
-  margin-left: calc(50% - 50vw) !important;
-  margin-right: calc(50% - 50vw) !important;
+  position: relative !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
   margin-top: -1.25rem !important;
-  margin-bottom: 14px !important;
-  padding: calc(1.25rem + 8px) clamp(16px, 4vw, 40px) 18px !important;
+  margin-bottom: 16px !important;
+  padding: 14px clamp(18px, 4vw, 44px) 16px !important;
   box-sizing: border-box !important;
-  background: linear-gradient(
-    125deg,
-    #eef2ff 0%,
-    #e0f2fe 44%,
-    #fff7ed 100%
-  ) !important;
+  min-height: 88px !important;
   border: none !important;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.25) !important;
-  border-radius: 0 !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 10px 32px rgba(79, 70, 229, 0.09) !important;
+  border-radius: 0 0 22px 22px !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.14) !important;
+  box-shadow: 0 10px 32px rgba(6, 42, 40, 0.32) !important;
+  overflow: hidden !important;
+  background: linear-gradient(
+    102deg,
+    #050f14 0%,
+    #0a1f24 18%,
+    #0c2e32 40%,
+    #115e59 68%,
+    #0f766e 88%,
+    #14b8a6 100%
+  ) !important;
 }
 
-.hero-title {
+[data-testid="stVerticalBlock"].st-key-pg_masthead::after,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead::after,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand)::after,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand)::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  border-radius: inherit !important;
+  opacity: 0.05 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z'/%3E%3C/svg%3E") !important;
+  background-size: 24px 24px !important;
+}
+
+.hero-band-target {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+[data-testid="stVerticalBlock"].st-key-pg_masthead div[data-testid="stMarkdownContainer"]:has(.hero-band-target),
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead div[data-testid="stMarkdownContainer"]:has(.hero-band-target),
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) div[data-testid="stMarkdownContainer"]:has(.hero-band-target),
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) div[data-testid="stMarkdownContainer"]:has(.hero-band-target) {
+  margin-bottom: 0 !important;
+}
+
+.hero-masthead-brand {
+  display: flex !important;
+  align-items: center !important;
+  min-width: 0 !important;
+}
+
+.hero-masthead-brand .hero-title {
   font-family: 'Poppins', sans-serif;
-  font-size: 1.65rem;
+  font-size: clamp(1.1rem, 2.4vw, 1.5rem);
   font-weight: 700;
-  color: #312e81;
-  margin: 0 0 12px 0;
+  color: #ffffff;
+  margin: 0 !important;
   letter-spacing: -0.02em;
-  text-align: center;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+  text-align: left !important;
+  line-height: 1.2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-title) [data-baseweb="radio"] > div {
-  justify-content: center !important;
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"],
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stHorizontalBlock"],
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stHorizontalBlock"] {
+  width: 100% !important;
+  align-items: center !important;
+}
+
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:first-child,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:first-child,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:first-child,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:first-child {
+  display: flex !important;
+  align-items: center !important;
+  min-width: 0 !important;
+}
+
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:last-child,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:last-child,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:last-child,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:last-child {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
   flex-wrap: wrap !important;
   gap: 8px !important;
 }
 
-/* Header içi radyo — pastel zeminde */
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-title) .stRadio div[role="radiogroup"] label {
-  background: rgba(255, 255, 255, 0.88) !important;
-  border: 1px solid rgba(129, 140, 248, 0.38) !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadio"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadio"],
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadio"],
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadio"] {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  width: 100% !important;
 }
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-title) .stRadio div[role="radiogroup"] label span {
-  color: #3730a3 !important;
+
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"],
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"],
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"],
+[data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"],
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"],
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] {
+  display: inline-flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 2px !important;
+  margin: 0 !important;
+  margin-left: auto !important;
+  padding: 6px 8px !important;
+  width: auto !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  background: rgba(0, 0, 0, 0.26) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 20px !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 1 auto !important;
+  margin: 0 !important;
+  min-height: 40px !important;
+  padding: 8px 12px !important;
+  border-radius: 14px !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label span,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label span,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label span,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label span,
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label p,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label p,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label p,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label p,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label span,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label span,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label span,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label span,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label p,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label p,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label p,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label p {
+  color: #ffffff !important;
   font-weight: 500 !important;
+  font-size: 0.82rem !important;
 }
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-title)
-  .stRadio
-  div[role="radiogroup"]
-  label:has(input:checked) {
+
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label:hover:not(:has(input:checked)),
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label:hover:not(:has(input:checked)),
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:hover:not(:has(input:checked)),
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:hover:not(:has(input:checked)),
+[data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:hover:not(:has(input:checked)),
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:hover:not(:has(input:checked)),
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:hover:not(:has(input:checked)),
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:hover:not(:has(input:checked)) {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label:has(input:checked),
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label:has(input:checked),
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:has(input:checked),
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:has(input:checked),
+[data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:has(input:checked),
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:has(input:checked),
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:has(input:checked),
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:has(input:checked) {
   background: #ffffff !important;
-  border-color: #a5b4fc !important;
-  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.2);
+  border-radius: 20px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18) !important;
 }
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-title)
-  .stRadio
-  div[role="radiogroup"]
-  label:has(input:checked)
-  span {
-  color: #4338ca !important;
+
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label:has(input:checked) span,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label:has(input:checked) span,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:has(input:checked) span,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:has(input:checked) span,
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label:has(input:checked) p,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label:has(input:checked) p,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:has(input:checked) p,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:has(input:checked) p,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:has(input:checked) span,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:has(input:checked) span,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:has(input:checked) span,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:has(input:checked) span,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:has(input:checked) p,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:has(input:checked) p,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:has(input:checked) p,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:has(input:checked) p {
+  color: #0b2f2c !important;
   font-weight: 600 !important;
+}
+
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label input[type="radio"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label input[type="radio"],
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label input[type="radio"],
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label input[type="radio"],
+[data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label input[type="radio"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label input[type="radio"],
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label input[type="radio"],
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label input[type="radio"] {
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  pointer-events: none !important;
+}
+
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label > input[type="radio"] + div,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label > input[type="radio"] + div,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label > input[type="radio"] + div,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label > input[type="radio"] + div,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label > input[type="radio"] + div,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label > input[type="radio"] + div,
+[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label > input[type="radio"] + div,
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label > input[type="radio"] + div {
+  display: none !important;
 }
 
 .fancy-divider {
