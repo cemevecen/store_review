@@ -78,6 +78,29 @@ def _play_brand_slug(query: str) -> Optional[str]:
     return slug if len(slug) >= 4 else None
 
 
+_PLAY_SKIP_SEGMENTS = frozenset(
+    {"com", "android", "app", "apps", "mobile", "www", "net", "org", "io", "tv", "wear"}
+)
+
+
+def _effective_brand_slug(slug: str, app_id: str) -> str:
+    """
+    Kısmi arama (örn. sahibin, trendyo) için paket / kimlikten tam marka kökünü çıkarır;
+    böylece com.sahibinden ana uygulamasına bonus, com.sahibinden.pro için ceza uygulanır.
+    """
+    aid = (app_id or "").lower().strip()
+    if not aid or len(slug) < 4:
+        return slug
+    parts = [p for p in aid.split(".") if p and p not in _PLAY_SKIP_SEGMENTS and not p.isdigit()]
+    best = ""
+    for seg in parts:
+        if len(seg) < len(slug):
+            continue
+        if seg.startswith(slug) and len(seg) > len(best):
+            best = seg
+    return best if best else slug
+
+
 def _play_canonical_package_bonus(slug: str, app_id: str) -> float:
     """Ana tüketici uygulaması paket kalıplarına yüksek bonus."""
     aid = (app_id or "").lower().strip()
@@ -139,7 +162,8 @@ def _android_play_relevance_score(query: str, title: str, app_id: str) -> float:
     slug = _play_brand_slug(query)
     if not slug:
         return base
-    return base + _play_canonical_package_bonus(slug, app_id) + _play_title_satellite_adjustment(slug, title)
+    brand = _effective_brand_slug(slug, app_id)
+    return base + _play_canonical_package_bonus(brand, app_id) + _play_title_satellite_adjustment(brand, title)
 
 
 def _stable_sort_android_play(query: str, rows: List[dict[str, Any]]) -> List[dict[str, Any]]:
@@ -230,6 +254,57 @@ def _play_store_search_html_packages(search_query: str, max_results: int = 48) -
         return []
 
 
+def _inject_missing_main_play_row(rows: List[dict[str, Any]], query: str) -> List[dict[str, Any]]:
+    """
+    Sonuçlarda yalnızca com.marka.pro / com.marka.go gibi uydular var, com.marka veya marka.com yoksa
+    ana paketi play_app ile listeye ekler (kısmi arama sahibin + yalnızca pro dönmesi gibi durumlar).
+    """
+    slug = _play_brand_slug(query)
+    if not slug or not rows:
+        return rows
+    aids = {str(r.get("appId", "")) for r in rows if r.get("appId")}
+    for r in rows:
+        aid = str(r.get("appId", ""))
+        if not aid.startswith("com."):
+            continue
+        b = _effective_brand_slug(slug, aid)
+        if not b or len(b) < len(slug):
+            continue
+        main = f"com.{b}"
+        alt = f"{b}.com"
+        if main in aids or alt in aids:
+            continue
+        if not aid.startswith(main + "."):
+            continue
+        rest_head = aid[len(main) + 1 :].split(".")[0].lower()
+        if rest_head not in _PLAY_SATELLITE_SEGMENTS:
+            continue
+        try:
+            from google_play_scraper import app as play_app
+
+            chosen: Optional[str] = None
+            info: Any = None
+            for cand in (main, alt):
+                try:
+                    info = play_app(cand, lang="tr", country="tr")
+                    chosen = cand
+                    break
+                except Exception:
+                    continue
+            if not chosen or not info:
+                break
+            new_row: dict[str, Any] = {
+                "platform": "Android",
+                "appId": chosen,
+                "title": (info.get("title") or chosen)[:80],
+                "icon": str(info.get("icon") or "").strip(),
+            }
+            return [new_row] + [x for x in rows if str(x.get("appId", "")) != chosen]
+        except Exception:
+            break
+    return rows
+
+
 def _enrich_android_rows_parallel(
     rows: List[dict[str, Any]],
     *,
@@ -306,6 +381,7 @@ def search_play_store(query: str, n_hits: int = 80) -> List[dict[str, Any]]:
             _enrich_android_rows_parallel(html_rows, max_fetch=min(24, len(html_rows)), workers=5)
             out = html_rows
 
+    out = _inject_missing_main_play_row(out, q)
     return _stable_sort_android_play(query, out)
 
 
