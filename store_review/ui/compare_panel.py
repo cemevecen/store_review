@@ -29,6 +29,47 @@ from store_review.ui.store_link_panel import (
     _inject_store_search_css,
 )
 
+_CMP_COMPACT_CSS = """
+<style>
+[data-testid="stVerticalBlock"].st-key-cmp_shell [data-testid="element-container"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [data-testid="element-container"] {
+  margin-top: 0 !important;
+  margin-bottom: 0.2rem !important;
+}
+[data-testid="stVerticalBlock"].st-key-cmp_shell .sl-plat-radio-wrap,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell .sl-plat-radio-wrap {
+  margin: 4px 0 6px !important;
+}
+[data-testid="stVerticalBlock"].st-key-cmp_shell hr,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell hr {
+  display: none !important;
+  margin: 0 !important;
+  height: 0 !important;
+  border: 0 !important;
+}
+[data-testid="stVerticalBlock"].st-key-cmp_shell [data-testid="stMetricContainer"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [data-testid="stMetricContainer"] {
+  padding-top: 0.1rem !important;
+  padding-bottom: 0.1rem !important;
+}
+[data-testid="stVerticalBlock"].st-key-cmp_shell [data-testid="stPlotlyChart"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [data-testid="stPlotlyChart"] {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.35rem !important;
+}
+[data-testid="stVerticalBlock"].st-key-cmp_shell [data-testid="stCaption"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [data-testid="stCaption"] {
+  margin-top: 0.1rem !important;
+  margin-bottom: 0.15rem !important;
+}
+[data-testid="stVerticalBlock"].st-key-cmp_shell [data-testid="stHeadingWithActionElements"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [data-testid="stHeadingWithActionElements"] {
+  margin-top: 0.35rem !important;
+  margin-bottom: 0.15rem !important;
+}
+</style>
+"""
+
 
 def _prepare_pool(rows: list[dict]) -> list[dict]:
     from store_review.utils.validators import is_valid_comment
@@ -229,7 +270,6 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
     if resolve_msg:
         st.info(resolve_msg)
 
-    looks_pkg = text.startswith(("com.", "org.", "net.", "io.")) and "." in text
     is_selected = st.session_state.get(f"{p}selected_id") is not None
 
     if not text and not is_selected:
@@ -320,8 +360,6 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
         if st.button("Bu uygulamayı sıfırla", key=f"cmp_slot_reset_{slot}"):
             _reset_cmp_slot(slot)
             st.rerun()
-    elif looks_pkg or (resolved is not None):
-        st.caption("Doğrudan paket / ID / link ile devam edebilirsiniz; aşağıdan karşılaştırmayı başlatın.")
 
 
 def render_compare_tab(
@@ -336,203 +374,196 @@ def render_compare_tab(
         st.session_state.cmp_detail_rows = {}
 
     _inject_store_search_css()
-    st.caption(
-        "Her uygulama için **Mağaza** sekmesindeki gibi isim yazıp **Android / iOS** seçin; sonuçlardan **Seç** deyin. "
-        "İsterseniz **paket** (`com…`), **App Store ID** veya **mağaza linki** de yapıştırabilirsiniz."
-    )
+    st.markdown(_CMP_COMPACT_CSS, unsafe_allow_html=True)
+    with st.container(key="cmp_shell"):
+        _render_compare_app_picker(0, "Uygulama 1")
+        _render_compare_app_picker(1, "Uygulama 2")
 
-    _render_compare_app_picker(0, "Uygulama 1")
-    st.divider()
-    _render_compare_app_picker(1, "Uygulama 2")
-    st.divider()
+        time_label = st.selectbox("Tarih aralığı", RANGE_OPTIONS, index=1, key="cmp_time_range")
+        days = RANGE_DAYS[time_label]
 
-    time_label = st.selectbox("Tarih aralığı", RANGE_OPTIONS, index=1, key="cmp_time_range")
-    days = RANGE_DAYS[time_label]
-
-    m1, m2 = st.columns(2)
-    with m1:
-        cmp_method = st.radio(
-            "Karşılaştırma analiz yöntemi",
-            ["Hızlı (heuristic)", "Zengin (LLM)"],
-            horizontal=True,
-            key="cmp_method",
-            label_visibility="collapsed",
-        )
-    use_fast = cmp_method == "Hızlı (heuristic)"
-    with m2:
-        if use_fast:
-            mode_idx = 0
-            st.caption("Heuristic için derinlik sabit.")
-        else:
-            depth = st.radio(
-                "Derinlik",
-                ["Standart", "Gelişmiş"],
+        m1, m2 = st.columns(2)
+        with m1:
+            cmp_method = st.radio(
+                "Karşılaştırma analiz yöntemi",
+                ["Hızlı (heuristic)", "Zengin (LLM)"],
                 horizontal=True,
-                key="cmp_depth",
+                key="cmp_method",
+                label_visibility="collapsed",
             )
-            mode_idx = 0 if depth == "Standart" else 1
+        use_fast = cmp_method == "Hızlı (heuristic)"
+        with m2:
+            if use_fast:
+                mode_idx = 0
+                st.caption("Heuristic için derinlik sabit.")
+            else:
+                depth = st.radio(
+                    "Derinlik",
+                    ["Standart", "Gelişmiş"],
+                    horizontal=True,
+                    key="cmp_depth",
+                )
+                mode_idx = 0 if depth == "Standart" else 1
 
-    provider = "Google Gemini"
-    model = default_models.get("Google Gemini", "")
+        provider = "Google Gemini"
+        model = default_models.get("Google Gemini", "")
 
-    def _resolve_one(raw: str) -> tuple[Optional[ResolvedApp], Optional[str]]:
-        s = (raw or "").strip()
-        if not s:
-            return None, None
-        return resolve_direct_input(s)
+        def _resolve_one(raw: str) -> tuple[Optional[ResolvedApp], Optional[str]]:
+            s = (raw or "").strip()
+            if not s:
+                return None, None
+            return resolve_direct_input(s)
 
-    if st.button("Karşılaştırmayı başlat", type="primary", use_container_width=True, key="cmp_start"):
-        inputs = [_cmp_slot_effective_raw(0), _cmp_slot_effective_raw(1)]
-        if sum(1 for x in inputs if x) < 2:
-            st.warning("İki uygulama için de ID veya link girin.")
-        elif not use_fast and not has_llm_keys:
-            st.error("Zengin analiz için en az bir API anahtarı gerekir (.env veya Streamlit secrets).")
-        else:
-            results: dict[str, dict[str, Any]] = {}
-            detail_rows: dict[str, list[dict]] = {}
-            errors: list[str] = []
-            model_final = (model or "").strip() or default_models.get(provider, "")
+        if st.button("Karşılaştırmayı başlat", type="primary", use_container_width=True, key="cmp_start"):
+            inputs = [_cmp_slot_effective_raw(0), _cmp_slot_effective_raw(1)]
+            if sum(1 for x in inputs if x) < 2:
+                st.warning("İki uygulama için de ID veya link girin.")
+            elif not use_fast and not has_llm_keys:
+                st.error("Zengin analiz için en az bir API anahtarı gerekir (.env veya Streamlit secrets).")
+            else:
+                results: dict[str, dict[str, Any]] = {}
+                detail_rows: dict[str, list[dict]] = {}
+                errors: list[str] = []
+                model_final = (model or "").strip() or default_models.get(provider, "")
 
-            for raw in inputs:
-                resolved, msg = _resolve_one(raw)
-                if msg:
-                    st.info(msg)
-                if resolved is None:
-                    errors.append(f"Çözülemedi: `{raw[:48]}…`" if len(raw) > 48 else f"Çözülemedi: `{raw}`")
-                    continue
+                for raw in inputs:
+                    resolved, msg = _resolve_one(raw)
+                    if msg:
+                        st.info(msg)
+                    if resolved is None:
+                        errors.append(f"Çözülemedi: `{raw[:48]}…`" if len(raw) > 48 else f"Çözülemedi: `{raw}`")
+                        continue
 
-                meta = _metadata(resolved)
-                with st.spinner(f"«{meta['title']}» yorumlar çekiliyor ve analiz ediliyor…"):
-                    try:
-                        if resolved.platform == "android":
-                            pool = fetch_google_play_reviews(
-                                resolved.app_id,
-                                days,
-                                _progress_callback=lambda x: None,
+                    meta = _metadata(resolved)
+                    with st.spinner(f"«{meta['title']}» yorumlar çekiliyor ve analiz ediliyor…"):
+                        try:
+                            if resolved.platform == "android":
+                                pool = fetch_google_play_reviews(
+                                    resolved.app_id,
+                                    days,
+                                    _progress_callback=lambda x: None,
+                                )
+                            else:
+                                pool = get_app_store_reviews(
+                                    resolved.app_id,
+                                    _progress_callback=lambda x: None,
+                                    _days_limit=days,
+                                )
+                            prepared = _prepare_pool(pool)
+                            if not prepared:
+                                errors.append(f"{meta['title']}: analiz edilecek yorum yok.")
+                                continue
+
+                            rows = analyze_batch(
+                                prepared,
+                                use_heuristic_only=use_fast,
+                                analysis_mode=mode_idx,
+                                rich=None if use_fast else rich,
+                                provider=provider,
+                                model=model_final,
+                                max_workers=28 if use_fast else 12,
+                                progress=None,
+                                max_rich_items=500,
                             )
-                        else:
-                            pool = get_app_store_reviews(
-                                resolved.app_id,
-                                _progress_callback=lambda x: None,
-                                _days_limit=days,
-                            )
-                        prepared = _prepare_pool(pool)
-                        if not prepared:
-                            errors.append(f"{meta['title']}: analiz edilecek yorum yok.")
-                            continue
+                            agg = _aggregate_rows(rows)
+                            slug = f"{resolved.platform}:{resolved.app_id}"
+                            detail_rows[slug] = list(rows)
+                            results[slug] = {
+                                **meta,
+                                **agg,
+                                "app_id": resolved.app_id,
+                                "platform": resolved.platform,
+                                "chart_label": f"{meta['title'][:36]}{'…' if len(meta['title']) > 36 else ''} ({'Play' if resolved.platform == 'android' else 'App Store'})",
+                            }
+                        except Exception as e:
+                            errors.append(f"{meta.get('title', raw)}: {e}")
 
-                        rows = analyze_batch(
-                            prepared,
-                            use_heuristic_only=use_fast,
-                            analysis_mode=mode_idx,
-                            rich=None if use_fast else rich,
-                            provider=provider,
-                            model=model_final,
-                            max_workers=28 if use_fast else 12,
-                            progress=None,
-                            max_rich_items=500,
-                        )
-                        agg = _aggregate_rows(rows)
-                        slug = f"{resolved.platform}:{resolved.app_id}"
-                        detail_rows[slug] = list(rows)
-                        results[slug] = {
-                            **meta,
-                            **agg,
-                            "app_id": resolved.app_id,
-                            "platform": resolved.platform,
-                            "chart_label": f"{meta['title'][:36]}{'…' if len(meta['title']) > 36 else ''} ({'Play' if resolved.platform == 'android' else 'App Store'})",
-                        }
-                    except Exception as e:
-                        errors.append(f"{meta.get('title', raw)}: {e}")
+                st.session_state.cmp_results = results
+                st.session_state.cmp_detail_rows = detail_rows
+                st.session_state.cmp_range_label = time_label
+                if errors:
+                    for er in errors:
+                        st.error(er)
+        res = st.session_state.get("cmp_results") or {}
+        if res:
+            if st.button("Karşılaştırma sonuçlarını temizle", key="cmp_clear"):
+                st.session_state.cmp_results = {}
+                st.session_state.cmp_detail_rows = {}
+                st.session_state.pop("cmp_range_label", None)
+                st.rerun()
 
-            st.session_state.cmp_results = results
-            st.session_state.cmp_detail_rows = detail_rows
-            st.session_state.cmp_range_label = time_label
-            if errors:
-                for er in errors:
-                    st.error(er)
-    res = st.session_state.get("cmp_results") or {}
-    if res:
-        if st.button("Karşılaştırma sonuçlarını temizle", key="cmp_clear"):
-            st.session_state.cmp_results = {}
-            st.session_state.cmp_detail_rows = {}
-            st.session_state.pop("cmp_range_label", None)
-            st.rerun()
+            st.markdown("#### Özet")
+            cols = st.columns(len(res))
+            colors = ["#6366F1", "#F97316", "#0EA5E9"]
+            for i, (_slug, data) in enumerate(res.items()):
+                app_nm = data.get("title") or _slug
+                with cols[i]:
+                    accent = colors[i % len(colors)]
+                    st.markdown(
+                        f'<div style="font-size:0.75rem;font-weight:700;color:{accent};margin-bottom:6px;">'
+                        f"{html.escape(str(app_nm))}</div>",
+                        unsafe_allow_html=True,
+                    )
+                    icon = (data.get("icon") or "").strip()
+                    if icon.startswith("http"):
+                        st.image(icon, width=56)
+                    st.caption(f"{data.get('store', '')} · {data.get('genre', '—')}")
+                    st.metric("Duygu skoru (0–100)", int(data.get("score", 0)))
+                    st.metric("Analiz edilen yorum", int(data.get("total", 0)))
+                    st.caption(f"Olumlu %{data.get('pos_pct', 0)}")
+                    st.progress(min(1.0, max(0.0, int(data.get("pos_pct", 0)) / 100.0)))
+                    st.caption(f"Olumsuz %{data.get('neg_pct', 0)}")
+                    st.progress(min(1.0, max(0.0, int(data.get("neg_pct", 0)) / 100.0)))
+                    st.caption(f"İstek/Görüş %{data.get('neu_pct', 0)}")
+                    st.progress(min(1.0, max(0.0, int(data.get("neu_pct", 0)) / 100.0)))
 
-        st.markdown("#### Özet")
-        cols = st.columns(len(res))
-        colors = ["#6366F1", "#F97316", "#0EA5E9"]
-        for i, (_slug, data) in enumerate(res.items()):
-            app_nm = data.get("title") or _slug
-            with cols[i]:
-                accent = colors[i % len(colors)]
+            names = [res[k].get("chart_label") or res[k].get("title") or k for k in res.keys()]
+            keys = list(res.keys())
+            fig = go.Figure(
+                data=[
+                    go.Bar(name="Olumlu", x=names, y=[res[k]["pos_pct"] for k in keys], marker_color="#34D399"),
+                    go.Bar(name="Olumsuz", x=names, y=[res[k]["neg_pct"] for k in keys], marker_color="#F87171"),
+                    go.Bar(
+                        name="İstek/Görüş",
+                        x=names,
+                        y=[res[k]["neu_pct"] for k in keys],
+                        marker_color="#60A5FA",
+                    ),
+                ]
+            )
+            fig.update_layout(
+                barmode="group",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#334155"),
+                margin=dict(t=22, b=28),
+                yaxis_title="Yüzde",
+                height=320,
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+            st.markdown("#### Yorumlar")
+            range_lbl = st.session_state.get("cmp_range_label") or time_label
+            st.caption(f"**{range_lbl}** aralığında analiz edilen yorumlar.")
+            detail = st.session_state.get("cmp_detail_rows") or {}
+            if not detail:
                 st.markdown(
-                    f'<div style="font-size:0.75rem;font-weight:700;color:{accent};margin-bottom:6px;">'
-                    f"{html.escape(str(app_nm))}</div>",
+                    '<p style="color:#64748b;font-size:0.92rem;margin:0;">'
+                    "Yorum satırları bulunamadı. Karşılaştırmayı yeniden çalıştırın.</p>",
                     unsafe_allow_html=True,
                 )
-                icon = (data.get("icon") or "").strip()
-                if icon.startswith("http"):
-                    st.image(icon, width=56)
-                st.caption(f"{data.get('store', '')} · {data.get('genre', '—')}")
-                st.metric("Duygu skoru (0–100)", int(data.get("score", 0)))
-                st.metric("Analiz edilen yorum", int(data.get("total", 0)))
-                st.caption(f"Olumlu %{data.get('pos_pct', 0)}")
-                st.progress(min(1.0, max(0.0, int(data.get("pos_pct", 0)) / 100.0)))
-                st.caption(f"Olumsuz %{data.get('neg_pct', 0)}")
-                st.progress(min(1.0, max(0.0, int(data.get("neg_pct", 0)) / 100.0)))
-                st.caption(f"İstek/Görüş %{data.get('neu_pct', 0)}")
-                st.progress(min(1.0, max(0.0, int(data.get("neu_pct", 0)) / 100.0)))
-
-        names = [res[k].get("chart_label") or res[k].get("title") or k for k in res.keys()]
-        keys = list(res.keys())
-        fig = go.Figure(
-            data=[
-                go.Bar(name="Olumlu", x=names, y=[res[k]["pos_pct"] for k in keys], marker_color="#34D399"),
-                go.Bar(name="Olumsuz", x=names, y=[res[k]["neg_pct"] for k in keys], marker_color="#F87171"),
-                go.Bar(
-                    name="İstek/Görüş",
-                    x=names,
-                    y=[res[k]["neu_pct"] for k in keys],
-                    marker_color="#60A5FA",
-                ),
-            ]
-        )
-        fig.update_layout(
-            barmode="group",
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#334155"),
-            margin=dict(t=40, b=40),
-            yaxis_title="Yüzde",
-            height=360,
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-        st.markdown("#### Yorumlar (seçilen tarih aralığına göre)")
-        range_lbl = st.session_state.get("cmp_range_label") or time_label
-        st.caption(
-            f"Tarih aralığı: **{range_lbl}**. Aşağıdaki tablolar, bu aralıkta çekilen ve analiz edilen yorumlardır."
-        )
-        detail = st.session_state.get("cmp_detail_rows") or {}
-        if not detail:
-            st.markdown(
-                '<p style="color:#64748b;font-size:0.92rem;margin:0;">'
-                "Yorum satırları bulunamadı. Karşılaştırmayı yeniden çalıştırın.</p>",
-                unsafe_allow_html=True,
-            )
-        else:
-            key_list = list(res.keys())[:2]
-            for idx, slug in enumerate(key_list):
-                data = res.get(slug) or {}
-                title = html.escape(str(data.get("title") or slug))
-                rows_d = detail.get(slug) or []
-                st.markdown(
-                    f'<p style="font-weight:700;color:#334155;margin:16px 0 8px 0;">{title}</p>',
-                    unsafe_allow_html=True,
-                )
-                st.caption(f"{int(data.get('total', 0))} yorum · {data.get('chart_label', '')}")
-                if not rows_d:
-                    st.write("—")
-                else:
-                    render_analyzed_review_cards(rows_d, key_prefix=f"cmp_{idx}")
+            else:
+                key_list = list(res.keys())[:2]
+                for idx, slug in enumerate(key_list):
+                    data = res.get(slug) or {}
+                    title = html.escape(str(data.get("title") or slug))
+                    rows_d = detail.get(slug) or []
+                    st.markdown(
+                        f'<p style="font-weight:700;color:#334155;margin:10px 0 6px 0;">{title}</p>',
+                        unsafe_allow_html=True,
+                    )
+                    st.caption(f"{int(data.get('total', 0))} yorum · {data.get('chart_label', '')}")
+                    if not rows_d:
+                        st.write("—")
+                    else:
+                        render_analyzed_review_cards(rows_d, key_prefix=f"cmp_{idx}")
