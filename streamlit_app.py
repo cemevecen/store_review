@@ -109,8 +109,10 @@ def main():
 
     st.markdown(
         """
-<div class="hero-card">
-  <h1 class="hero-title">🧠 AI Mağaza Yorumu Analizi</h1>
+<div class="hero-full-bleed">
+  <div class="hero-card">
+    <h1 class="hero-title">🧠 AI Mağaza Yorumu Analizi</h1>
+  </div>
 </div>
 """,
         unsafe_allow_html=True,

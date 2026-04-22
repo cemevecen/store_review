@@ -193,6 +193,22 @@ div[data-testid="stDataFrame"] {
   overflow: hidden;
 }
 
+/* Başlık — üst blok container dışına taşır, viewport genişliği */
+.hero-full-bleed {
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  margin-top: -1.25rem;
+  padding-top: 1.25rem;
+  padding-bottom: 10px;
+  box-sizing: border-box;
+}
+.hero-full-bleed .hero-card {
+  border-radius: 0;
+  margin-bottom: 0;
+}
+
 /* Başlık kartı — masaüstü streamlit_app / AI duygu referansı (ince vurgu çizgisi) */
 .hero-card {
   background: #ffffff;
