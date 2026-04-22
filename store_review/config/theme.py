@@ -51,6 +51,7 @@ APP_CSS = """
   padding: 10px 12px !important;
   border-radius: 12px !important;
   border: 1px solid transparent !important;
+  border-bottom: none !important;
   background: transparent !important;
   box-shadow: none !important;
   transition: background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
@@ -81,9 +82,6 @@ APP_CSS = """
   visibility: hidden !important;
   height: 0 !important;
   min-height: 0 !important;
-}
-[data-testid="stTabs"] [data-baseweb="tab"] {
-  border-bottom: none !important;
 }
 [data-testid="stTabs"] [data-baseweb="tab-panel"] {
   padding-top: 1.15rem !important;
