@@ -161,9 +161,6 @@ def main():
                     st.session_state.review_pool_file = load_reviews_from_dataframe(df)
                     st.session_state._file_pool_sig = sig
                     st.session_state.analysis_rows = []
-                    st.success(
-                        f"{len(st.session_state.review_pool_file)} satır yüklendi (filtre sonrası)."
-                    )
             except Exception as e:
                 st.error(str(e))
         elif st.session_state.review_pool_file:
@@ -207,7 +204,6 @@ def main():
                     }
                 )
             st.session_state.review_pool_paste = pool
-            st.success(f"{len(pool)} yorum hazır.")
             st.session_state.analysis_rows = []
     else:
         render_compare_tab(

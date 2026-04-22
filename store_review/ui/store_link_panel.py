@@ -88,9 +88,9 @@ def _banner_play(app_id: str) -> None:
             if icon.startswith("http"):
                 st.image(icon, width=56)
         with col_b:
-            st.success(f"**{title}** · Google Play · Mağaza puanı: {sc}")
+            st.caption(f"{title} · Google Play · Mağaza puanı: {sc}")
     except Exception:
-        st.success(f"Seçili uygulama: `{app_id}` (Google Play)")
+        st.caption(f"Seçili uygulama: {app_id} (Google Play)")
 
 
 def _banner_ios(app_id: str) -> None:
@@ -118,7 +118,7 @@ def _banner_ios(app_id: str) -> None:
         if icon.startswith("http"):
             st.image(icon, width=56)
     with col_b:
-        st.success(f"**{title}** · App Store · ID `{app_id}`")
+        st.caption(f"{title} · App Store · ID {app_id}")
 
 
 RANGE_OPTIONS = [
@@ -309,7 +309,7 @@ def render_store_link_tab() -> None:
             st.session_state.review_pool_store = pool
             st.session_state.analysis_rows = []
             prog.empty()
-            st.success(f"{len(pool)} benzersiz yorum yüklendi ({time_label}).")
+            st.caption(f"{len(pool)} benzersiz yorum yüklendi ({time_label}).")
         except Exception as e:
             prog.empty()
             st.error(f"Çekim hatası: {e}")

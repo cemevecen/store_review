@@ -306,9 +306,6 @@ def render_compare_tab(
             if errors:
                 for er in errors:
                     st.error(er)
-            if results:
-                st.success(f"{len(results)} uygulama için özet hazır.")
-
     res = st.session_state.get("cmp_results") or {}
     if res:
         if st.button("Karşılaştırma sonuçlarını temizle", key="cmp_clear"):
