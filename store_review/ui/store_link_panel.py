@@ -165,6 +165,16 @@ def _inject_store_search_css() -> None:
   color: #0f172a;
 }
 .sl-app-banner-score.muted { color: #94a3b8; font-weight: 600; }
+@media (max-width: 768px) {
+  .sl-app-banner-grid {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center;
+  }
+  .sl-app-banner-body { width: 100%; }
+  .sl-app-banner-title { font-size: 1rem !important; }
+  .sl-platform-wrap { justify-content: center; }
+}
 </style>
 """,
         unsafe_allow_html=True,

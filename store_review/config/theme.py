@@ -509,4 +509,153 @@ div[data-testid="stDataFrame"] {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+
+/* ---- Mobil / dar ekran (≤768px) — yatay sütunları dikey yığ, taşmayı kes ---- */
+@media (max-width: 768px) {
+  .block-container {
+    padding-left: clamp(0.5rem, 3vw, 1rem) !important;
+    padding-right: clamp(0.5rem, 3vw, 1rem) !important;
+    max-width: 100% !important;
+  }
+  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"] > [data-testid="column"] {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+  /* Masthead: yan boşluk sütunlarını gizle, orta blok tam genişlik */
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:first-child,
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:last-child,
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:first-child,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:last-child,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child {
+    display: none !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:nth-child(2),
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"]:nth-child(2),
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:nth-child(2),
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"]:nth-child(2) {
+    width: 100% !important;
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead {
+    padding: 22px clamp(12px, 4vw, 20px) 16px !important;
+    min-height: 0 !important;
+  }
+  [data-testid="stTabs"] [data-baseweb="tab-list"] {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  [data-testid="stTabs"] [data-baseweb="tab"] {
+    flex: 1 1 calc(50% - 6px) !important;
+    min-height: 44px !important;
+    padding: 8px 10px !important;
+  }
+  [data-testid="stTabs"] [data-baseweb="tab"] p,
+  [data-testid="stTabs"] [data-baseweb="tab"] span {
+    font-size: 0.8rem !important;
+  }
+  [data-testid="stAppViewContainer"] .main .stRadio div[role="radiogroup"] {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  [data-testid="stAppViewContainer"] .main .stRadio div[role="radiogroup"] label {
+    flex: 1 1 auto !important;
+    min-height: 44px !important;
+    margin-right: 0 !important;
+  }
+  .stButton > button {
+    min-height: 44px !important;
+  }
+  .stTextInput input,
+  .stNumberInput input,
+  textarea {
+    font-size: 16px !important;
+  }
+  [data-testid="stPlotlyChart"],
+  div[data-testid="stDataFrame"] {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .js-plotly-plot,
+  .js-plotly-plot .plotly {
+    max-width: 100% !important;
+  }
+  .metric-strip {
+    padding: 12px 14px !important;
+  }
+  .sr-analysis-page-title {
+    font-size: 1.15rem !important;
+  }
+  .sr-analysis-metric-pill {
+    flex: 1 1 calc(50% - 0.5rem) !important;
+    max-width: none !important;
+  }
+  .review-card {
+    padding: 12px 14px 14px !important;
+  }
+  .review-card-head {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .review-card-date {
+    margin-left: 0 !important;
+  }
+  /* Inline HTML blokları (analiz özeti) */
+  .sr-responsive-row {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  .sr-week-dow-strip {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+  .sr-summary-footer {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  /* Yorum sayfalama: anahtar dinamik (ör. main_analiz_review_pager) — sınıf adında _review_pager geçer */
+  [data-testid="stVerticalBlock"][class*="_review_pager"] [data-testid="stHorizontalBlock"],
+  [data-testid="stVerticalBlockBorderWrapper"][class*="_review_pager"] [data-testid="stHorizontalBlock"] {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+  }
+  [data-testid="stVerticalBlock"][class*="_review_pager"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+  [data-testid="stVerticalBlock"][class*="_review_pager"] [data-testid="stHorizontalBlock"] > [data-testid="column"],
+  [data-testid="stVerticalBlockBorderWrapper"][class*="_review_pager"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+  [data-testid="stVerticalBlockBorderWrapper"][class*="_review_pager"] [data-testid="stHorizontalBlock"] > [data-testid="column"] {
+    width: auto !important;
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-masthead-brand .hero-title {
+    font-size: 1rem !important;
+  }
+}
 """

@@ -164,6 +164,18 @@ _CMP_COMPACT_CSS = """
 [data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_start_method_row [data-testid="stHorizontalBlock"] > [data-testid="column"] {
   min-width: 0 !important;
 }
+@media (max-width: 768px) {
+  [data-testid="stVerticalBlock"].st-key-cmp_start_method_row [data-testid="stHorizontalBlock"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_start_method_row [data-testid="stHorizontalBlock"] {
+    flex-direction: column !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-cmp_start_method_row [data-baseweb="segmented-control"] button,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_start_method_row [data-baseweb="segmented-control"] button {
+    font-size: 0.78rem !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+}
 </style>
 """
 

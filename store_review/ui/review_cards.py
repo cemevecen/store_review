@@ -134,38 +134,39 @@ def render_analyzed_review_cards(rows: list[dict[str, Any]], *, key_prefix: str 
             start = page * PAGE_SIZE
             end = min(start + PAGE_SIZE, n)
 
-            c_prev, c_info, c_next = st.columns([1, 3, 1])
-            with c_prev:
-                if st.button("Önceki", key=f"{key_prefix}_prev_page", disabled=page <= 0):
-                    st.session_state[page_k] = page - 1
-                    st.rerun()
-            with c_info:
-                st.caption(f"**{start + 1}–{end}** / {n} yorum · sayfa **{page + 1}** / **{total_pages}**")
-            with c_next:
-                if st.button("Sonraki", key=f"{key_prefix}_next_page", disabled=page >= total_pages - 1):
-                    st.session_state[page_k] = page + 1
-                    st.rerun()
+            with st.container(key=f"{key_prefix}_review_pager"):
+                c_prev, c_info, c_next = st.columns([1, 3, 1])
+                with c_prev:
+                    if st.button("Önceki", key=f"{key_prefix}_prev_page", disabled=page <= 0):
+                        st.session_state[page_k] = page - 1
+                        st.rerun()
+                with c_info:
+                    st.caption(f"**{start + 1}–{end}** / {n} yorum · sayfa **{page + 1}** / **{total_pages}**")
+                with c_next:
+                    if st.button("Sonraki", key=f"{key_prefix}_next_page", disabled=page >= total_pages - 1):
+                        st.session_state[page_k] = page + 1
+                        st.rerun()
 
-            if total_pages <= _MAX_PAGE_BUTTONS:
-                cols = st.columns(total_pages)
-                for i in range(total_pages):
-                    with cols[i]:
-                        is_cur = i == page
-                        if st.button(
-                            str(i + 1),
-                            key=f"{key_prefix}_pgnum_{i}",
-                            type="primary" if is_cur else "secondary",
-                            use_container_width=True,
-                            disabled=is_cur,
-                        ):
-                            st.session_state[page_k] = i
-                            st.rerun()
-            else:
-                st.caption(f"Çok sayfa ({total_pages}); **Önceki** / **Sonraki** ile gezinin.")
+                if total_pages <= _MAX_PAGE_BUTTONS:
+                    cols = st.columns(total_pages)
+                    for i in range(total_pages):
+                        with cols[i]:
+                            is_cur = i == page
+                            if st.button(
+                                str(i + 1),
+                                key=f"{key_prefix}_pgnum_{i}",
+                                type="primary" if is_cur else "secondary",
+                                use_container_width=True,
+                                disabled=is_cur,
+                            ):
+                                st.session_state[page_k] = i
+                                st.rerun()
+                else:
+                    st.caption(f"Çok sayfa ({total_pages}); **Önceki** / **Sonraki** ile gezinin.")
 
-            if st.button("Tümünü gör", key=f"{key_prefix}_show_all_reviews", use_container_width=True):
-                st.session_state[show_all_k] = True
-                st.rerun()
+                if st.button("Tümünü gör", key=f"{key_prefix}_show_all_reviews", use_container_width=True):
+                    st.session_state[show_all_k] = True
+                    st.rerun()
 
     inner = "".join(_one_card_html(r, i) for i, r in enumerate(slice_rows))
     st.markdown(

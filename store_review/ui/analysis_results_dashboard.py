@@ -60,7 +60,7 @@ def _render_concentric_legend(m_olumlu: int, m_olumsuz: int, m_istek: int) -> No
 
     st.markdown(
         f"""
-        <div style="display:flex;align-items:center;gap:20px;padding:8px 0 4px 0;">
+        <div class="sr-responsive-row" style="display:flex;align-items:center;gap:20px;padding:8px 0 4px 0;">
             <svg width="140" height="140" viewBox="0 0 140 140" style="flex-shrink:0;">
                 <circle cx="70" cy="70" r="{r_outer}" fill="none" stroke="#E2E8F0" stroke-width="10"/>
                 <circle cx="70" cy="70" r="{r_mid}" fill="none" stroke="#E2E8F0" stroke-width="10"/>
@@ -149,7 +149,7 @@ def _render_trend(rows: list[dict]) -> None:
             trend_icon, trend_color, trend_text = "→", "#f59e0b", "Oran stabil seyrediyor"
         st.markdown(
             f"""
-            <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:12px 15px;margin-top:8px;display:flex;align-items:center;gap:10px;">
+            <div class="sr-responsive-row" style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:12px 15px;margin-top:8px;display:flex;align-items:center;gap:10px;">
                 <span style="font-size:1.6rem;color:{trend_color};font-weight:800;line-height:1;">{trend_icon}</span>
                 <div>
                     <div style="font-size:0.7rem;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Trend</div>
@@ -198,7 +198,7 @@ def _render_daily_negative(rows: list[dict]) -> None:
                 f"""
                 <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:12px 15px;margin-top:8px;">
                     <div style="font-size:0.7rem;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Günlük Olumsuz Oran</div>
-                    <div style="display:flex;gap:4px;">{cells}</div>
+                    <div class="sr-week-dow-strip" style="display:flex;gap:4px;">{cells}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -283,7 +283,7 @@ def _render_sentiment_summary(
     <div style="font-size:0.82rem;font-weight:700;color:{title_color};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">{html.escape(summary_title)}</div>
     <div style="font-size:0.9rem;color:#1E293B;line-height:1.75;margin:0;">{summary_body}</div>
     {persona_html}
-    <div style="margin-top:18px;padding-top:12px;border-top:1px solid #E2E8F0;display:flex;gap:12px;align-items:center;">
+    <div class="sr-summary-footer" style="margin-top:18px;padding-top:12px;border-top:1px solid #E2E8F0;display:flex;gap:12px;align-items:center;">
         <div style="display:flex;gap:4px;">
             <div style="width:8px;height:8px;border-radius:50%;background:#10b981;"></div>
             <div style="width:8px;height:8px;border-radius:50%;background:#f43f5e;"></div>
