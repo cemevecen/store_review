@@ -368,6 +368,25 @@ def _resolve_null_play_search_app_ids(hits: list[Any], query: str) -> None:
     if len(q) < 2:
         return
 
+    slug_brand = _play_brand_slug(q)
+    if slug_brand:
+        sl = slug_brand.lower()
+        pkg_canon = ANDROID_SEARCH_CANONICAL_BY_SLUG.get(sl)
+        if pkg_canon:
+            for idx, want_title in orphans:
+                if hits[idx].get("appId"):
+                    continue
+                wn = (want_title or "").casefold()
+                if sl not in wn:
+                    continue
+                wcompact = re.sub(r"\s+", "", wn)
+                if sl == "letgo" and "letgoo" in wcompact:
+                    continue
+                hits[idx]["appId"] = pkg_canon
+
+    if all(hits[idx].get("appId") for idx, _ in orphans):
+        return
+
     try:
         from google_play_scraper import app as play_app
     except ImportError:
@@ -590,7 +609,7 @@ def _enrich_android_rows_parallel(
                 r["icon"] = ic
 
 
-def search_play_store(query: str, n_hits: int = 80) -> List[dict[str, Any]]:
+def search_play_store(query: str, n_hits: int = 40) -> List[dict[str, Any]]:
     try:
         from google_play_scraper import search as play_search
     except ImportError:
@@ -603,7 +622,8 @@ def search_play_store(query: str, n_hits: int = 80) -> List[dict[str, Any]]:
     merged: list[Any] = []
     seen_ids: set[str] = set()
     seen_null_titles: set[str] = set()
-    for lang, cc in (("tr", "tr"), ("en", "us"), ("en", "gb")):
+    # Tek (tr) mağazası: UI araması için yeterli; iOS tek HTTP ile kıyaslanınca gecikme azalır.
+    for lang, cc in (("tr", "tr"),):
         try:
             chunk = play_search(q, n_hits=n_hits, lang=lang, country=cc) or []
         except Exception:

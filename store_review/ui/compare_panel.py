@@ -205,6 +205,7 @@ def _init_cmp_pick_defaults(slot: int) -> None:
     pairs: list[tuple[str, Any]] = [
         ("selected_id", None),
         ("selected_platform", None),
+        ("selected_title", ""),
         ("search_results", []),
         ("last_query", ""),
         ("last_filter", "Android"),
@@ -231,6 +232,7 @@ def _reset_cmp_slot(slot: int) -> None:
     st.session_state[f"cmp_store_in_{slot}"] = ""
     st.session_state[f"{p}selected_id"] = None
     st.session_state[f"{p}selected_platform"] = None
+    st.session_state[f"{p}selected_title"] = ""
     st.session_state[f"{p}search_results"] = []
     st.session_state[f"{p}last_query"] = ""
     st.session_state[f"{p}display_n"] = 12
@@ -269,6 +271,7 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
         if direct_res is not None and str(direct_res.app_id) != str(sel_id):
             st.session_state[f"{p}selected_id"] = None
             st.session_state[f"{p}selected_platform"] = None
+            st.session_state[f"{p}selected_title"] = ""
 
     resolved, resolve_msg = resolve_direct_input(text)
     if resolve_msg:
@@ -343,6 +346,7 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
                         if st.button("Seç", key=f"cmp_sel_{slot}_{idx}_{aid}", use_container_width=True):
                             st.session_state[f"{p}selected_id"] = aid
                             st.session_state[f"{p}selected_platform"] = plat
+                            st.session_state[f"{p}selected_title"] = str(app.get("title") or "")[:120]
                             st.session_state[f"{p}search_results"] = []
                             st.session_state[f"{p}last_query"] = ""
                             st.session_state[f"_pending_cmp_store_in_{slot}"] = aid
@@ -360,7 +364,17 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
     sid = st.session_state.get(f"{p}selected_id")
     splat = st.session_state.get(f"{p}selected_platform")
     if sid:
-        st.caption(f"Seçili: `{sid}` · **{splat or '—'}**")
+        stitle = (st.session_state.get(f"{p}selected_title") or "").strip()
+        if stitle:
+            st.markdown(
+                f'<p style="margin:0;font-size:0.92rem;color:#0f172a;"><b>{html.escape(stitle)}</b></p>'
+                f'<p style="margin:2px 0 0 0;font-size:0.82rem;color:#64748b;">'
+                f'<code style="font-size:0.78rem;">{html.escape(str(sid))}</code> · '
+                f"<b>{html.escape(str(splat or '—'))}</b></p>",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.caption(f"Seçili: `{sid}` · **{splat or '—'}**")
         if st.button("Bu uygulamayı sıfırla", key=f"cmp_slot_reset_{slot}"):
             _reset_cmp_slot(slot)
             st.rerun()
