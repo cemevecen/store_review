@@ -56,9 +56,30 @@ def _inject_css():
     st.markdown(f"<style>{APP_CSS}</style>", unsafe_allow_html=True)
 
 
+def _verdict_blurb_from_counts(vc: pd.Series) -> str | None:
+    """Masaüstü streamlit_app.py tarzı kısa özet (Baskın Duygu dağılımına göre)."""
+    if vc is None or len(vc) == 0:
+        return None
+    vc2 = vc.drop(index=["—"], errors="ignore") if "—" in vc.index else vc
+    if len(vc2) == 0:
+        return None
+    top = str(vc2.idxmax())
+    total = int(vc2.sum())
+    share = float(vc2[top] / total) if total else 0.0
+    pct = int(round(100 * share))
+    if top == "Olumlu":
+        return f"Bu yorum seti genel olarak **olumlu** ton ağırlığı taşıyor (%{pct}). 😊"
+    if top == "Olumsuz":
+        return f"Bu yorum seti genel olarak **olumsuz** ton ağırlığı taşıyor (%{pct}). 😔"
+    if top == "İstek/Görüş":
+        return f"Yorumların önemli bir kısmı **istek / görüş** niteliğinde (%{pct}). 💡"
+    return None
+
+
 def main():
     st.set_page_config(
-        page_title="Mağaza Yorumu Analizi",
+        page_title="AI Mağaza Yorumu Analizi",
+        page_icon="🧠",
         layout="centered",
         initial_sidebar_state="collapsed",
     )
@@ -67,9 +88,19 @@ def main():
     st.markdown(
         f"""
 <div class="hero-card">
-  <h1 class="hero-title">Mağaza Yorumu Analizi</h1>
-  <p class="hero-sub">Google Play ve App Store yorumları · Hızlı (heuristic) veya zengin analiz (Gemini / Groq / OpenAI)</p>
+  <h1 class="hero-title">🧠 AI Mağaza Yorumu Analizi</h1>
+  <p class="hero-sub">Google Play ve App Store yorumları · Hızlı (heuristic) veya zengin mod (Gemini / Groq / OpenAI)</p>
   <p class="hero-version">Sürüm: {APP_VERSION}</p>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+<div class="intro-blurb">
+Bu uygulama mağaza yorumlarını <strong>üç sınıfta</strong> (olumlu, olumsuz, istek/görüş) analiz eder.
+<strong>Hızlı analiz</strong> kelime ve kural tabanlıdır; <strong>zengin analiz</strong> yapay zeka ile güçlendirilir.
 </div>
 """,
         unsafe_allow_html=True,
@@ -120,7 +151,13 @@ def main():
 
     with tab_text:
         st.caption("Her satır bir kullanıcı yorumu olacak şekilde yapıştırın.")
-        ta = st.text_area("Yorumlar", height=200, key="paste_reviews", label_visibility="visible")
+        ta = st.text_area(
+            "Yorumlar",
+            height=200,
+            key="paste_reviews",
+            label_visibility="visible",
+            placeholder="Örn: Uygulama çok iyi ama bildirimler bazen geç geliyor.\nHer satıra bir yorum…",
+        )
         if st.button("Metni havuza yükle", use_container_width=True, key="btn_paste"):
             lines = [ln.strip() for ln in ta.splitlines() if ln.strip()]
             pool = []
@@ -219,38 +256,42 @@ def main():
     mode_idx = 0 if depth == "Standart" else 1
     rich = RichAnalyzer(gemini_key=gk, groq_key=gqk, openai_key=ok)
 
-    if st.button("ANALİZİ BAŞLAT", type="primary", use_container_width=True):
+    if st.button("Duygu analizini başlat", type="primary", use_container_width=True):
         prepared = _prepare_pool(pool)
         if not prepared:
             st.warning("Önce yorum yükleyin.")
         elif not use_fast and not (gk or gqk or ok):
             st.error("Zengin analiz için en az bir API anahtarı gerekir.")
         else:
-            bar = st.progress(0.0)
-            status = st.empty()
+            method_label = "Hızlı (heuristic)" if use_fast else f"Zengin ({provider})"
+            with st.spinner("Yorumlar analiz ediliyor…"):
+                bar = st.progress(0.0)
+                status = st.empty()
 
-            def prog(done: int, total: int):
-                bar.progress(done / max(total, 1))
-                status.text(f"{done} / {total}")
+                def prog(done: int, total: int):
+                    bar.progress(done / max(total, 1))
+                    status.text(f"{done} / {total}")
 
-            rows = analyze_batch(
-                prepared,
-                use_heuristic_only=use_fast,
-                analysis_mode=mode_idx,
-                rich=None if use_fast else rich,
-                provider=provider,
-                model=model.strip() or DEFAULT_MODELS[provider],
-                max_workers=28 if use_fast else 12,
-                progress=prog,
-                max_rich_items=500,
-            )
-            st.session_state.analysis_rows = rows
-            bar.empty()
-            status.empty()
-            st.success("Analiz tamamlandı.")
+                rows = analyze_batch(
+                    prepared,
+                    use_heuristic_only=use_fast,
+                    analysis_mode=mode_idx,
+                    rich=None if use_fast else rich,
+                    provider=provider,
+                    model=model.strip() or DEFAULT_MODELS[provider],
+                    max_workers=28 if use_fast else 12,
+                    progress=prog,
+                    max_rich_items=500,
+                )
+                st.session_state.analysis_rows = rows
+                bar.empty()
+                status.empty()
+            st.divider()
+            st.success(f"Analiz tamamlandı (yöntem: **{method_label}**).")
 
     rows = st.session_state.analysis_rows
     if rows:
+        st.divider()
         st.markdown('<p class="section-title">Sonuçlar</p>', unsafe_allow_html=True)
         df = pd.DataFrame(rows)
         vc = df["Baskın Duygu"].value_counts()
@@ -258,6 +299,10 @@ def main():
         m1.metric("Toplam", len(df))
         for col, label in [(m2, "Olumlu"), (m3, "Olumsuz"), (m4, "İstek/Görüş")]:
             col.metric(label, int(vc.get(label, 0)))
+
+        blurb = _verdict_blurb_from_counts(vc)
+        if blurb:
+            st.info(blurb)
 
         pie_df = vc.reset_index()
         pie_df.columns = ["duygu", "adet"]
@@ -291,6 +336,12 @@ def main():
             mime="text/csv",
             use_container_width=True,
         )
+
+    st.divider()
+    st.markdown(
+        '<p class="app-footer">🧠 AI destekli mağaza yorumu analizi · Bitirme projesi</p>',
+        unsafe_allow_html=True,
+    )
 
 
 if __name__ == "__main__":

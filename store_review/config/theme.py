@@ -1,6 +1,6 @@
 """Streamlit görünüm katmanı — açık tema, yüksek kontrast, kart + turuncu CTA (eski arayüz referansı)."""
 
-APP_VERSION = "2026-04-22"
+APP_VERSION = "2026-04-22-ui"
 
 APP_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
@@ -143,13 +143,14 @@ div[data-testid="stDataFrame"] {
   overflow: hidden;
 }
 
-/* Başlık kartı (HTML) */
+/* Başlık kartı — masaüstü streamlit_app / AI duygu referansı (ince vurgu çizgisi) */
 .hero-card {
   background: #ffffff;
   border-radius: 18px;
   padding: 22px 26px 18px;
   box-shadow: 0 4px 24px rgba(15, 23, 42, 0.07);
   border: 1px solid #e2e8f0;
+  border-left: 4px solid #818cf8;
   margin-bottom: 8px;
   text-align: center;
 }
@@ -216,5 +217,27 @@ div[data-testid="stDataFrame"] {
   font-weight: 600;
   color: #0f172a;
   margin: 18px 0 8px;
+}
+
+/* Giriş paragrafı (Desktop streamlit_app.py üst açıklama stili) */
+.intro-blurb {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin: 0 0 18px 0;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* Alt bilgi (footer caption) */
+.app-footer {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  margin-top: 2rem;
+  padding-top: 0.5rem;
 }
 """
