@@ -1,61 +1,101 @@
-# Mağaza yorumu duygu analizi (bitirme projesi)
+# Store review sentiment analysis
 
-Google Play ve App Store yorumlarını çeker; **üç sınıflı** duygu skoru üretir: Olumlu, Olumsuz, İstek/Görüş.
+---
 
-- **Hızlı analiz:** Eski projedeki **heuristic engine** (sarkazm, pivot/ama-but, manipülasyon tuzağı, kritik bug anahtar kelimeleri, çok dilli listeler, rating override) birebir taşındı.
-- **Zengin analiz:** `Gemini`, `Groq`, `OpenAI` sırasıyla denenir; tümü başarısızsa otomatik olarak heuristic’e düşülür.
+## English
 
-Google İşletme / pazaryeri kodları **bilerek yok**; yalnızca mağaza yorumu akışı.
+A Streamlit application for ingesting mobile store reviews, classifying sentiment into three categories (positive, negative, request / neutral opinion), and presenting aggregated results with optional review-level detail. The scope is consumer store review workflows only.
 
-**Neden repoda `.env` yok?** API anahtarları asla Git’e eklenmemeli; bu yüzden sadece **`.env.example`** var. Projeyi klonladıktan sonra kendi bilgisayarında `cp .env.example .env` ile `.env` oluşturup anahtarlarını bu dosyaya yazıyorsun (`.gitignore` içinde `.env` zaten yok sayılıyor).
+### What it does
 
-## Kurulum
+- **Ingest:** Google Play and App Store sources, uploaded spreadsheets, pasted plain text, or side‑by‑side comparison of two listed applications over a selectable time window.
+- **Analyse:** Two modes—a deterministic rules engine tuned for short, noisy user text, and a deeper model‑assisted path when local configuration allows. The rules path requires no remote services.
+- **Deliver:** Dashboard metrics, distribution views, and paginated review cards; exports to common tabular formats.
+
+### Requirements
+
+- Python 3.10+ recommended  
+- Dependencies listed in `requirements.txt`
+
+### Run locally
 
 ```bash
-cd "/Users/cemevecen/Desktop/store review"
 python3 -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+source .venv/bin/activate    # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env        # anahtarları düzenle
+cp .env.example .env         # optional: only if you use the deeper analysis path
 streamlit run streamlit_app.py
 ```
 
-## Mimari şema
+Repository configuration uses a local environment file that is not versioned. Use the shipped template and keep secrets out of version control.
+
+### Repository layout
 
 ```text
-store review/
-├── streamlit_app.py          # Sekmeler, analiz tetikleme, grafik / tablo
+├── streamlit_app.py              # Application shell and analysis orchestration
 ├── requirements.txt
 ├── .env.example
-├── README.md
-└── store_review/             # Python paketi
-    ├── config/
-    │   ├── settings.py       # Ortam değişkenlerinden API anahtarları
-    │   └── theme.py          # Tek yerde CSS
-    ├── data/
-    │   └── heuristic_lexicon.json  # Tüm kelime/liste/pivot/sarkazm verisi (düzenlenebilir)
-    ├── core/
-    │   ├── heuristic.py      # Rule-based motor (mantık; veri → JSON)
-    │   ├── prompts.py        # LLM prompt + JSON ayrıştırma
-    │   ├── ai_providers.py # Gemini / Groq / OpenAI + fallback zinciri
-    │   └── analyzer.py       # Paralel toplu analiz + dedup
-    ├── fetchers/
-    │   ├── google_play.py    # Çok kanallı paralel Play çekimi
-    │   ├── app_store.py      # 40 ülke RSS paralel
-    │   └── file_loader.py    # CSV/XLSX → normalize edilmiş yorum listesi
-    └── utils/
-        ├── validators.py     # is_valid_comment (geliştirici cevabı vb. filtre)
-        └── exporters.py      # CSV / Excel bayt çıktısı
+└── store_review/                 # Installable package
+    ├── config/                   # Runtime settings and presentation layer (CSS)
+    ├── core/                     # Heuristics, batch analysis, model integration
+    ├── data/                     # Externalised lexicon for the rules engine
+    ├── fetchers/                 # Store connectors, discovery helpers, file ingestion
+    ├── ui/                       # Dashboards, store and comparison panels, review UI
+    └── utils/                    # Validation and export helpers
 ```
 
-## Akış
+### Behavioural notes
 
-1. **Veri:** Play package / URL, App Store id / URL, dosya veya yapıştırılan metin.
-2. **Havuz:** `dedupe_reviews` + `is_valid_comment` ile temizlenmiş liste.
-3. **Analiz:** `analyze_batch` → Hızlı: `heuristic_analysis`; Zengin: `RichAnalyzer` (API zinciri + gerekirse heuristic).
+- Review pools are deduplicated and filtered for non‑review noise before scoring.
+- The deeper analysis path applies an upper bound on batch size for stability; the fast path processes the full prepared pool within the same pipeline constraints.
+- Lexicon and rule weights live in `store_review/data/heuristic_lexicon.json`; restart the app after edits, or clear the in‑process lexicon cache from code during development.
 
-## Notlar
+---
 
-- **Heuristic verisi:** `store_review/data/heuristic_lexicon.json` dosyasında toplanır (manipülasyon kalıpları, tam eşleşme kısa metinler, sarkazm, NEG/POS/NEU listeleri, kritik bug, pivot ifadeleri). Bu dosyayı düzenledikten sonra Streamlit sürecini yeniden başlatman yeterli (`_lexicon` önbelleği). Geliştirme sırasında `from store_review.core.heuristic import reload_heuristic_lexicon` ile önbelleği temizleyebilirsin.
-- Zengin analizde güvenlik için varsayılan **500 yorum** kotası vardır (`analyzer.analyze_batch` içinde `max_rich_items`).
-- Gemini model varsayılanı `gemini-2.0-flash`; sağlayıcı arayüzünden değiştirebilirsiniz (ör. `models/gemini-2.0-flash` gerektiren kurulumlar için).
+## Türkçe
+
+Mağaza yorumlarını toplayan, duygu sınıflandırmasını üç kategoride (olumlu, olumsuz, istek / nötr görüş) üreten ve özet ile satır düzeyinde sonuçları sunan bir Streamlit uygulaması. Kapsam yalnızca tüketici mağaza yorumu akışıdır.
+
+### Ne sunar
+
+- **Toplama:** Google Play ve App Store, yüklenen tablolar, yapıştırılan metin veya seçilebilir tarih aralığında iki uygulamanın karşılaştırmalı işlenmesi.
+- **Analiz:** Gürültülü kısa metinlere göre ayarlanmış kural tabanlı motor ile, yerel yapılandırma uygun olduğunda devreye giren daha derin model destekli yol. Kural yolu uzak servis gerektirmez.
+- **Sunum:** Özet göstergeleri, dağılım görünümleri ve sayfalanmış yorum kartları; tablo dışa aktarımı.
+
+### Gereksinimler
+
+- Önerilen: Python 3.10+  
+- Bağımlılıklar: `requirements.txt`
+
+### Yerelde çalıştırma
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate    # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env         # isteğe bağlı: yalnızca derin analiz yolunu kullanacaksanız
+streamlit run streamlit_app.py
+```
+
+Ortam dosyası sürüm kontrolüne alınmaz; şablona kopyalayarak gizli değerleri yalnızca yerelde tutun.
+
+### Dizin yapısı
+
+```text
+├── streamlit_app.py              # Uygulama gövdesi ve analiz akışı
+├── requirements.txt
+├── .env.example
+└── store_review/                 # Paket
+    ├── config/                   # Ayarlar ve arayüz stilleri (CSS)
+    ├── core/                     # Heuristik, toplu analiz, model katmanı
+    ├── data/                     # Kural motoru sözlüğü (dış dosya)
+    ├── fetchers/                 # Mağaza bağlantıları, keşif, dosya yükleme
+    ├── ui/                       # Özet panelleri, mağaza ve karşılaştırma, yorumlar
+    └── utils/                    # Doğrulama ve dışa aktarım
+```
+
+### Davranış notları
+
+- Havuz, tekrarlar giderildikten ve geliştirici yanıtı vb. gürültü elendikten sonra skorlanır.
+- Derin analiz yolu toplu işlemde üst sınır uygular; hızlı yol aynı boru hattında hazırlanmış tüm satırları işler.
+- `store_review/data/heuristic_lexicon.json` dosyası kural verisini taşır; düzenlemeden sonra süreci yeniden başlatın veya geliştirme sırasında önbelleği kod üzerinden temizleyin.
