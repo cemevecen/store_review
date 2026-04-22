@@ -65,6 +65,7 @@ _PLAY_SATELLITE_SEGMENTS = frozenset(
         "business",
         "b2b",
         "internal",
+        "services",
     }
 )
 
@@ -82,6 +83,18 @@ _PLAY_SKIP_SEGMENTS = frozenset(
     {"com", "android", "app", "apps", "mobile", "www", "net", "org", "io", "tv", "wear"}
 )
 
+# (arama_kökü, paket_segmenti): segment slug ile başlıyor ama farklı marka (yanlış genişletme)
+_FALSE_BRAND_PREFIX: set[tuple[str, str]] = {
+    ("letgo", "letgoo"),
+}
+
+# Arama kelimesi → bilinen ana Play paketi (paket yolunda marka geçmediğinde; örn. letgo)
+ANDROID_SEARCH_CANONICAL_BY_SLUG: dict[str, str] = {
+    "letgo": "com.abtnprojects.ambatana",
+}
+
+_ANDROID_CANONICAL_ALIAS_BONUS = 780.0
+
 
 def _effective_brand_slug(slug: str, app_id: str) -> str:
     """
@@ -95,6 +108,8 @@ def _effective_brand_slug(slug: str, app_id: str) -> str:
     best = ""
     for seg in parts:
         if len(seg) < len(slug):
+            continue
+        if (slug, seg) in _FALSE_BRAND_PREFIX:
             continue
         if seg.startswith(slug) and len(seg) > len(best):
             best = seg
@@ -163,7 +178,15 @@ def _android_play_relevance_score(query: str, title: str, app_id: str) -> float:
     if not slug:
         return base
     brand = _effective_brand_slug(slug, app_id)
-    return base + _play_canonical_package_bonus(brand, app_id) + _play_title_satellite_adjustment(brand, title)
+    score = base + _play_canonical_package_bonus(brand, app_id) + _play_title_satellite_adjustment(brand, title)
+    canon = ANDROID_SEARCH_CANONICAL_BY_SLUG.get(slug.lower())
+    if canon and str(app_id).lower() == canon.lower():
+        score += _ANDROID_CANONICAL_ALIAS_BONUS
+    # letgo aramasında "LetgoO" (letgoo) vb. taklit başlıkları düşür
+    tflat = re.sub(r"\s+", "", (title or "").lower())
+    if slug == "letgo" and "letgoo" in tflat:
+        score -= 450.0
+    return score
 
 
 def _stable_sort_android_play(query: str, rows: List[dict[str, Any]]) -> List[dict[str, Any]]:
@@ -305,6 +328,32 @@ def _inject_missing_main_play_row(rows: List[dict[str, Any]], query: str) -> Lis
     return rows
 
 
+def _inject_canonical_alias_row(rows: List[dict[str, Any]], query: str) -> List[dict[str, Any]]:
+    """Bilinen ana paket listede yoksa (marka paket adında yok) play_app ile başa ekler."""
+    slug = _play_brand_slug(query)
+    if not slug or not rows:
+        return rows
+    target = ANDROID_SEARCH_CANONICAL_BY_SLUG.get(slug.lower())
+    if not target:
+        return rows
+    aids_lower = {str(r.get("appId", "")).lower() for r in rows if r.get("appId")}
+    if target.lower() in aids_lower:
+        return rows
+    try:
+        from google_play_scraper import app as play_app
+
+        info = play_app(target, lang="tr", country="tr")
+        new_row: dict[str, Any] = {
+            "platform": "Android",
+            "appId": target,
+            "title": (info.get("title") or target)[:80],
+            "icon": str(info.get("icon") or "").strip(),
+        }
+        return [new_row] + list(rows)
+    except Exception:
+        return rows
+
+
 def _enrich_android_rows_parallel(
     rows: List[dict[str, Any]],
     *,
@@ -382,6 +431,7 @@ def search_play_store(query: str, n_hits: int = 80) -> List[dict[str, Any]]:
             out = html_rows
 
     out = _inject_missing_main_play_row(out, q)
+    out = _inject_canonical_alias_row(out, q)
     return _stable_sort_android_play(query, out)
 
 
