@@ -32,8 +32,10 @@ store review/
     ├── config/
     │   ├── settings.py       # Ortam değişkenlerinden API anahtarları
     │   └── theme.py          # Tek yerde CSS
+    ├── data/
+    │   └── heuristic_lexicon.json  # Tüm kelime/liste/pivot/sarkazm verisi (düzenlenebilir)
     ├── core/
-    │   ├── heuristic.py      # Rule-based motor (legacy v3.0)
+    │   ├── heuristic.py      # Rule-based motor (mantık; veri → JSON)
     │   ├── prompts.py        # LLM prompt + JSON ayrıştırma
     │   ├── ai_providers.py # Gemini / Groq / OpenAI + fallback zinciri
     │   └── analyzer.py       # Paralel toplu analiz + dedup
@@ -54,5 +56,6 @@ store review/
 
 ## Notlar
 
+- **Heuristic verisi:** `store_review/data/heuristic_lexicon.json` dosyasında toplanır (manipülasyon kalıpları, tam eşleşme kısa metinler, sarkazm, NEG/POS/NEU listeleri, kritik bug, pivot ifadeleri). Bu dosyayı düzenledikten sonra Streamlit sürecini yeniden başlatman yeterli (`_lexicon` önbelleği). Geliştirme sırasında `from store_review.core.heuristic import reload_heuristic_lexicon` ile önbelleği temizleyebilirsin.
 - Zengin analizde güvenlik için varsayılan **500 yorum** kotası vardır (`analyzer.analyze_batch` içinde `max_rich_items`).
 - Gemini model varsayılanı `gemini-2.0-flash`; sağlayıcı arayüzünden değiştirebilirsiniz (ör. `models/gemini-2.0-flash` gerektiren kurulumlar için).
