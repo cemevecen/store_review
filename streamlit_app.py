@@ -102,13 +102,6 @@ def main():
         _secrets_get,
     )
 
-    with st.expander("API anahtarları ve durum", expanded=False):
-        st.caption(".env (yerel) veya Streamlit Cloud **Secrets** içinde tanımlayın.")
-        st.write("Gemini:", "tanımlı" if gk else "—")
-        st.write("Groq:", "tanımlı" if gqk else "—")
-        st.write("OpenAI:", "tanımlı" if ok else "—")
-        st.info("Zengin analiz için en az bir anahtar gerekir. Hızlı analiz tamamen ücretsizdir.")
-
     if "review_pool" not in st.session_state:
         st.session_state.review_pool = []
     if "analysis_rows" not in st.session_state:
