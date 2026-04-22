@@ -151,23 +151,41 @@ def main():
                         df = pd.read_csv(io.BytesIO(raw))
                     else:
                         df = pd.read_excel(io.BytesIO(raw))
-                    st.session_state.review_pool_file = load_reviews_from_dataframe(df)
+                    new_rows = load_reviews_from_dataframe(df)
+                    existing = list(st.session_state.get("review_pool_file") or [])
+                    st.session_state.review_pool_file = dedupe_reviews(existing + new_rows)
                     st.session_state._file_pool_sig = sig
+                    srcs = list(st.session_state.get("_file_pool_sources") or [])
+                    srcs.append(up.name)
+                    st.session_state._file_pool_sources = srcs
                     st.session_state.analysis_rows = []
             except Exception as e:
                 st.error(str(e))
         elif st.session_state.review_pool_file:
-            sig = st.session_state.get("_file_pool_sig")
-            fn = sig[0] if isinstance(sig, tuple) and sig else "—"
-            st.caption(
-                f"Son yüklenen dosya havuzunda: **{fn}** "
-                f"({len(st.session_state.review_pool_file)} yorum). Yeni dosya seçebilirsiniz."
-            )
+            srcs = st.session_state.get("_file_pool_sources") or []
+            n = len(st.session_state.review_pool_file)
+            if len(srcs) > 1:
+                shown = ", ".join(srcs[-5:])
+                more = "…" if len(srcs) > 5 else ""
+                st.caption(
+                    f"**{len(srcs)} dosya** birleşik havuz ({shown}{more}) — **{n}** benzersiz yorum. "
+                    "Yeni dosya ekleyebilirsiniz."
+                )
+            else:
+                fn = srcs[0] if srcs else (
+                    st.session_state.get("_file_pool_sig", ("—",))[0]
+                    if isinstance(st.session_state.get("_file_pool_sig"), tuple)
+                    else "—"
+                )
+                st.caption(
+                    f"Yüklenen dosya: **{fn}** — **{n}** yorum. Başka dosya ekleyerek havuzu büyütebilirsiniz."
+                )
         if st.session_state.review_pool_file and st.button(
             "Dosya havuzunu temizle", use_container_width=True, key="btn_clear_file_pool"
         ):
             st.session_state.review_pool_file = []
             st.session_state.pop("_file_pool_sig", None)
+            st.session_state._file_pool_sources = []
             st.session_state.analysis_rows = []
             st.session_state._file_uploader_gen = int(st.session_state._file_uploader_gen) + 1
             st.rerun()
