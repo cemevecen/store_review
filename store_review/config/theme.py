@@ -206,9 +206,14 @@ div[data-testid="stDataFrame"] {
   margin-right: 0 !important;
   margin-top: -1.25rem !important;
   margin-bottom: 16px !important;
-  padding: 14px clamp(18px, 4vw, 44px) 16px !important;
+  padding: 18px clamp(18px, 4vw, 44px) 20px !important;
   box-sizing: border-box !important;
-  min-height: 88px !important;
+  min-height: 108px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 14px !important;
   border: none !important;
   border-radius: 0 0 22px 22px !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.14) !important;
@@ -256,8 +261,13 @@ div[data-testid="stDataFrame"] {
 
 .hero-masthead-brand {
   display: flex !important;
+  flex-direction: column !important;
   align-items: center !important;
+  justify-content: center !important;
   min-width: 0 !important;
+  width: 100% !important;
+  max-width: min(100%, 720px) !important;
+  text-align: center !important;
 }
 
 .hero-masthead-brand .hero-title {
@@ -267,7 +277,7 @@ div[data-testid="stDataFrame"] {
   color: #ffffff;
   margin: 0 !important;
   letter-spacing: -0.02em;
-  text-align: left !important;
+  text-align: center !important;
   line-height: 1.2;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
@@ -278,29 +288,26 @@ div[data-testid="stDataFrame"] {
   align-items: center !important;
 }
 
-[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:first-child,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:first-child {
+/* Masthead — orta sütun: başlık + pills dikey yığılı ve ortalı */
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2),
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2) {
   display: flex !important;
+  flex-direction: column !important;
   align-items: center !important;
-  min-width: 0 !important;
+  justify-content: center !important;
+  gap: 14px !important;
+  text-align: center !important;
 }
 
-[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:last-child,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:last-child {
-  display: flex !important;
-  justify-content: flex-end !important;
-  align-items: center !important;
-  flex-wrap: wrap !important;
-  gap: 8px !important;
-}
-
-/* Masthead — veri kaynağı st.pills (chip); radyo kılıfı kullanılmıyor */
+/* Masthead — st.pills satırı chip grubunu yatay ortala */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-main_data_source_tab,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-main_data_source_tab {
   display: flex !important;
-  justify-content: flex-end !important;
+  justify-content: center !important;
+  align-items: center !important;
   width: 100% !important;
   margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 .fancy-divider {
