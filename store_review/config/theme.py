@@ -217,16 +217,17 @@ div[data-testid="stDataFrame"] {
   border: none !important;
   border-radius: 0 0 22px 22px !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.14) !important;
-  box-shadow: 0 10px 32px rgba(6, 42, 40, 0.32) !important;
+  box-shadow: 0 10px 32px rgba(48, 8, 16, 0.38) !important;
   overflow: hidden !important;
+  /* Bordo / şarap tonları (önceki teal yerine) */
   background: linear-gradient(
     102deg,
-    #050f14 0%,
-    #0a1f24 18%,
-    #0c2e32 40%,
-    #115e59 68%,
-    #0f766e 88%,
-    #14b8a6 100%
+    #120608 0%,
+    #1f0a0e 18%,
+    #3a0f18 40%,
+    #5c1524 62%,
+    #7a1f30 82%,
+    #8f2840 100%
   ) !important;
 }
 
