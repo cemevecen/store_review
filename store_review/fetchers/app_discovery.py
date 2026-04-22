@@ -178,17 +178,9 @@ class ResolvedApp:
     app_id: str
 
 
-def search_play_store(query: str, n_hits: int = 80) -> List[dict[str, Any]]:
-    try:
-        from google_play_scraper import search as play_search
-    except ImportError:
-        return []
-    try:
-        res = play_search(query.strip(), n_hits=n_hits, lang="tr", country="tr")
-    except Exception:
-        return []
+def _play_hits_to_rows(hits: Any) -> List[dict[str, Any]]:
     out: List[dict[str, Any]] = []
-    for a in res or []:
+    for a in hits or []:
         aid = a.get("appId")
         if not aid:
             continue
@@ -196,11 +188,124 @@ def search_play_store(query: str, n_hits: int = 80) -> List[dict[str, Any]]:
         out.append(
             {
                 "platform": "Android",
-                "appId": aid,
+                "appId": str(aid),
                 "title": (a.get("title") or "—")[:80],
                 "icon": icon,
             }
         )
+    return out
+
+
+def _play_store_search_html_packages(search_query: str, max_results: int = 48) -> List[dict[str, Any]]:
+    """play_search boş kaldığında Play mağaza web aramasından paket listesi (typo / API farkı için yedek)."""
+    s = (search_query or "").strip()
+    if len(s) < 2:
+        return []
+    try:
+        q = urllib.parse.quote(s)
+        url = f"https://play.google.com/store/search?q={q}&c=apps"
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            ),
+            "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
+        }
+        r = requests.get(url, headers=headers, timeout=16)
+        if r.status_code != 200:
+            return []
+        ids = re.findall(r"/store/apps/details\?id=([a-zA-Z0-9._]+)", r.text)
+        seen: set[str] = set()
+        rows: List[dict[str, Any]] = []
+        for aid in ids:
+            aid = aid.strip()
+            if not aid or aid in seen:
+                continue
+            seen.add(aid)
+            rows.append({"platform": "Android", "appId": aid, "title": "—", "icon": ""})
+            if len(rows) >= max_results:
+                break
+        return rows
+    except Exception:
+        return []
+
+
+def _enrich_android_rows_parallel(
+    rows: List[dict[str, Any]],
+    *,
+    max_fetch: int = 22,
+    workers: int = 5,
+) -> None:
+    """HTML yedeğinden gelen satırlara başlık ve ikon ekler (yerinde)."""
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    def fetch_title_icon(aid: str) -> tuple[str, str, str]:
+        try:
+            from google_play_scraper import app as play_app
+
+            info = play_app(aid, lang="tr", country="tr")
+            t = str(info.get("title") or aid)[:80]
+            ic = str(info.get("icon") or "").strip()
+            return aid, t, ic
+        except Exception:
+            return aid, str(aid)[:80], ""
+
+    aids = [str(r["appId"]) for r in rows[:max_fetch]]
+    if not aids:
+        return
+    meta: dict[str, tuple[str, str]] = {}
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        futs = [ex.submit(fetch_title_icon, aid) for aid in dict.fromkeys(aids)]
+        for fut in as_completed(futs):
+            aid, t, ic = fut.result()
+            meta[aid] = (t, ic)
+
+    for r in rows:
+        aid = str(r.get("appId", ""))
+        if aid in meta:
+            t, ic = meta[aid]
+            r["title"] = t
+            if ic:
+                r["icon"] = ic
+
+
+def search_play_store(query: str, n_hits: int = 80) -> List[dict[str, Any]]:
+    try:
+        from google_play_scraper import search as play_search
+    except ImportError:
+        return []
+
+    q = query.strip()
+    if not q:
+        return []
+
+    merged: list[Any] = []
+    seen_ids: set[str] = set()
+    for lang, cc in (("tr", "tr"), ("en", "us"), ("en", "gb")):
+        try:
+            chunk = play_search(q, n_hits=n_hits, lang=lang, country=cc) or []
+        except Exception:
+            chunk = []
+        for a in chunk:
+            aid = a.get("appId")
+            if not aid:
+                continue
+            sid = str(aid)
+            if sid in seen_ids:
+                continue
+            seen_ids.add(sid)
+            merged.append(a)
+        if len(merged) >= n_hits:
+            break
+
+    out = _play_hits_to_rows(merged[:n_hits])
+
+    if not out and len(q) >= 3 and looks_like_search_keyword(q):
+        html_rows = _play_store_search_html_packages(q, max_results=n_hits)
+        if html_rows:
+            _enrich_android_rows_parallel(html_rows, max_fetch=min(24, len(html_rows)), workers=5)
+            out = html_rows
+
     return _stable_sort_android_play(query, out)
 
 
