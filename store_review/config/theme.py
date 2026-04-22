@@ -456,4 +456,43 @@ div[data-testid="stDataFrame"] {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* Analiz sonuçları — nlp-sentiment tarzı üst metrik + özet */
+.sr-analysis-page-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0.35rem 0 0.45rem;
+  letter-spacing: -0.02em;
+}
+.sr-analysis-metric-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 0.15rem 0 0.75rem;
+  flex-wrap: wrap;
+}
+.sr-analysis-metric-pill {
+  background: #ffffff !important;
+  border: 2px solid #ffe4d6 !important;
+  border-radius: 100px !important;
+  padding: 0.55rem 0.75rem !important;
+  text-align: center;
+  flex: 1 1 128px;
+  max-width: 188px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+}
+.sr-analysis-metric-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.sr-analysis-metric-label {
+  font-size: 0.72rem;
+  color: #64748b !important;
+  font-weight: 600;
+  margin-top: 0.15rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
 """

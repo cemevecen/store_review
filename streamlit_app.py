@@ -13,7 +13,6 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
-import plotly.express as px
 import streamlit as st
 
 ROOT = Path(__file__).resolve().parent
@@ -29,6 +28,7 @@ from store_review.config.theme import APP_CSS
 from store_review.core.ai_providers import DEFAULT_MODELS, RichAnalyzer, resolve_api_keys
 from store_review.core.analyzer import analyze_batch, dedupe_reviews
 from store_review.fetchers.file_loader import load_reviews_from_dataframe
+from store_review.ui.analysis_results_dashboard import render_analysis_results_dashboard
 from store_review.ui.compare_panel import render_compare_tab
 from store_review.ui.review_cards import render_analyzed_review_cards
 from store_review.ui.store_link_panel import render_store_link_tab
@@ -319,6 +319,7 @@ def main():
                         merged.append(row)
                 if merged:
                     st.session_state.analysis_rows = merged
+                    st.session_state._last_analysis_use_fast = True
                 else:
                     st.warning("Önce yorum yükleyin.")
             else:
@@ -346,41 +347,15 @@ def main():
                     max_rich_items=500,
                 )
                 st.session_state.analysis_rows = rows
+                st.session_state._last_analysis_use_fast = use_fast
                 bar.empty()
                 status.empty()
 
     rows = st.session_state.analysis_rows
     if rows:
-        st.markdown('<p class="section-title">Sonuçlar</p>', unsafe_allow_html=True)
+        use_fast_last = bool(st.session_state.get("_last_analysis_use_fast", True))
+        render_analysis_results_dashboard(rows, use_fast=use_fast_last)
         df = pd.DataFrame(rows)
-        vc = df["Baskın Duygu"].value_counts()
-        m1, m2, m3, m4 = st.columns(4)
-        m1.metric("Toplam", len(df))
-        for col, label in [(m2, "Olumlu"), (m3, "Olumsuz"), (m4, "İstek/Görüş")]:
-            col.metric(label, int(vc.get(label, 0)))
-
-        pie_df = vc.reset_index()
-        pie_df.columns = ["duygu", "adet"]
-        fig = px.pie(
-            pie_df,
-            names="duygu",
-            values="adet",
-            hole=0.45,
-            color="duygu",
-            color_discrete_map={
-                "Olumlu": "#34D399",
-                "Olumsuz": "#F87171",
-                "İstek/Görüş": "#60A5FA",
-                "—": "#94A3B8",
-            },
-        )
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#334155"),
-            margin=dict(l=8, r=8, t=8, b=8),
-        )
-        st.plotly_chart(fig, use_container_width=True)
 
         st.markdown('<p class="section-title section-title--tight">Yorumlar</p>', unsafe_allow_html=True)
         render_analyzed_review_cards(rows, key_prefix="main_analiz")
