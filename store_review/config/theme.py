@@ -184,38 +184,70 @@ div[data-testid="stDataFrame"] {
   overflow: hidden;
 }
 
-/* Üst header: başlık + veri kaynağı radyosu (border’lı container, başlık sınıfı ile hedeflenir) */
+/* Üst header — viewport genişliği + pastel (indigo / gök / şeftali) */
 [data-testid="stVerticalBlockBorderWrapper"]:has(.hero-title) {
   width: 100vw !important;
   max-width: 100vw !important;
   margin-left: calc(50% - 50vw) !important;
   margin-right: calc(50% - 50vw) !important;
   margin-top: -1.25rem !important;
-  padding-top: calc(1.25rem + 6px) !important;
-  padding-bottom: 14px !important;
-  padding-left: clamp(12px, 3vw, 28px) !important;
-  padding-right: clamp(12px, 3vw, 28px) !important;
+  margin-bottom: 14px !important;
+  padding: calc(1.25rem + 8px) clamp(16px, 4vw, 40px) 18px !important;
   box-sizing: border-box !important;
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-left: 4px solid #818cf8 !important;
+  background: linear-gradient(
+    125deg,
+    #eef2ff 0%,
+    #e0f2fe 44%,
+    #fff7ed 100%
+  ) !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.25) !important;
   border-radius: 0 !important;
-  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.07) !important;
-  margin-bottom: 12px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 10px 32px rgba(79, 70, 229, 0.09) !important;
 }
+
 .hero-title {
   font-family: 'Poppins', sans-serif;
   font-size: 1.65rem;
   font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 10px 0;
+  color: #312e81;
+  margin: 0 0 12px 0;
   letter-spacing: -0.02em;
   text-align: center;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
 }
+
 [data-testid="stVerticalBlockBorderWrapper"]:has(.hero-title) [data-baseweb="radio"] > div {
   justify-content: center !important;
   flex-wrap: wrap !important;
-  gap: 6px !important;
+  gap: 8px !important;
+}
+
+/* Header içi radyo — pastel zeminde */
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-title) .stRadio div[role="radiogroup"] label {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(129, 140, 248, 0.38) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-title) .stRadio div[role="radiogroup"] label span {
+  color: #3730a3 !important;
+  font-weight: 500 !important;
+}
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-title)
+  .stRadio
+  div[role="radiogroup"]
+  label:has(input:checked) {
+  background: #ffffff !important;
+  border-color: #a5b4fc !important;
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.2);
+}
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-title)
+  .stRadio
+  div[role="radiogroup"]
+  label:has(input:checked)
+  span {
+  color: #4338ca !important;
+  font-weight: 600 !important;
 }
 
 .fancy-divider {
