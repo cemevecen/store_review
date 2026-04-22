@@ -1,7 +1,56 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 from typing import Any
+
+# Yalnızca sütun adı gibi görünen satırlar (CSV/Excel başlığı, dışa aktarım)
+_HEADER_TOKENS = frozenset(
+    {
+        "id",
+        "no",
+        "idx",
+        "index",
+        "text",
+        "yorum",
+        "review",
+        "comment",
+        "body",
+        "content",
+        "mesaj",
+        "date",
+        "tarih",
+        "time",
+        "created",
+        "rating",
+        "puan",
+        "score",
+        "star",
+        "stars",
+        "lang",
+        "language",
+        "locale",
+        "user",
+        "author",
+        "title",
+        "name",
+        "version",
+        "versiyon",
+        "app",
+        "platform",
+        "device",
+        "baskın",
+        "baskin",
+        "duygu",
+        "olumlu",
+        "olumsuz",
+        "istek",
+        "görüş",
+        "gorus",
+        "yüzde",
+        "%",
+    }
+)
 
 
 def is_valid_comment(text: Any) -> bool:
@@ -12,9 +61,25 @@ def is_valid_comment(text: Any) -> bool:
     if not text:
         return False
     s = str(text).strip()
-    sl = s.lower()
+    s_norm = unicodedata.normalize("NFKC", s)
+    sl = s_norm.lower()
 
-    if len(s) < 3:
+    if len(s_norm) < 3:
+        return False
+
+    # Gerçek yorum: en az bir harf (saf rakam / ID / sadece noktalama elenir)
+    if not any(ch.isalpha() for ch in s_norm):
+        return False
+
+    # Uzun sayısal kimlik / puan satırı (ör. 13354134213)
+    compact_num = re.sub(r"[\s,._\-+eE]", "", s_norm)
+    if compact_num.isdigit() and len(compact_num) >= 5:
+        return False
+
+    # Başlık satırı: yalnızca bilinen sütun adlarından oluşuyorsa
+    nh = re.sub(r"[\s,;\t|]+", " ", sl).strip()
+    hdr_words = [w for w in nh.split() if w and w not in ("%",)]
+    if len(hdr_words) >= 3 and all(w in _HEADER_TOKENS for w in hdr_words) and len(s_norm) < 160:
         return False
     if sl in ("nan", "null", "none"):
         return False
@@ -70,16 +135,16 @@ def is_valid_comment(text: Any) -> bool:
         "aralık",
     ]
     first_word = sl.split()[0].replace(".", "").replace(",", "") if sl.split() else ""
-    if first_word in months and len(s) < 60:
+    if first_word in months and len(s_norm) < 60:
         return False
 
-    if len(s) < 45:
+    if len(s_norm) < 45:
         date_regex = (
             r"(\d{1,4}[-./]\d{1,2}[-./]\d{1,4})|"
             r"((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|"
             r"Ocak|Şubat|Mart|Nisan|Mayıs|Haziran|Temmuz|Ağustos|Eylül|Ekim|Kasım|Aralık)\s+\d{1,2},?\s+\d{4})"
         )
-        if re.search(date_regex, s, re.IGNORECASE):
+        if re.search(date_regex, s_norm, re.IGNORECASE):
             return False
 
     formal_patterns = [

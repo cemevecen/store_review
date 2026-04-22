@@ -201,12 +201,13 @@ def main():
         if st.button("Metni havuza yükle", use_container_width=True, key="btn_paste"):
             lines = [ln.strip() for ln in ta.splitlines() if ln.strip()]
             pool = []
-            for i, ln in enumerate(lines):
+            j = 0
+            for ln in lines:
                 if not is_valid_comment(ln):
                     continue
                 pool.append(
                     {
-                        "id": f"paste-{i}",
+                        "id": f"paste-{j}",
                         "text": ln,
                         "date": None,
                         "rating": "",
@@ -214,6 +215,7 @@ def main():
                         "is_valid": True,
                     }
                 )
+                j += 1
             st.session_state.review_pool_paste = pool
             st.session_state.analysis_rows = []
     else:
