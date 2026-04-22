@@ -5,6 +5,7 @@ Doğrudan paket / ID / ürün URL çözümleme (eski streamlit_app mantığında
 
 from __future__ import annotations
 
+import difflib
 import re
 import urllib.parse
 from dataclasses import dataclass
@@ -325,6 +326,102 @@ class ResolvedApp:
     app_id: str
 
 
+def _normalize_store_title(s: str) -> str:
+    """Play / arama sonuçlarında başlık eşlemesi için hafif normalize."""
+    t = (s or "").strip().lower()
+    t = re.sub(r"\s+", " ", t)
+    return t
+
+
+def _titles_close_enough(a: str, b: str, *, min_ratio: float = 0.88) -> bool:
+    na, nb = _normalize_store_title(a), _normalize_store_title(b)
+    if not na or not nb:
+        return False
+    if na == nb:
+        return True
+    if len(na) >= 10 and len(nb) >= 10 and (na in nb or nb in na):
+        return True
+    return difflib.SequenceMatcher(None, na, nb).ratio() >= min_ratio
+
+
+def _resolve_null_play_search_app_ids(hits: list[Any], query: str) -> None:
+    """
+    google_play_scraper.search bazen en iyi eşleşmede appId döndürmez (null).
+    Play web araması + başlık eşlemesi ile paket kimliğini doldurur (yerinde).
+    """
+    if not hits:
+        return
+    orphans: list[tuple[int, str]] = []
+    for i, h in enumerate(hits):
+        if h is None:
+            continue
+        if h.get("appId"):
+            continue
+        title = str(h.get("title") or "").strip()
+        if not title:
+            continue
+        orphans.append((i, title))
+    if not orphans:
+        return
+
+    q = (query or "").strip()
+    if len(q) < 2:
+        return
+
+    try:
+        from google_play_scraper import app as play_app
+    except ImportError:
+        return
+
+    html_rows = _play_store_search_html_packages(q, max_results=48)
+    pkg_order = [str(r.get("appId") or "") for r in html_rows if r.get("appId")]
+    if not pkg_order:
+        return
+
+    def fetch_title(pkg: str) -> str:
+        try:
+            info = play_app(pkg, lang="tr", country="tr")
+            return str(info.get("title") or "")[:120]
+        except Exception:
+            return ""
+
+    assigned_pkg: set[str] = set()
+    max_probe = min(28, len(pkg_order))
+    for pkg in pkg_order[:max_probe]:
+        if all(hits[idx].get("appId") for idx, _ in orphans):
+            break
+        if not pkg or pkg in assigned_pkg:
+            continue
+        got = fetch_title(pkg)
+        if not got:
+            continue
+        for idx, want_title in orphans:
+            if hits[idx].get("appId"):
+                continue
+            if _titles_close_enough(want_title, got):
+                hits[idx]["appId"] = pkg
+                assigned_pkg.add(pkg)
+                break
+
+
+def _dedupe_play_hits_by_appid(hits: list[Any]) -> list[Any]:
+    """Aynı paket birden fazla kez gelirse ilk sıradakini koru."""
+    seen: set[str] = set()
+    out: list[Any] = []
+    for h in hits or []:
+        if not h:
+            continue
+        aid = h.get("appId")
+        if not aid:
+            continue
+        sid = str(aid).strip()
+        if not sid or sid in seen:
+            continue
+        seen.add(sid)
+        out.append(h)
+    return out
+
+
 def _play_hits_to_rows(hits: Any) -> List[dict[str, Any]]:
     out: List[dict[str, Any]] = []
     for a in hits or []:
@@ -505,6 +602,7 @@ def search_play_store(query: str, n_hits: int = 80) -> List[dict[str, Any]]:
 
     merged: list[Any] = []
     seen_ids: set[str] = set()
+    seen_null_titles: set[str] = set()
     for lang, cc in (("tr", "tr"), ("en", "us"), ("en", "gb")):
         try:
             chunk = play_search(q, n_hits=n_hits, lang=lang, country=cc) or []
@@ -512,15 +610,26 @@ def search_play_store(query: str, n_hits: int = 80) -> List[dict[str, Any]]:
             chunk = []
         for a in chunk:
             aid = a.get("appId")
-            if not aid:
+            if aid:
+                sid = str(aid).strip()
+                if not sid or sid in seen_ids:
+                    continue
+                seen_ids.add(sid)
+                merged.append(a)
                 continue
-            sid = str(aid)
-            if sid in seen_ids:
+            title = str(a.get("title") or "").strip()
+            if not title:
                 continue
-            seen_ids.add(sid)
+            tkey = title.casefold()
+            if tkey in seen_null_titles:
+                continue
+            seen_null_titles.add(tkey)
             merged.append(a)
         if len(merged) >= n_hits:
             break
+
+    _resolve_null_play_search_app_ids(merged, q)
+    merged = _dedupe_play_hits_by_appid(merged)
 
     out = _play_hits_to_rows(merged[:n_hits])
 
