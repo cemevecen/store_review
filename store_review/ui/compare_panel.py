@@ -85,6 +85,47 @@ _CMP_COMPACT_CSS = """
   flex: 1 1 0 !important;
   min-width: 0 !important;
 }
+[data-testid="stVerticalBlock"].st-key-cmp_plat_row_0 .sl-plat-radio-wrap,
+[data-testid="stVerticalBlock"].st-key-cmp_plat_row_1 .sl-plat-radio-wrap,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_plat_row_0 .sl-plat-radio-wrap,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_plat_row_1 .sl-plat-radio-wrap {
+  margin-top: 2px !important;
+  margin-bottom: 2px !important;
+}
+[data-testid="stVerticalBlock"].st-key-cmp_plat_row_0 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+[data-testid="stVerticalBlock"].st-key-cmp_plat_row_1 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_plat_row_0 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_plat_row_1 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+[data-testid="stVerticalBlock"].st-key-cmp_reset_row_0 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+[data-testid="stVerticalBlock"].st-key-cmp_reset_row_1 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_reset_row_0 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_reset_row_1 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  align-self: center !important;
+}
+[data-testid="stVerticalBlock"].st-key-cmp_plat_row_0 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton,
+[data-testid="stVerticalBlock"].st-key-cmp_plat_row_1 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_plat_row_0 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_plat_row_1 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton,
+[data-testid="stVerticalBlock"].st-key-cmp_reset_row_0 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton,
+[data-testid="stVerticalBlock"].st-key-cmp_reset_row_1 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_reset_row_0 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_reset_row_1 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton {
+  width: auto !important;
+}
+[data-testid="stVerticalBlock"].st-key-cmp_plat_row_0 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton > button,
+[data-testid="stVerticalBlock"].st-key-cmp_plat_row_1 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton > button,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_plat_row_0 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton > button,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_plat_row_1 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton > button,
+[data-testid="stVerticalBlock"].st-key-cmp_reset_row_0 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton > button,
+[data-testid="stVerticalBlock"].st-key-cmp_reset_row_1 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton > button,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_reset_row_0 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton > button,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_reset_row_1 [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton > button {
+  width: auto !important;
+  min-width: 5.5rem !important;
+}
 </style>
 """
 
@@ -311,21 +352,31 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
     if looks_like_search_keyword(text):
         st.session_state[f"{p}search_performed"] = True
 
+    sid = st.session_state.get(f"{p}selected_id")
+    splat = st.session_state.get(f"{p}selected_platform")
+
     if st.session_state.get(f"{p}search_performed"):
 
         def _cmp_plat_changed() -> None:
             st.session_state[f"{p}last_query"] = ""
 
-        st.markdown('<div class="sl-plat-radio-wrap">', unsafe_allow_html=True)
-        st.radio(
-            "Platform",
-            ["Android", "iOS"],
-            horizontal=True,
-            key=f"{p}last_filter",
-            label_visibility="collapsed",
-            on_change=_cmp_plat_changed,
-        )
-        st.markdown("</div>", unsafe_allow_html=True)
+        with st.container(key=f"cmp_plat_row_{slot}"):
+            plat_c, reset_c = st.columns([4, 1], gap="small", vertical_alignment="center")
+            with plat_c:
+                st.markdown('<div class="sl-plat-radio-wrap">', unsafe_allow_html=True)
+                st.radio(
+                    "Platform",
+                    ["Android", "iOS"],
+                    horizontal=True,
+                    key=f"{p}last_filter",
+                    label_visibility="collapsed",
+                    on_change=_cmp_plat_changed,
+                )
+                st.markdown("</div>", unsafe_allow_html=True)
+            with reset_c:
+                if sid and st.button("Sıfırla", key=f"cmp_slot_reset_{slot}", use_container_width=False):
+                    _reset_cmp_slot(slot)
+                    st.rerun()
 
         filt = st.session_state.get(f"{p}last_filter", "Android")
         if looks_like_search_keyword(text) and len(text) >= 2:
@@ -385,27 +436,28 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
                         st.rerun()
             elif len(text) >= 2 and looks_like_search_keyword(text):
                 st.warning("Sonuç bulunamadı. Farklı anahtar kelime veya platform deneyin.")
+    elif sid:
+        with st.container(key=f"cmp_reset_row_{slot}"):
+            _, reset_c = st.columns([4, 1], gap="small", vertical_alignment="center")
+            with reset_c:
+                if st.button("Sıfırla", key=f"cmp_slot_reset_{slot}", use_container_width=False):
+                    _reset_cmp_slot(slot)
+                    st.rerun()
 
     sid = st.session_state.get(f"{p}selected_id")
     splat = st.session_state.get(f"{p}selected_platform")
     if sid:
-        csel, creset = st.columns([5, 1], gap="small")
-        with csel:
-            stitle = (st.session_state.get(f"{p}selected_title") or "").strip()
-            if stitle:
-                st.markdown(
-                    f'<p style="margin:0;font-size:0.88rem;color:#0f172a;line-height:1.3;"><b>{html.escape(stitle)}</b></p>'
-                    f'<p style="margin:2px 0 0 0;font-size:0.75rem;color:#64748b;line-height:1.25;word-break:break-all;">'
-                    f'<code style="font-size:0.72rem;">{html.escape(str(sid))}</code> · '
-                    f"<b>{html.escape(str(splat or '—'))}</b></p>",
-                    unsafe_allow_html=True,
-                )
-            else:
-                st.caption(f"Seçili: `{sid}` · **{splat or '—'}**")
-        with creset:
-            if st.button("Sıfırla", key=f"cmp_slot_reset_{slot}", use_container_width=True):
-                _reset_cmp_slot(slot)
-                st.rerun()
+        stitle = (st.session_state.get(f"{p}selected_title") or "").strip()
+        if stitle:
+            st.markdown(
+                f'<p style="margin:0;font-size:0.88rem;color:#0f172a;line-height:1.3;"><b>{html.escape(stitle)}</b></p>'
+                f'<p style="margin:2px 0 0 0;font-size:0.75rem;color:#64748b;line-height:1.25;word-break:break-all;">'
+                f'<code style="font-size:0.72rem;">{html.escape(str(sid))}</code> · '
+                f"<b>{html.escape(str(splat or '—'))}</b></p>",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.caption(f"Seçili: `{sid}` · **{splat or '—'}**")
 
 
 def merge_compare_details_for_dashboard() -> list[dict[str, Any]]:
