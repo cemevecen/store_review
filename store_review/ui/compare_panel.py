@@ -646,7 +646,6 @@ def render_compare_tab(
                     index=1,
                     key="cmp_time_range",
                     label_visibility="hidden",
-                    width="content",
                 )
             with mid:
                 st.empty()
