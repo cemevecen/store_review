@@ -144,6 +144,15 @@ def _aggregate_rows(rows: list[dict]) -> dict[str, int | float]:
     }
 
 
+def _detail_df(rows: list[dict]) -> pd.DataFrame:
+    if not rows:
+        return pd.DataFrame()
+    df = pd.DataFrame(rows)
+    pref = ["Yorum", "Baskın Duygu", "Tarih", "Puan", "Olumlu %", "Olumsuz %", "İstek/Görüş %"]
+    cols = [c for c in pref if c in df.columns]
+    return df[cols] if cols else df
+
+
 def render_compare_tab(
     *,
     rich: RichAnalyzer,
@@ -152,6 +161,8 @@ def render_compare_tab(
 ) -> None:
     if "cmp_results" not in st.session_state:
         st.session_state.cmp_results = {}
+    if "cmp_detail_rows" not in st.session_state:
+        st.session_state.cmp_detail_rows = {}
 
     st.caption(
         "Her iki alana **paket adı** (`com…`), **App Store sayısal ID** veya **mağaza ürün linki** girin. "
@@ -233,6 +244,7 @@ def render_compare_tab(
             st.error("Zengin analiz için en az bir API anahtarı gerekir (.env veya Streamlit secrets).")
         else:
             results: dict[str, dict[str, Any]] = {}
+            detail_rows: dict[str, list[dict]] = {}
             errors: list[str] = []
             model_final = (model or "").strip() or default_models.get(provider, "")
 
@@ -261,7 +273,7 @@ def render_compare_tab(
                             )
                         prepared = _prepare_pool(pool)
                         if not prepared:
-                            errors.append(f"{name_key}: analiz edilecek yorum yok.")
+                            errors.append(f"{meta['title']}: analiz edilecek yorum yok.")
                             continue
 
                         rows = analyze_batch(
@@ -277,6 +289,7 @@ def render_compare_tab(
                         )
                         agg = _aggregate_rows(rows)
                         slug = f"{resolved.platform}:{resolved.app_id}"
+                        detail_rows[slug] = list(rows)
                         results[slug] = {
                             **meta,
                             **agg,
@@ -288,6 +301,8 @@ def render_compare_tab(
                         errors.append(f"{meta.get('title', raw)}: {e}")
 
             st.session_state.cmp_results = results
+            st.session_state.cmp_detail_rows = detail_rows
+            st.session_state.cmp_range_label = time_label
             if errors:
                 for er in errors:
                     st.error(er)
@@ -298,6 +313,8 @@ def render_compare_tab(
     if res:
         if st.button("Karşılaştırma sonuçlarını temizle", key="cmp_clear"):
             st.session_state.cmp_results = {}
+            st.session_state.cmp_detail_rows = {}
+            st.session_state.pop("cmp_range_label", None)
             st.rerun()
 
         st.markdown("#### Özet")
@@ -349,3 +366,35 @@ def render_compare_tab(
             height=360,
         )
         st.plotly_chart(fig, use_container_width=True)
+
+        st.markdown("#### Yorumlar (seçilen tarih aralığına göre)")
+        range_lbl = st.session_state.get("cmp_range_label") or time_label
+        st.caption(
+            f"Tarih aralığı: **{range_lbl}**. Aşağıdaki tablolar, bu aralıkta çekilen ve analiz edilen yorumlardır."
+        )
+        detail = st.session_state.get("cmp_detail_rows") or {}
+        if not detail:
+            st.markdown(
+                '<p style="color:#64748b;font-size:0.92rem;margin:0;">'
+                "Yorum satırları bulunamadı. Karşılaştırmayı yeniden çalıştırın.</p>",
+                unsafe_allow_html=True,
+            )
+        else:
+            dc1, dc2 = st.columns(2, gap="medium")
+            key_list = list(res.keys())[:2]
+            for idx, slug in enumerate(key_list):
+                data = res.get(slug) or {}
+                title = html.escape(str(data.get("title") or slug))
+                rows_d = detail.get(slug) or []
+                tgt = dc1 if idx == 0 else dc2
+                with tgt:
+                    st.markdown(
+                        f'<p style="font-weight:700;color:#334155;margin:0 0 8px 0;">{title}</p>',
+                        unsafe_allow_html=True,
+                    )
+                    st.caption(f"{int(data.get('total', 0))} yorum · {data.get('chart_label', '')}")
+                    ddf = _detail_df(rows_d)
+                    if ddf.empty:
+                        st.write("—")
+                    else:
+                        st.dataframe(ddf, use_container_width=True, height=320)

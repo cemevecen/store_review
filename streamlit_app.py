@@ -219,9 +219,15 @@ def main():
     st.markdown('<div class="fancy-divider"></div>', unsafe_allow_html=True)
 
     pool = _active_review_pool()
+    src_cur = st.session_state.get("main_data_source_tab") or SOURCE_OPTIONS[0]
+    if src_cur == "Karşılaştır":
+        detail_cmp = st.session_state.get("cmp_detail_rows") or {}
+        pool_display_count = sum(len(v) for v in detail_cmp.values())
+    else:
+        pool_display_count = len(pool)
     st.markdown(
         f'<div class="metric-strip"><div class="metric-strip-label">Havuzdaki yorum</div>'
-        f'<div class="metric-strip-value">{len(pool)}</div></div>',
+        f'<div class="metric-strip-value">{pool_display_count}</div></div>',
         unsafe_allow_html=True,
     )
 
