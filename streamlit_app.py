@@ -7,6 +7,7 @@ Run from project root:
 
 from __future__ import annotations
 
+import io
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -57,6 +58,46 @@ def _inject_css():
     st.markdown(f"<style>{APP_CSS}</style>", unsafe_allow_html=True)
 
 
+SOURCE_OPTIONS = [
+    "Mağaza (ara / link)",
+    "Dosya yükle",
+    "Metin yapıştır",
+    "Karşılaştır",
+]
+SOURCE_POOL_KEY = {
+    "Mağaza (ara / link)": "store",
+    "Dosya yükle": "file",
+    "Metin yapıştır": "paste",
+    "Karşılaştır": "compare",
+}
+
+
+def _init_split_pools() -> None:
+    for k in ("store", "file", "paste"):
+        if f"review_pool_{k}" not in st.session_state:
+            st.session_state[f"review_pool_{k}"] = []
+    if "_file_uploader_gen" not in st.session_state:
+        st.session_state._file_uploader_gen = 0
+    if not st.session_state.get("_pools_migrated_from_legacy"):
+        legacy = st.session_state.get("review_pool")
+        if isinstance(legacy, list) and legacy:
+            if not st.session_state.review_pool_store:
+                st.session_state.review_pool_store = list(legacy)
+        st.session_state._pools_migrated_from_legacy = True
+
+
+def _active_review_pool() -> list:
+    label = st.session_state.get("main_data_source_tab") or SOURCE_OPTIONS[0]
+    pk = SOURCE_POOL_KEY.get(label, "store")
+    if pk == "compare":
+        return []
+    return list(st.session_state.get(f"review_pool_{pk}") or [])
+
+
+def _on_data_source_change() -> None:
+    st.session_state.analysis_rows = []
+
+
 def main():
     st.set_page_config(
         page_title="AI Mağaza Yorumu Analizi",
@@ -85,35 +126,61 @@ def main():
     rich = RichAnalyzer(gemini_key=gk, groq_key=gqk, openai_key=ok)
     has_llm_keys = bool(gk or gqk or ok)
 
-    if "review_pool" not in st.session_state:
-        st.session_state.review_pool = []
     if "analysis_rows" not in st.session_state:
         st.session_state.analysis_rows = []
+    _init_split_pools()
 
     st.markdown('<p class="source-section-title">Veri kaynağı</p>', unsafe_allow_html=True)
-    tab_store, tab_file, tab_text, tab_compare = st.tabs(
-        ["Mağaza (ara / link)", "Dosya yükle", "Metin yapıştır", "Karşılaştır"]
+    st.radio(
+        "",
+        SOURCE_OPTIONS,
+        horizontal=True,
+        label_visibility="collapsed",
+        key="main_data_source_tab",
+        on_change=_on_data_source_change,
     )
 
-    with tab_store:
-        render_store_link_tab()
+    src = st.session_state.get("main_data_source_tab") or SOURCE_OPTIONS[0]
 
-    with tab_file:
+    if src == "Mağaza (ara / link)":
+        render_store_link_tab()
+    elif src == "Dosya yükle":
         st.caption("CSV veya Excel; metin sütunu otomatik eşlenir (ör. Yorum, review, text).")
-        up = st.file_uploader("Dosya seç", type=["csv", "xlsx"])
-        if up:
+        fu_key = f"main_file_uploader_{st.session_state._file_uploader_gen}"
+        up = st.file_uploader("Dosya seç", type=["csv", "xlsx"], key=fu_key)
+        if up is not None:
             try:
-                if up.name.lower().endswith(".csv"):
-                    df = pd.read_csv(up)
-                else:
-                    df = pd.read_excel(up)
-                st.session_state.review_pool = load_reviews_from_dataframe(df)
-                st.success(f"{len(st.session_state.review_pool)} satır yüklendi (filtre sonrası).")
-                st.session_state.analysis_rows = []
+                raw = up.getvalue()
+                sig = (up.name, len(raw))
+                if st.session_state.get("_file_pool_sig") != sig:
+                    if up.name.lower().endswith(".csv"):
+                        df = pd.read_csv(io.BytesIO(raw))
+                    else:
+                        df = pd.read_excel(io.BytesIO(raw))
+                    st.session_state.review_pool_file = load_reviews_from_dataframe(df)
+                    st.session_state._file_pool_sig = sig
+                    st.session_state.analysis_rows = []
+                    st.success(
+                        f"{len(st.session_state.review_pool_file)} satır yüklendi (filtre sonrası)."
+                    )
             except Exception as e:
                 st.error(str(e))
-
-    with tab_text:
+        elif st.session_state.review_pool_file:
+            sig = st.session_state.get("_file_pool_sig")
+            fn = sig[0] if isinstance(sig, tuple) and sig else "—"
+            st.caption(
+                f"Son yüklenen dosya havuzunda: **{fn}** "
+                f"({len(st.session_state.review_pool_file)} yorum). Yeni dosya seçebilirsiniz."
+            )
+        if st.session_state.review_pool_file and st.button(
+            "Dosya havuzunu temizle", use_container_width=True, key="btn_clear_file_pool"
+        ):
+            st.session_state.review_pool_file = []
+            st.session_state.pop("_file_pool_sig", None)
+            st.session_state.analysis_rows = []
+            st.session_state._file_uploader_gen = int(st.session_state._file_uploader_gen) + 1
+            st.rerun()
+    elif src == "Metin yapıştır":
         st.caption("Her satır bir kullanıcı yorumu olacak şekilde yapıştırın.")
         ta = st.text_area(
             "Yorumlar",
@@ -138,11 +205,10 @@ def main():
                         "is_valid": True,
                     }
                 )
-            st.session_state.review_pool = pool
+            st.session_state.review_pool_paste = pool
             st.success(f"{len(pool)} yorum hazır.")
             st.session_state.analysis_rows = []
-
-    with tab_compare:
+    else:
         render_compare_tab(
             rich=rich,
             has_llm_keys=has_llm_keys,
@@ -151,7 +217,7 @@ def main():
 
     st.markdown('<div class="fancy-divider"></div>', unsafe_allow_html=True)
 
-    pool = st.session_state.review_pool
+    pool = _active_review_pool()
     st.markdown(
         f'<div class="metric-strip"><div class="metric-strip-label">Havuzdaki yorum</div>'
         f'<div class="metric-strip-value">{len(pool)}</div></div>',

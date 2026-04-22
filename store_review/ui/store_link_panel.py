@@ -63,7 +63,6 @@ def _inject_store_search_css() -> None:
 .sl-row-icon img { width:40px; height:40px; border-radius:50%; object-fit:cover; display:block; }
 .sl-row-title { font-weight:700; color:#0f172a; font-size:0.9rem; line-height:1.25; }
 .sl-row-id { font-size:0.72rem; color:#94a3b8; margin-top:2px; word-break:break-all; }
-input::placeholder { opacity: 1 !important; color: #64748b !important; }
 </style>
 """,
         unsafe_allow_html=True,
@@ -148,7 +147,7 @@ def render_store_link_tab() -> None:
     q = st.text_input(
         "Uygulama ara veya mağaza linki / ID",
         key="sl_store_input",
-        placeholder="Örn: döviz  ·  com.whatsapp  ·  mağaza linki",
+        placeholder="Örn. döviz, com.whatsapp mağaza linki",
         label_visibility="visible",
     )
     text = (q or "").strip()
@@ -302,7 +301,7 @@ def render_store_link_tab() -> None:
                     _progress_callback=lambda x: prog.progress(min(float(x), 1.0)),
                     _days_limit=days,
                 )
-            st.session_state.review_pool = pool
+            st.session_state.review_pool_store = pool
             st.session_state.analysis_rows = []
             prog.empty()
             st.success(f"{len(pool)} benzersiz yorum yüklendi ({time_label}).")
