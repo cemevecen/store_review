@@ -28,6 +28,7 @@ from store_review.config.theme import APP_CSS
 from store_review.core.ai_providers import DEFAULT_MODELS, RichAnalyzer, resolve_api_keys
 from store_review.core.analyzer import analyze_batch, dedupe_reviews
 from store_review.fetchers.file_loader import load_reviews_from_dataframe
+from store_review.ui.compare_panel import render_compare_tab
 from store_review.ui.store_link_panel import render_store_link_tab
 from store_review.utils.exporters import df_to_csv_bytes, df_to_excel_bytes
 from store_review.utils.validators import is_valid_comment
@@ -101,6 +102,8 @@ def main():
         env_settings.openai_api_key,
         _secrets_get,
     )
+    rich = RichAnalyzer(gemini_key=gk, groq_key=gqk, openai_key=ok)
+    has_llm_keys = bool(gk or gqk or ok)
 
     if "review_pool" not in st.session_state:
         st.session_state.review_pool = []
@@ -108,8 +111,8 @@ def main():
         st.session_state.analysis_rows = []
 
     st.markdown('<p class="source-section-title">Veri kaynağı</p>', unsafe_allow_html=True)
-    tab_store, tab_file, tab_text = st.tabs(
-        ["Mağaza (ara / link)", "Dosya yükle", "Metin yapıştır"]
+    tab_store, tab_file, tab_text, tab_compare = st.tabs(
+        ["Mağaza (ara / link)", "Dosya yükle", "Metin yapıştır", "Karşılaştır"]
     )
 
     with tab_store:
@@ -158,6 +161,13 @@ def main():
             st.session_state.review_pool = pool
             st.success(f"{len(pool)} yorum hazır.")
             st.session_state.analysis_rows = []
+
+    with tab_compare:
+        render_compare_tab(
+            rich=rich,
+            has_llm_keys=has_llm_keys,
+            default_models=DEFAULT_MODELS,
+        )
 
     st.markdown('<div class="fancy-divider"></div>', unsafe_allow_html=True)
 
@@ -235,7 +245,6 @@ def main():
     )
 
     mode_idx = 0 if depth == "Standart" else 1
-    rich = RichAnalyzer(gemini_key=gk, groq_key=gqk, openai_key=ok)
 
     if st.button("Duygu analizini başlat", type="primary", use_container_width=True):
         prepared = _prepare_pool(pool)
