@@ -106,16 +106,19 @@ def main():
     )
     _inject_css()
 
-    st.markdown(
-        """
-<div class="hero-full-bleed">
-  <div class="hero-card">
-    <h1 class="hero-title">AI Mağaza Yorumu Analizi</h1>
-  </div>
-</div>
-""",
-        unsafe_allow_html=True,
-    )
+    with st.container(border=True, key="hero_header_shell", width="stretch"):
+        st.markdown(
+            '<h1 class="hero-title">AI Mağaza Yorumu Analizi</h1>',
+            unsafe_allow_html=True,
+        )
+        st.radio(
+            "",
+            SOURCE_OPTIONS,
+            horizontal=True,
+            label_visibility="collapsed",
+            key="main_data_source_tab",
+            on_change=_on_data_source_change,
+        )
 
     env_settings = Settings.from_env()
     gk, gqk, ok = resolve_api_keys(
@@ -130,16 +133,6 @@ def main():
     if "analysis_rows" not in st.session_state:
         st.session_state.analysis_rows = []
     _init_split_pools()
-
-    st.markdown('<p class="source-section-title">Veri kaynağı</p>', unsafe_allow_html=True)
-    st.radio(
-        "",
-        SOURCE_OPTIONS,
-        horizontal=True,
-        label_visibility="collapsed",
-        key="main_data_source_tab",
-        on_change=_on_data_source_change,
-    )
 
     src = st.session_state.get("main_data_source_tab") or SOURCE_OPTIONS[0]
 

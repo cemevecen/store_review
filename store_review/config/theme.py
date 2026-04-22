@@ -87,15 +87,6 @@ APP_CSS = """
   padding-top: 1.15rem !important;
 }
 
-.source-section-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #64748b;
-  margin: 0 0 12px 4px;
-}
-
 /* Giriş alanları — açık kutu, koyu metin */
 .stTextInput input,
 .stNumberInput input,
@@ -193,40 +184,38 @@ div[data-testid="stDataFrame"] {
   overflow: hidden;
 }
 
-/* Başlık — üst blok container dışına taşır, viewport genişliği */
-.hero-full-bleed {
-  width: 100vw;
-  max-width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  margin-top: -1.25rem;
-  padding-top: 1.25rem;
-  padding-bottom: 10px;
-  box-sizing: border-box;
-}
-.hero-full-bleed .hero-card {
-  border-radius: 0;
-  margin-bottom: 0;
-}
-
-/* Başlık kartı — masaüstü streamlit_app / AI duygu referansı (ince vurgu çizgisi) */
-.hero-card {
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 22px 26px 18px;
-  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.07);
-  border: 1px solid #e2e8f0;
-  border-left: 4px solid #818cf8;
-  margin-bottom: 8px;
-  text-align: center;
+/* Üst header: başlık + veri kaynağı radyosu (border’lı container, başlık sınıfı ile hedeflenir) */
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-title) {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+  margin-right: calc(50% - 50vw) !important;
+  margin-top: -1.25rem !important;
+  padding-top: calc(1.25rem + 6px) !important;
+  padding-bottom: 14px !important;
+  padding-left: clamp(12px, 3vw, 28px) !important;
+  padding-right: clamp(12px, 3vw, 28px) !important;
+  box-sizing: border-box !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-left: 4px solid #818cf8 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.07) !important;
+  margin-bottom: 12px !important;
 }
 .hero-title {
   font-family: 'Poppins', sans-serif;
   font-size: 1.65rem;
   font-weight: 700;
   color: #0f172a;
-  margin: 0;
+  margin: 0 0 10px 0;
   letter-spacing: -0.02em;
+  text-align: center;
+}
+[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-title) [data-baseweb="radio"] > div {
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
 }
 
 .fancy-divider {
