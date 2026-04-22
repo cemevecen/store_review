@@ -111,7 +111,7 @@ def _on_data_source_change() -> None:
 
 def main():
     st.set_page_config(
-        page_title="AI Mağaza Yorumu Analizi",
+        page_title="ai store review analysis",
         layout="centered",
         initial_sidebar_state="collapsed",
     )
@@ -123,7 +123,7 @@ def main():
             st.markdown(
                 '<span class="hero-band-target" aria-hidden="true"></span>'
                 '<div class="hero-masthead-brand">'
-                '<h1 class="hero-title">AI Mağaza Yorumu Analizi</h1>'
+                '<h1 class="hero-title">ai store review analysis</h1>'
                 "</div>",
                 unsafe_allow_html=True,
             )
