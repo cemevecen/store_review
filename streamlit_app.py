@@ -57,26 +57,6 @@ def _inject_css():
     st.markdown(f"<style>{APP_CSS}</style>", unsafe_allow_html=True)
 
 
-def _verdict_blurb_from_counts(vc: pd.Series) -> str | None:
-    """Masaüstü streamlit_app.py tarzı kısa özet (Baskın Duygu dağılımına göre)."""
-    if vc is None or len(vc) == 0:
-        return None
-    vc2 = vc.drop(index=["—"], errors="ignore") if "—" in vc.index else vc
-    if len(vc2) == 0:
-        return None
-    top = str(vc2.idxmax())
-    total = int(vc2.sum())
-    share = float(vc2[top] / total) if total else 0.0
-    pct = int(round(100 * share))
-    if top == "Olumlu":
-        return f"Bu yorum seti genel olarak **olumlu** ton ağırlığı taşıyor (%{pct}). 😊"
-    if top == "Olumsuz":
-        return f"Bu yorum seti genel olarak **olumsuz** ton ağırlığı taşıyor (%{pct}). 😔"
-    if top == "İstek/Görüş":
-        return f"Yorumların önemli bir kısmı **istek / görüş** niteliğinde (%{pct}). 💡"
-    return None
-
-
 def main():
     st.set_page_config(
         page_title="AI Mağaza Yorumu Analizi",
@@ -202,24 +182,12 @@ def main():
     st.markdown('<p class="section-title">Analiz ayarları</p>', unsafe_allow_html=True)
 
     method = st.radio(
-        "Analiz yöntemi",
+        "",
         ["Hızlı (heuristic)", "Zengin (LLM)"],
         horizontal=True,
+        label_visibility="collapsed",
+        key="main_analysis_method",
     )
-
-    if method == "Hızlı (heuristic)":
-        st.markdown(
-            '<div class="analysis-hint"><strong>Hızlı Analiz:</strong> '
-            "Çok dilli kelime listeleri ve kurallarla saniyeler içinde sonuç üretir; API anahtarı gerekmez.</div>",
-            unsafe_allow_html=True,
-        )
-    else:
-        st.markdown(
-            '<div class="analysis-hint"><strong>Zengin Analiz:</strong> '
-            "Gemini / Groq / OpenAI ile yorum başına skor; en az bir API anahtarı gerekir. "
-            "Varsayılan en fazla <strong>500</strong> yorum işlenir.</div>",
-            unsafe_allow_html=True,
-        )
 
     use_fast = method == "Hızlı (heuristic)"
     col_d, col_p = st.columns(2)
@@ -253,7 +221,6 @@ def main():
         elif not use_fast and not (gk or gqk or ok):
             st.error("Zengin analiz için en az bir API anahtarı gerekir.")
         else:
-            method_label = "Hızlı (heuristic)" if use_fast else f"Zengin ({provider})"
             with st.spinner("Yorumlar analiz ediliyor…"):
                 bar = st.progress(0.0)
                 status = st.empty()
@@ -277,7 +244,6 @@ def main():
                 bar.empty()
                 status.empty()
             st.divider()
-            st.success(f"Analiz tamamlandı (yöntem: **{method_label}**).")
 
     rows = st.session_state.analysis_rows
     if rows:
@@ -289,10 +255,6 @@ def main():
         m1.metric("Toplam", len(df))
         for col, label in [(m2, "Olumlu"), (m3, "Olumsuz"), (m4, "İstek/Görüş")]:
             col.metric(label, int(vc.get(label, 0)))
-
-        blurb = _verdict_blurb_from_counts(vc)
-        if blurb:
-            st.info(blurb)
 
         pie_df = vc.reset_index()
         pie_df.columns = ["duygu", "adet"]

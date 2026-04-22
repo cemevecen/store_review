@@ -180,10 +180,11 @@ def render_compare_tab(
     m1, m2 = st.columns(2)
     with m1:
         cmp_method = st.radio(
-            "Analiz yöntemi",
+            "",
             ["Hızlı (heuristic)", "Zengin (LLM)"],
             horizontal=True,
             key="cmp_method",
+            label_visibility="collapsed",
         )
     use_fast = cmp_method == "Hızlı (heuristic)"
     with m2:

@@ -107,6 +107,16 @@ textarea {
   border-radius: 10px !important;
 }
 
+/* İpucu metni — gerçek girişle karışmasın diye belirgin şekilde silik */
+.stTextInput input::placeholder,
+.stTextInput input::-webkit-input-placeholder,
+textarea::placeholder,
+textarea::-webkit-input-placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.38 !important;
+  font-weight: 400 !important;
+}
+
 .stRadio div[role="radiogroup"] label {
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -207,17 +217,6 @@ div[data-testid="stDataFrame"] {
   height: 1px;
   margin: 20px 0;
   background: linear-gradient(90deg, transparent, #93c5fd, transparent);
-}
-
-.analysis-hint {
-  background: #e0f2fe;
-  border: 1px solid #7dd3fc;
-  border-radius: 14px;
-  padding: 14px 18px;
-  margin: 12px 0 18px;
-  color: #0c4a6e;
-  font-size: 0.92rem;
-  line-height: 1.55;
 }
 
 .metric-strip {
