@@ -208,7 +208,6 @@ def main():
     if src == "Mağaza":
         render_store_link_tab()
     elif src == "Dosya":
-        st.caption("CSV veya Excel; metin sütunu otomatik eşlenir (ör. Yorum, review, text).")
         fu_key = f"main_file_uploader_{st.session_state._file_uploader_gen}"
         up = st.file_uploader("Dosya seç", type=["csv", "xlsx"], key=fu_key)
         if up is not None:
@@ -259,7 +258,6 @@ def main():
             st.session_state._file_uploader_gen = int(st.session_state._file_uploader_gen) + 1
             st.rerun()
     elif src == "Metin":
-        st.caption("Her satır bir kullanıcı yorumu olacak şekilde yapıştırın.")
         ta = st.text_area(
             "Yorumlar",
             height=200,
