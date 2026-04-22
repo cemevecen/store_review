@@ -156,6 +156,14 @@ _CMP_COMPACT_CSS = """
   justify-content: flex-end !important;
   align-items: center !important;
 }
+[data-testid="stVerticalBlock"].st-key-cmp_start_method_row [data-testid="stHorizontalBlock"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_start_method_row [data-testid="stHorizontalBlock"] {
+  flex-direction: row-reverse !important;
+}
+[data-testid="stVerticalBlock"].st-key-cmp_start_method_row [data-testid="stHorizontalBlock"] > [data-testid="column"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_start_method_row [data-testid="stHorizontalBlock"] > [data-testid="column"] {
+  min-width: 0 !important;
+}
 </style>
 """
 
@@ -638,7 +646,7 @@ def render_compare_tab(
             _render_compare_app_picker(1, "Uygulama 2")
 
         with st.container(key="cmp_date_method_row"):
-            tcol, mid, mcol = st.columns([1, 0.2, 1.15], gap="medium", vertical_alignment="center")
+            tcol, _sp = st.columns([1, 2.2], gap="medium", vertical_alignment="center")
             with tcol:
                 time_label = st.selectbox(
                     "Tarih",
@@ -647,58 +655,60 @@ def render_compare_tab(
                     key="cmp_time_range",
                     label_visibility="hidden",
                 )
-            with mid:
+            with _sp:
                 st.empty()
-            with mcol:
-                push_l, push_r = st.columns([0.22, 0.78], gap="small", vertical_alignment="center")
-                with push_l:
-                    st.empty()
-                with push_r:
-                    mm1, mm2 = st.columns(2, gap="small", vertical_alignment="center")
-                    with mm1:
-                        cmp_method = st.radio(
-                            "Karşılaştırma analiz yöntemi",
-                            ["Hızlı (heuristic)", "Zengin (LLM)"],
-                            horizontal=True,
-                            key="cmp_method",
-                            label_visibility="collapsed",
-                        )
-                    use_fast = cmp_method == "Hızlı (heuristic)"
-                    with mm2:
-                        if use_fast:
-                            mode_idx = 0
-                            st.caption("Heuristic: derinlik sabit.")
-                        else:
-                            depth = st.radio(
-                                "Derinlik",
-                                ["Standart", "Gelişmiş"],
-                                horizontal=True,
-                                key="cmp_depth",
-                                label_visibility="collapsed",
-                            )
-                            mode_idx = 0 if depth == "Standart" else 1
         days = RANGE_DAYS[time_label]
 
         res = st.session_state.get("cmp_results") or {}
-        b1, b2 = st.columns([2.2, 1], gap="small")
-        with b1:
-            if st.button("Karşılaştırmayı başlat", type="primary", use_container_width=True, key="cmp_start"):
-                if sum(1 for x in (_cmp_slot_effective_raw(0), _cmp_slot_effective_raw(1)) if x) < 2:
-                    st.warning("İki uygulama için de ID veya link girin.")
-                elif not use_fast and not has_llm_keys:
-                    st.error("Zengin analiz için en az bir API anahtarı gerekir (.env veya Streamlit secrets).")
+        # Script order: yöntem (ve derinlik) önce, böylece "Başlat" tıklanınca güncel state okunur.
+        # Görünüm: CSS row-reverse ile solda %50 başlat, sağda %50 alan içinde iki eşit segment (Hızlı / Zengin).
+        with st.container(key="cmp_start_method_row"):
+            c_method, c_start = st.columns([1, 1], gap="small", vertical_alignment="center")
+            with c_method:
+                method_pick = st.segmented_control(
+                    "Karşılaştırma analiz yöntemi",
+                    options=["Hızlı (heuristic)", "Zengin (LLM)"],
+                    selection_mode="single",
+                    default="Hızlı (heuristic)",
+                    key="cmp_method",
+                    label_visibility="collapsed",
+                    width="stretch",
+                )
+                pick = method_pick if method_pick is not None else st.session_state.get(
+                    "cmp_method", "Hızlı (heuristic)"
+                )
+                use_fast = pick == "Hızlı (heuristic)"
+                if use_fast:
+                    mode_idx = 0
+                    st.caption("Heuristic: derinlik sabit.")
                 else:
-                    with st.spinner("Uygulamalar analiz ediliyor…"):
-                        n_ok, errs = execute_compare_analysis(
-                            rich=rich,
-                            has_llm_keys=has_llm_keys,
-                            default_models=default_models,
-                            use_heuristic_only=use_fast,
-                            analysis_mode=mode_idx,
-                        )
-                    for er in errs:
-                        st.error(er)
-        with b2:
+                    depth = st.radio(
+                        "Derinlik",
+                        ["Standart", "Gelişmiş"],
+                        horizontal=True,
+                        key="cmp_depth",
+                        label_visibility="collapsed",
+                    )
+                    mode_idx = 0 if depth == "Standart" else 1
+            with c_start:
+                if st.button("Karşılaştırmayı başlat", type="primary", use_container_width=True, key="cmp_start"):
+                    if sum(1 for x in (_cmp_slot_effective_raw(0), _cmp_slot_effective_raw(1)) if x) < 2:
+                        st.warning("İki uygulama için de ID veya link girin.")
+                    elif not use_fast and not has_llm_keys:
+                        st.error("Zengin analiz için en az bir API anahtarı gerekir (.env veya Streamlit secrets).")
+                    else:
+                        with st.spinner("Uygulamalar analiz ediliyor…"):
+                            n_ok, errs = execute_compare_analysis(
+                                rich=rich,
+                                has_llm_keys=has_llm_keys,
+                                default_models=default_models,
+                                use_heuristic_only=use_fast,
+                                analysis_mode=mode_idx,
+                            )
+                        for er in errs:
+                            st.error(er)
+        _, c_clear = st.columns([3, 1], gap="small")
+        with c_clear:
             if res and st.button("Sonuçları temizle", key="cmp_clear", use_container_width=True):
                 st.session_state.cmp_results = {}
                 st.session_state.cmp_detail_rows = {}
