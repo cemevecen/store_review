@@ -73,6 +73,16 @@ SOURCE_POOL_KEY = {
 }
 
 
+def _session_main_data_source() -> str:
+    """Masthead seçimi: eski st.radio (str) veya st.pills tek seçim ile uyumlu."""
+    v = st.session_state.get("main_data_source_tab")
+    if isinstance(v, (list, tuple)):
+        v = v[0] if v else None
+    if isinstance(v, str) and v in SOURCE_OPTIONS:
+        return v
+    return SOURCE_OPTIONS[0]
+
+
 def _init_split_pools() -> None:
     for k in ("store", "file", "paste"):
         if f"review_pool_{k}" not in st.session_state:
@@ -88,7 +98,7 @@ def _init_split_pools() -> None:
 
 
 def _active_review_pool() -> list:
-    label = st.session_state.get("main_data_source_tab") or SOURCE_OPTIONS[0]
+    label = _session_main_data_source()
     pk = SOURCE_POOL_KEY.get(label, "store")
     if pk == "compare":
         return []
@@ -118,12 +128,14 @@ def main():
                 unsafe_allow_html=True,
             )
         with col_nav:
-            st.radio(
+            st.pills(
                 "Veri kaynağı",
                 SOURCE_OPTIONS,
-                horizontal=True,
-                label_visibility="collapsed",
+                selection_mode="single",
+                default=SOURCE_OPTIONS[0],
                 key="main_data_source_tab",
+                label_visibility="collapsed",
+                width="stretch",
                 on_change=_on_data_source_change,
             )
 
@@ -141,7 +153,7 @@ def main():
         st.session_state.analysis_rows = []
     _init_split_pools()
 
-    src = st.session_state.get("main_data_source_tab") or SOURCE_OPTIONS[0]
+    src = _session_main_data_source()
 
     if src == "Mağaza (ara / link)":
         render_store_link_tab()
@@ -235,7 +247,7 @@ def main():
     st.markdown('<div class="fancy-divider"></div>', unsafe_allow_html=True)
 
     pool = _active_review_pool()
-    src_cur = st.session_state.get("main_data_source_tab") or SOURCE_OPTIONS[0]
+    src_cur = _session_main_data_source()
     if src_cur == "Karşılaştır":
         detail_cmp = st.session_state.get("cmp_detail_rows") or {}
         pool_display_count = sum(len(v) for v in detail_cmp.values())
@@ -294,7 +306,7 @@ def main():
     if st.button("Duygu analizini başlat", type="primary", use_container_width=True):
         prepared = _prepare_pool(pool)
         if not prepared:
-            src_now = st.session_state.get("main_data_source_tab") or SOURCE_OPTIONS[0]
+            src_now = _session_main_data_source()
             if src_now == "Karşılaştır":
                 detail_cmp = st.session_state.get("cmp_detail_rows") or {}
                 meta_cmp = st.session_state.get("cmp_results") or {}
