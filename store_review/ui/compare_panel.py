@@ -458,6 +458,8 @@ def render_compare_tab(
                                 errors.append(f"{meta['title']}: analiz edilecek yorum yok.")
                                 continue
 
+                            prep_n = len(prepared)
+                            pool_n = len(pool)
                             rows = analyze_batch(
                                 prepared,
                                 use_heuristic_only=use_fast,
@@ -472,12 +474,17 @@ def render_compare_tab(
                             agg = _aggregate_rows(rows)
                             slug = f"{resolved.platform}:{resolved.app_id}"
                             detail_rows[slug] = list(rows)
+                            rich_cap = (not use_fast) and (prep_n > 500)
                             results[slug] = {
                                 **meta,
                                 **agg,
                                 "app_id": resolved.app_id,
                                 "platform": resolved.platform,
                                 "chart_label": f"{meta['title'][:36]}{'…' if len(meta['title']) > 36 else ''} ({'Play' if resolved.platform == 'android' else 'App Store'})",
+                                "cmp_pool_fetched": pool_n,
+                                "cmp_pool_prepared": prep_n,
+                                "cmp_rich_capped": rich_cap,
+                                "cmp_rich_cap_limit": 500 if rich_cap else None,
                             }
                         except Exception as e:
                             errors.append(f"{meta.get('title', raw)}: {e}")
@@ -485,6 +492,7 @@ def render_compare_tab(
                 st.session_state.cmp_results = results
                 st.session_state.cmp_detail_rows = detail_rows
                 st.session_state.cmp_range_label = time_label
+                st.session_state.cmp_days_used = int(days)
                 if errors:
                     for er in errors:
                         st.error(er)
@@ -494,9 +502,18 @@ def render_compare_tab(
                 st.session_state.cmp_results = {}
                 st.session_state.cmp_detail_rows = {}
                 st.session_state.pop("cmp_range_label", None)
+                st.session_state.pop("cmp_days_used", None)
                 st.rerun()
 
             st.markdown("#### Özet")
+            days_u = st.session_state.get("cmp_days_used")
+            rng_lbl = st.session_state.get("cmp_range_label") or time_label
+            if days_u is not None:
+                st.markdown(
+                    f'<p style="margin:0 0 10px 0;font-size:0.8rem;color:#475569;">'
+                    f"{html.escape(str(rng_lbl))} · <b>{int(days_u)}</b> gün</p>",
+                    unsafe_allow_html=True,
+                )
             cols = st.columns(len(res))
             colors = ["#6366F1", "#F97316", "#0EA5E9"]
             for i, (_slug, data) in enumerate(res.items()):
@@ -512,6 +529,28 @@ def render_compare_tab(
                     if icon.startswith("http"):
                         st.image(icon, width=56)
                     st.caption(f"{data.get('store', '')} · {data.get('genre', '—')}")
+                    rt = data.get("rating")
+                    rct = data.get("ratings")
+                    if rt is not None or (rct is not None and int(rct or 0) > 0):
+                        st.markdown(
+                            f'<p style="margin:0 0 4px 0;font-size:0.72rem;color:#64748b;">'
+                            f"Mağaza <b>{float(rt or 0):.1f}</b> · <b>{int(rct or 0)}</b> oy</p>",
+                            unsafe_allow_html=True,
+                        )
+                    fe = data.get("cmp_pool_fetched")
+                    if fe is not None:
+                        pr = int(data.get("cmp_pool_prepared") or 0)
+                        cap = bool(data.get("cmp_rich_capped"))
+                        lim = data.get("cmp_rich_cap_limit")
+                        bits = [f"Ham <b>{int(fe)}</b>", f"Filtre <b>{pr}</b>"]
+                        if cap and lim:
+                            bits.append(f"LLM ≤<b>{int(lim)}</b>")
+                        st.markdown(
+                            '<p style="margin:0 0 8px 0;font-size:0.72rem;color:#64748b;line-height:1.4;">'
+                            + " · ".join(bits)
+                            + "</p>",
+                            unsafe_allow_html=True,
+                        )
                     st.metric("Duygu skoru (0–100)", int(data.get("score", 0)))
                     st.metric("Analiz edilen yorum", int(data.get("total", 0)))
                     st.caption(f"Olumlu %{data.get('pos_pct', 0)}")
@@ -547,8 +586,6 @@ def render_compare_tab(
             st.plotly_chart(fig, use_container_width=True)
 
             st.markdown("#### Yorumlar")
-            range_lbl = st.session_state.get("cmp_range_label") or time_label
-            st.caption(f"**{range_lbl}** aralığında analiz edilen yorumlar.")
             detail = st.session_state.get("cmp_detail_rows") or {}
             if not detail:
                 st.markdown(
@@ -566,7 +603,9 @@ def render_compare_tab(
                         f'<p style="font-weight:700;color:#334155;margin:10px 0 6px 0;">{title}</p>',
                         unsafe_allow_html=True,
                     )
-                    st.caption(f"{int(data.get('total', 0))} yorum · {data.get('chart_label', '')}")
+                    aid_disp = str(data.get("app_id", "") or "")
+                    ch_disp = str(data.get("chart_label", "") or "")
+                    st.caption(f"{int(data.get('total', 0))} · {aid_disp} · {ch_disp}")
                     if not rows_d:
                         st.write("—")
                     else:
