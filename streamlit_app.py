@@ -66,16 +66,23 @@ def _inject_css() -> None:
 
 
 SOURCE_OPTIONS = [
-    "Mağaza (ara / link)",
-    "Dosya yükle",
-    "Metin yapıştır",
-    "Karşılaştır",
+    "Mağaza",
+    "Dosya",
+    "Metin",
+    "Uygulama karşılaştır",
 ]
 SOURCE_POOL_KEY = {
-    "Mağaza (ara / link)": "store",
-    "Dosya yükle": "file",
-    "Metin yapıştır": "paste",
-    "Karşılaştır": "compare",
+    "Mağaza": "store",
+    "Dosya": "file",
+    "Metin": "paste",
+    "Uygulama karşılaştır": "compare",
+}
+# Eski sekme etiketleri (oturum uyumu)
+_LEGACY_SOURCE_TAB = {
+    "Mağaza (ara / link)": "Mağaza",
+    "Dosya yükle": "Dosya",
+    "Metin yapıştır": "Metin",
+    "Karşılaştır": "Uygulama karşılaştır",
 }
 
 
@@ -84,6 +91,8 @@ def _session_main_data_source() -> str:
     v = st.session_state.get("main_data_source_tab")
     if isinstance(v, (list, tuple)):
         v = v[0] if v else None
+    if isinstance(v, str):
+        v = _LEGACY_SOURCE_TAB.get(v, v)
     if isinstance(v, str) and v in SOURCE_OPTIONS:
         return v
     return SOURCE_OPTIONS[0]
@@ -117,17 +126,17 @@ def _on_data_source_change() -> None:
 
 def _havuz_metric_visible(src: str, pool_display_count: int) -> bool:
     """Havuzdaki yorum kutusu: yalnız ilgili sekmede veri / taslak / uygulama girişi varken."""
-    if src == "Mağaza (ara / link)":
+    if src == "Mağaza":
         typed = (st.session_state.get("sl_store_input") or "").strip()
         if typed or st.session_state.get("sl_selected_id"):
             return True
         return pool_display_count > 0
-    if src == "Dosya yükle":
+    if src == "Dosya":
         return pool_display_count > 0
-    if src == "Metin yapıştır":
+    if src == "Metin":
         draft = (st.session_state.get("paste_reviews") or "").strip()
         return bool(draft or pool_display_count > 0)
-    if src == "Karşılaştır":
+    if src == "Uygulama karşılaştır":
         return compare_tab_has_user_input() or pool_display_count > 0
     return False
 
@@ -162,6 +171,13 @@ def main():
                 "</div>",
                 unsafe_allow_html=True,
             )
+            _pill_raw = st.session_state.get("main_data_source_tab")
+            if isinstance(_pill_raw, (list, tuple)):
+                _pill_raw = _pill_raw[0] if _pill_raw else None
+            if isinstance(_pill_raw, str):
+                _pill_fix = _LEGACY_SOURCE_TAB.get(_pill_raw, _pill_raw)
+                if _pill_fix in SOURCE_OPTIONS and _pill_fix != _pill_raw:
+                    st.session_state.main_data_source_tab = _pill_fix
             st.pills(
                 "Veri kaynağı",
                 SOURCE_OPTIONS,
@@ -189,9 +205,9 @@ def main():
 
     src = _session_main_data_source()
 
-    if src == "Mağaza (ara / link)":
+    if src == "Mağaza":
         render_store_link_tab()
-    elif src == "Dosya yükle":
+    elif src == "Dosya":
         st.caption("CSV veya Excel; metin sütunu otomatik eşlenir (ör. Yorum, review, text).")
         fu_key = f"main_file_uploader_{st.session_state._file_uploader_gen}"
         up = st.file_uploader("Dosya seç", type=["csv", "xlsx"], key=fu_key)
@@ -242,7 +258,7 @@ def main():
             st.session_state.analysis_rows = []
             st.session_state._file_uploader_gen = int(st.session_state._file_uploader_gen) + 1
             st.rerun()
-    elif src == "Metin yapıştır":
+    elif src == "Metin":
         st.caption("Her satır bir kullanıcı yorumu olacak şekilde yapıştırın.")
         ta = st.text_area(
             "Yorumlar",
@@ -280,7 +296,7 @@ def main():
 
     pool = _active_review_pool()
     src_cur = _session_main_data_source()
-    if src_cur == "Karşılaştır":
+    if src_cur == "Uygulama karşılaştır":
         detail_cmp = st.session_state.get("cmp_detail_rows") or {}
         pool_display_count = sum(len(v) for v in detail_cmp.values())
     else:
@@ -338,7 +354,7 @@ def main():
 
     if st.button("Duygu analizini başlat", type="primary", use_container_width=True):
         src_now = _session_main_data_source()
-        if src_now == "Karşılaştır":
+        if src_now == "Uygulama karşılaştır":
             if not use_fast and not (gk or gqk or ok):
                 st.error("Zengin analiz için en az bir API anahtarı gerekir.")
             else:
