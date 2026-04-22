@@ -140,6 +140,18 @@ _CMP_COMPACT_CSS = """
   width: auto !important;
   min-width: 5.5rem !important;
 }
+[data-testid="stVerticalBlock"].st-key-cmp_date_method_row [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_date_method_row [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child {
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+}
+[data-testid="stVerticalBlock"].st-key-cmp_date_method_row [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_date_method_row [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+}
 </style>
 """
 
@@ -612,40 +624,48 @@ def render_compare_tab(
         with cb:
             _render_compare_app_picker(1, "Uygulama 2")
 
-        tcol, mcol = st.columns([1, 1.2], gap="small", vertical_alignment="center")
-        with tcol:
-            time_label = st.selectbox(
-                "Tarih",
-                RANGE_OPTIONS,
-                index=1,
-                key="cmp_time_range",
-                label_visibility="hidden",
-            )
-        days = RANGE_DAYS[time_label]
-        with mcol:
-            mm1, mm2 = st.columns(2, gap="small", vertical_alignment="center")
-            with mm1:
-                cmp_method = st.radio(
-                    "Karşılaştırma analiz yöntemi",
-                    ["Hızlı (heuristic)", "Zengin (LLM)"],
-                    horizontal=True,
-                    key="cmp_method",
-                    label_visibility="collapsed",
+        with st.container(key="cmp_date_method_row"):
+            tcol, mid, mcol = st.columns([1, 0.2, 1.15], gap="medium", vertical_alignment="center")
+            with tcol:
+                time_label = st.selectbox(
+                    "Tarih",
+                    RANGE_OPTIONS,
+                    index=1,
+                    key="cmp_time_range",
+                    label_visibility="hidden",
+                    width="content",
                 )
-            use_fast = cmp_method == "Hızlı (heuristic)"
-            with mm2:
-                if use_fast:
-                    mode_idx = 0
-                    st.caption("Heuristic: derinlik sabit.")
-                else:
-                    depth = st.radio(
-                        "Derinlik",
-                        ["Standart", "Gelişmiş"],
-                        horizontal=True,
-                        key="cmp_depth",
-                        label_visibility="collapsed",
-                    )
-                    mode_idx = 0 if depth == "Standart" else 1
+            with mid:
+                st.empty()
+            with mcol:
+                push_l, push_r = st.columns([0.22, 0.78], gap="small", vertical_alignment="center")
+                with push_l:
+                    st.empty()
+                with push_r:
+                    mm1, mm2 = st.columns(2, gap="small", vertical_alignment="center")
+                    with mm1:
+                        cmp_method = st.radio(
+                            "Karşılaştırma analiz yöntemi",
+                            ["Hızlı (heuristic)", "Zengin (LLM)"],
+                            horizontal=True,
+                            key="cmp_method",
+                            label_visibility="collapsed",
+                        )
+                    use_fast = cmp_method == "Hızlı (heuristic)"
+                    with mm2:
+                        if use_fast:
+                            mode_idx = 0
+                            st.caption("Heuristic: derinlik sabit.")
+                        else:
+                            depth = st.radio(
+                                "Derinlik",
+                                ["Standart", "Gelişmiş"],
+                                horizontal=True,
+                                key="cmp_depth",
+                                label_visibility="collapsed",
+                            )
+                            mode_idx = 0 if depth == "Standart" else 1
+        days = RANGE_DAYS[time_label]
 
         res = st.session_state.get("cmp_results") or {}
         b1, b2 = st.columns([2.2, 1], gap="small")
