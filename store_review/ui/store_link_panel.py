@@ -307,11 +307,6 @@ def render_store_link_tab() -> None:
     _apply_pending_sl_store_input()
     _inject_store_search_css()
 
-    st.caption(
-        "Uygulama **adı** yazarak arayın (aşağıda listelenir) veya **paket** (`com…`), **App Store ID**, "
-        "**Play / App Store ürün linki** girin."
-    )
-
     q = st.text_input(
         "Uygulama ara veya mağaza linki / ID",
         key="sl_store_input",
@@ -441,8 +436,6 @@ def render_store_link_tab() -> None:
 
     time_label = st.selectbox("Tarih aralığı", RANGE_OPTIONS, index=1, key="sl_time_range")
     days = RANGE_DAYS[time_label]
-
-    st.caption("Apple: mağaza linki veya sayısal ID. Play: link veya `com…` paket adı. İsim araması için yukarıda Android/iOS seçin.")
 
     if st.button("Yorumları çek", type="secondary", use_container_width=True, key="sl_fetch_btn"):
         app_id: str | None = None
