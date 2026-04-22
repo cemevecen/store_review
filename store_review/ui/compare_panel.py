@@ -380,6 +380,124 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
             st.rerun()
 
 
+def merge_compare_details_for_dashboard() -> list[dict[str, Any]]:
+    """cmp_detail_rows + cmp_results → ana ekran analiz tablosu (Uygulama sütunu)."""
+    detail_cmp = st.session_state.get("cmp_detail_rows") or {}
+    meta_cmp = st.session_state.get("cmp_results") or {}
+    merged: list[dict[str, Any]] = []
+    n = 1
+    for slug, app_rows in detail_cmp.items():
+        title = (meta_cmp.get(slug) or {}).get("title", slug)
+        for r in app_rows:
+            row = dict(r)
+            row["No"] = n
+            n += 1
+            row["Uygulama"] = title
+            merged.append(row)
+    return merged
+
+
+def execute_compare_analysis(
+    *,
+    rich: RichAnalyzer,
+    has_llm_keys: bool,
+    default_models: dict[str, str],
+    use_heuristic_only: bool,
+    analysis_mode: int,
+) -> tuple[int, list[str]]:
+    """
+    İki slot için mağazadan yorum çekip analiz eder; cmp_results / cmp_detail_rows güncellenir.
+    Dönüş: (tamamlanan uygulama sayısı 0–2, hata metinleri).
+    """
+    provider = "Google Gemini"
+    model = (default_models.get("Google Gemini") or "").strip() or default_models.get(provider, "")
+
+    time_label = st.session_state.get("cmp_time_range") or RANGE_OPTIONS[1]
+    if time_label not in RANGE_DAYS:
+        time_label = RANGE_OPTIONS[1]
+    days = RANGE_DAYS[time_label]
+
+    inputs = [_cmp_slot_effective_raw(0), _cmp_slot_effective_raw(1)]
+    if sum(1 for x in inputs if x) < 2:
+        return 0, ["İki uygulama için de paket, App Store ID veya mağaza linki / seçim gerekir."]
+    if not use_heuristic_only and not has_llm_keys:
+        return 0, ["Zengin analiz için en az bir API anahtarı gerekir."]
+
+    def _resolve_one(raw: str) -> tuple[Optional[ResolvedApp], Optional[str]]:
+        s = (raw or "").strip()
+        if not s:
+            return None, None
+        return resolve_direct_input(s)
+
+    results: dict[str, dict[str, Any]] = {}
+    detail_rows: dict[str, list[dict]] = {}
+    errors: list[str] = []
+
+    for raw in inputs:
+        resolved, msg = _resolve_one(raw)
+        if msg:
+            st.info(str(msg))
+        if resolved is None:
+            errors.append(f"Çözülemedi: `{raw[:48]}…`" if len(raw) > 48 else f"Çözülemedi: `{raw}`")
+            continue
+
+        meta = _metadata(resolved)
+        try:
+            if resolved.platform == "android":
+                pool = fetch_google_play_reviews(
+                    resolved.app_id,
+                    days,
+                    _progress_callback=lambda x: None,
+                )
+            else:
+                pool = get_app_store_reviews(
+                    resolved.app_id,
+                    _progress_callback=lambda x: None,
+                    _days_limit=days,
+                )
+            prepared = _prepare_pool(pool)
+            if not prepared:
+                errors.append(f"{meta['title']}: analiz edilecek yorum yok.")
+                continue
+
+            prep_n = len(prepared)
+            pool_n = len(pool)
+            rows = analyze_batch(
+                prepared,
+                use_heuristic_only=use_heuristic_only,
+                analysis_mode=analysis_mode,
+                rich=None if use_heuristic_only else rich,
+                provider=provider,
+                model=model,
+                max_workers=28 if use_heuristic_only else 12,
+                progress=None,
+                max_rich_items=500,
+            )
+            agg = _aggregate_rows(rows)
+            slug = f"{resolved.platform}:{resolved.app_id}"
+            detail_rows[slug] = list(rows)
+            rich_cap = (not use_heuristic_only) and (prep_n > 500)
+            results[slug] = {
+                **meta,
+                **agg,
+                "app_id": resolved.app_id,
+                "platform": resolved.platform,
+                "chart_label": f"{meta['title'][:36]}{'…' if len(meta['title']) > 36 else ''} ({'Play' if resolved.platform == 'android' else 'App Store'})",
+                "cmp_pool_fetched": pool_n,
+                "cmp_pool_prepared": prep_n,
+                "cmp_rich_capped": rich_cap,
+                "cmp_rich_cap_limit": 500 if rich_cap else None,
+            }
+        except Exception as e:
+            errors.append(f"{meta.get('title', raw)}: {e}")
+
+    st.session_state.cmp_results = results
+    st.session_state.cmp_detail_rows = detail_rows
+    st.session_state.cmp_range_label = time_label
+    st.session_state.cmp_days_used = int(days)
+    return len(results), errors
+
+
 def render_compare_tab(
     *,
     rich: RichAnalyzer,
@@ -423,93 +541,22 @@ def render_compare_tab(
                 )
                 mode_idx = 0 if depth == "Standart" else 1
 
-        provider = "Google Gemini"
-        model = default_models.get("Google Gemini", "")
-
-        def _resolve_one(raw: str) -> tuple[Optional[ResolvedApp], Optional[str]]:
-            s = (raw or "").strip()
-            if not s:
-                return None, None
-            return resolve_direct_input(s)
-
         if st.button("Karşılaştırmayı başlat", type="primary", use_container_width=True, key="cmp_start"):
-            inputs = [_cmp_slot_effective_raw(0), _cmp_slot_effective_raw(1)]
-            if sum(1 for x in inputs if x) < 2:
+            if sum(1 for x in (_cmp_slot_effective_raw(0), _cmp_slot_effective_raw(1)) if x) < 2:
                 st.warning("İki uygulama için de ID veya link girin.")
             elif not use_fast and not has_llm_keys:
                 st.error("Zengin analiz için en az bir API anahtarı gerekir (.env veya Streamlit secrets).")
             else:
-                results: dict[str, dict[str, Any]] = {}
-                detail_rows: dict[str, list[dict]] = {}
-                errors: list[str] = []
-                model_final = (model or "").strip() or default_models.get(provider, "")
-
-                for raw in inputs:
-                    resolved, msg = _resolve_one(raw)
-                    if msg:
-                        st.info(msg)
-                    if resolved is None:
-                        errors.append(f"Çözülemedi: `{raw[:48]}…`" if len(raw) > 48 else f"Çözülemedi: `{raw}`")
-                        continue
-
-                    meta = _metadata(resolved)
-                    with st.spinner(f"«{meta['title']}» yorumlar çekiliyor ve analiz ediliyor…"):
-                        try:
-                            if resolved.platform == "android":
-                                pool = fetch_google_play_reviews(
-                                    resolved.app_id,
-                                    days,
-                                    _progress_callback=lambda x: None,
-                                )
-                            else:
-                                pool = get_app_store_reviews(
-                                    resolved.app_id,
-                                    _progress_callback=lambda x: None,
-                                    _days_limit=days,
-                                )
-                            prepared = _prepare_pool(pool)
-                            if not prepared:
-                                errors.append(f"{meta['title']}: analiz edilecek yorum yok.")
-                                continue
-
-                            prep_n = len(prepared)
-                            pool_n = len(pool)
-                            rows = analyze_batch(
-                                prepared,
-                                use_heuristic_only=use_fast,
-                                analysis_mode=mode_idx,
-                                rich=None if use_fast else rich,
-                                provider=provider,
-                                model=model_final,
-                                max_workers=28 if use_fast else 12,
-                                progress=None,
-                                max_rich_items=500,
-                            )
-                            agg = _aggregate_rows(rows)
-                            slug = f"{resolved.platform}:{resolved.app_id}"
-                            detail_rows[slug] = list(rows)
-                            rich_cap = (not use_fast) and (prep_n > 500)
-                            results[slug] = {
-                                **meta,
-                                **agg,
-                                "app_id": resolved.app_id,
-                                "platform": resolved.platform,
-                                "chart_label": f"{meta['title'][:36]}{'…' if len(meta['title']) > 36 else ''} ({'Play' if resolved.platform == 'android' else 'App Store'})",
-                                "cmp_pool_fetched": pool_n,
-                                "cmp_pool_prepared": prep_n,
-                                "cmp_rich_capped": rich_cap,
-                                "cmp_rich_cap_limit": 500 if rich_cap else None,
-                            }
-                        except Exception as e:
-                            errors.append(f"{meta.get('title', raw)}: {e}")
-
-                st.session_state.cmp_results = results
-                st.session_state.cmp_detail_rows = detail_rows
-                st.session_state.cmp_range_label = time_label
-                st.session_state.cmp_days_used = int(days)
-                if errors:
-                    for er in errors:
-                        st.error(er)
+                with st.spinner("Uygulamalar analiz ediliyor…"):
+                    n_ok, errs = execute_compare_analysis(
+                        rich=rich,
+                        has_llm_keys=has_llm_keys,
+                        default_models=default_models,
+                        use_heuristic_only=use_fast,
+                        analysis_mode=mode_idx,
+                    )
+                for er in errs:
+                    st.error(er)
         res = st.session_state.get("cmp_results") or {}
         if res:
             if st.button("Karşılaştırma sonuçlarını temizle", key="cmp_clear"):

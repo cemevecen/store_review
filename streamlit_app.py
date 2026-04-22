@@ -29,7 +29,11 @@ from store_review.core.ai_providers import DEFAULT_MODELS, RichAnalyzer, resolve
 from store_review.core.analyzer import analyze_batch, dedupe_reviews
 from store_review.fetchers.file_loader import load_reviews_from_dataframe
 from store_review.ui.analysis_results_dashboard import render_analysis_results_dashboard
-from store_review.ui.compare_panel import render_compare_tab
+from store_review.ui.compare_panel import (
+    execute_compare_analysis,
+    merge_compare_details_for_dashboard,
+    render_compare_tab,
+)
 from store_review.ui.review_cards import render_analyzed_review_cards
 from store_review.ui.store_link_panel import render_store_link_tab
 from store_review.utils.exporters import df_to_csv_bytes, df_to_excel_bytes
@@ -301,55 +305,57 @@ def main():
     mode_idx = 0 if depth == "Standart" else 1
 
     if st.button("Duygu analizini başlat", type="primary", use_container_width=True):
-        prepared = _prepare_pool(pool)
-        if not prepared:
-            src_now = _session_main_data_source()
-            if src_now == "Karşılaştır":
-                detail_cmp = st.session_state.get("cmp_detail_rows") or {}
-                meta_cmp = st.session_state.get("cmp_results") or {}
-                merged: list[dict] = []
-                n = 1
-                for slug, app_rows in detail_cmp.items():
-                    title = (meta_cmp.get(slug) or {}).get("title", slug)
-                    for r in app_rows:
-                        row = dict(r)
-                        row["No"] = n
-                        n += 1
-                        row["Uygulama"] = title
-                        merged.append(row)
-                if merged:
-                    st.session_state.analysis_rows = merged
-                    st.session_state._last_analysis_use_fast = True
-                else:
-                    st.warning("Önce yorum yükleyin.")
+        src_now = _session_main_data_source()
+        if src_now == "Karşılaştır":
+            if not use_fast and not (gk or gqk or ok):
+                st.error("Zengin analiz için en az bir API anahtarı gerekir.")
             else:
-                st.warning("Önce yorum yükleyin.")
-        elif not use_fast and not (gk or gqk or ok):
-            st.error("Zengin analiz için en az bir API anahtarı gerekir.")
+                with st.spinner("İki uygulama analiz ediliyor…"):
+                    n_ok, cmp_errs = execute_compare_analysis(
+                        rich=rich,
+                        has_llm_keys=has_llm_keys,
+                        default_models=DEFAULT_MODELS,
+                        use_heuristic_only=use_fast,
+                        analysis_mode=mode_idx,
+                    )
+                for er in cmp_errs:
+                    st.error(er)
+                merged_cmp = merge_compare_details_for_dashboard()
+                if merged_cmp:
+                    st.session_state.analysis_rows = merged_cmp
+                    st.session_state._last_analysis_use_fast = use_fast
+                elif n_ok == 0:
+                    st.warning("İki uygulama için seçim veya paket / App Store ID girin.")
         else:
-            with st.spinner("Yorumlar analiz ediliyor…"):
-                bar = st.progress(0.0)
-                status = st.empty()
+            prepared = _prepare_pool(pool)
+            if not prepared:
+                st.warning("Önce yorum yükleyin.")
+            elif not use_fast and not (gk or gqk or ok):
+                st.error("Zengin analiz için en az bir API anahtarı gerekir.")
+            else:
+                with st.spinner("Yorumlar analiz ediliyor…"):
+                    bar = st.progress(0.0)
+                    status = st.empty()
 
-                def prog(done: int, total: int):
-                    bar.progress(done / max(total, 1))
-                    status.text(f"{done} / {total}")
+                    def prog(done: int, total: int):
+                        bar.progress(done / max(total, 1))
+                        status.text(f"{done} / {total}")
 
-                rows = analyze_batch(
-                    prepared,
-                    use_heuristic_only=use_fast,
-                    analysis_mode=mode_idx,
-                    rich=None if use_fast else rich,
-                    provider=provider,
-                    model=model.strip() or DEFAULT_MODELS[provider],
-                    max_workers=28 if use_fast else 12,
-                    progress=prog,
-                    max_rich_items=500,
-                )
-                st.session_state.analysis_rows = rows
-                st.session_state._last_analysis_use_fast = use_fast
-                bar.empty()
-                status.empty()
+                    rows = analyze_batch(
+                        prepared,
+                        use_heuristic_only=use_fast,
+                        analysis_mode=mode_idx,
+                        rich=None if use_fast else rich,
+                        provider=provider,
+                        model=model.strip() or DEFAULT_MODELS[provider],
+                        max_workers=28 if use_fast else 12,
+                        progress=prog,
+                        max_rich_items=500,
+                    )
+                    st.session_state.analysis_rows = rows
+                    st.session_state._last_analysis_use_fast = use_fast
+                    bar.empty()
+                    status.empty()
 
     rows = st.session_state.analysis_rows
     if rows:
