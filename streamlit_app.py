@@ -118,8 +118,8 @@ def main():
     _inject_css()
 
     with st.container(border=True, key="pg_masthead", width="stretch"):
-        _pad_l, col_center, _pad_r = st.columns([1, 10, 1], vertical_alignment="center")
-        with col_center:
+        _spacer_l, _spacer_mid, col_right = st.columns([2, 1, 9], vertical_alignment="center")
+        with col_right:
             st.markdown(
                 '<span class="hero-band-target" aria-hidden="true"></span>'
                 '<div class="hero-masthead-brand">'

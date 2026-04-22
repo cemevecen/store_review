@@ -262,12 +262,13 @@ div[data-testid="stDataFrame"] {
 .hero-masthead-brand {
   display: flex !important;
   flex-direction: column !important;
-  align-items: center !important;
+  align-items: flex-end !important;
   justify-content: center !important;
   min-width: 0 !important;
   width: 100% !important;
   max-width: min(100%, 720px) !important;
-  text-align: center !important;
+  margin-left: auto !important;
+  text-align: right !important;
 }
 
 .hero-masthead-brand .hero-title {
@@ -277,7 +278,7 @@ div[data-testid="stDataFrame"] {
   color: #ffffff;
   margin: 0 !important;
   letter-spacing: -0.02em;
-  text-align: center !important;
+  text-align: right !important;
   line-height: 1.2;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
@@ -288,26 +289,26 @@ div[data-testid="stDataFrame"] {
   align-items: center !important;
 }
 
-/* Masthead — orta sütun: başlık + pills dikey yığılı ve ortalı */
-[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2),
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2) {
+/* Masthead — sağ sütun: başlık + pills sağa hizalı, dikeyde header bandında ortalı */
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(3),
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(3) {
   display: flex !important;
   flex-direction: column !important;
-  align-items: center !important;
+  align-items: flex-end !important;
   justify-content: center !important;
   gap: 14px !important;
-  text-align: center !important;
+  text-align: right !important;
 }
 
-/* Masthead — st.pills satırı chip grubunu yatay ortala */
+/* Masthead — st.pills satırı sağa hizalı */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-main_data_source_tab,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-main_data_source_tab {
   display: flex !important;
-  justify-content: center !important;
+  justify-content: flex-end !important;
   align-items: center !important;
   width: 100% !important;
   margin-left: auto !important;
-  margin-right: auto !important;
+  margin-right: 0 !important;
 }
 
 .fancy-divider {
