@@ -66,6 +66,7 @@ _PLAY_SATELLITE_SEGMENTS = frozenset(
         "b2b",
         "internal",
         "services",
+        "inclub",
     }
 )
 
@@ -104,6 +105,8 @@ def _effective_brand_slug(slug: str, app_id: str) -> str:
     aid = (app_id or "").lower().strip()
     if not aid or len(slug) < 4:
         return slug
+    if aid.startswith("tr.com."):
+        aid = aid[6:]
     parts = [p for p in aid.split(".") if p and p not in _PLAY_SKIP_SEGMENTS and not p.isdigit()]
     best = ""
     for seg in parts:
@@ -121,6 +124,8 @@ def _play_canonical_package_bonus(slug: str, app_id: str) -> float:
     aid = (app_id or "").lower().strip()
     if not aid:
         return 0.0
+    if aid.startswith("tr.com."):
+        aid = "com." + aid[6:]
     b = 0.0
     if aid == f"{slug}.com":
         b += 560.0
@@ -172,13 +177,103 @@ def _play_title_satellite_adjustment(slug: str, title: str) -> float:
     return adj
 
 
+def _title_primary_brand_signal(slug: str, title: str) -> float:
+    """Başlıkta markanın birincil geçişi (Boyner – …) vs ikincil (InClub by Boyner)."""
+    t = (title or "").strip().lower()
+    slug = (slug or "").lower()
+    if len(slug) < 3 or not t:
+        return 0.0
+    t_ascii = (
+        t.replace("ı", "i")
+        .replace("ğ", "g")
+        .replace("ü", "u")
+        .replace("ş", "s")
+        .replace("ö", "o")
+        .replace("ç", "c")
+    )
+    s_ascii = (
+        slug.replace("ı", "i")
+        .replace("ğ", "g")
+        .replace("ü", "u")
+        .replace("ş", "s")
+        .replace("ö", "o")
+        .replace("ç", "c")
+    )
+    if s_ascii not in t_ascii:
+        return 0.0
+    if t.startswith(slug) or t_ascii.startswith(s_ascii):
+        return 360.0
+    if re.search(rf"(^|[^a-z0-9]){re.escape(slug)}([^a-z0-9]|$)", t):
+        return 230.0
+    if slug in t:
+        return 85.0
+    return 0.0
+
+
+_DISCOVERY_PKG_TEMPLATES = (
+    "{slug}.com",
+    "com.{slug}.android",
+    "com.{slug}",
+    "tr.com.{slug}.{slug}",
+    "com.mobisoft.{slug}",
+)
+
+
+def _discover_play_main_package_row(slug: str) -> Optional[dict[str, Any]]:
+    """Yaygın Play paket kalıplarını dene; başlıkta arama kökü geçiyorsa ana uygulama satırı üret."""
+    if len(slug) < 4:
+        return None
+    sl = slug.lower()
+    try:
+        from google_play_scraper import app as play_app
+    except ImportError:
+        return None
+    for tmpl in _DISCOVERY_PKG_TEMPLATES:
+        pkg = tmpl.format(slug=sl)
+        try:
+            info = play_app(pkg, lang="tr", country="tr")
+            title = str(info.get("title") or "").lower()
+            if sl not in title:
+                continue
+            if title.startswith(sl) or re.search(rf"(^|[^a-z0-9]){re.escape(sl)}([^a-z0-9]|$)", title):
+                return {
+                    "platform": "Android",
+                    "appId": pkg,
+                    "title": (info.get("title") or pkg)[:80],
+                    "icon": str(info.get("icon") or "").strip(),
+                }
+        except Exception:
+            continue
+    return None
+
+
+def _inject_play_main_discovery(rows: List[dict[str, Any]], query: str) -> List[dict[str, Any]]:
+    """Arama API'si ana paketi döndürmese bile şablon + play_app ile ana uygulamayı ekler."""
+    slug = _play_brand_slug(query)
+    if not slug or not rows or not looks_like_search_keyword(query):
+        return rows
+    aids = {str(r.get("appId", "")).lower() for r in rows if r.get("appId")}
+    row = _discover_play_main_package_row(slug)
+    if not row:
+        return rows
+    pid = str(row.get("appId", "")).lower()
+    if pid in aids:
+        return rows
+    return [row] + list(rows)
+
+
 def _android_play_relevance_score(query: str, title: str, app_id: str) -> float:
     base = _relevance_score(query, title, app_id)
     slug = _play_brand_slug(query)
     if not slug:
         return base
     brand = _effective_brand_slug(slug, app_id)
-    score = base + _play_canonical_package_bonus(brand, app_id) + _play_title_satellite_adjustment(brand, title)
+    score = (
+        base
+        + _play_canonical_package_bonus(brand, app_id)
+        + _play_title_satellite_adjustment(brand, title)
+        + _title_primary_brand_signal(slug, title)
+    )
     canon = ANDROID_SEARCH_CANONICAL_BY_SLUG.get(slug.lower())
     if canon and str(app_id).lower() == canon.lower():
         score += _ANDROID_CANONICAL_ALIAS_BONUS
@@ -186,6 +281,11 @@ def _android_play_relevance_score(query: str, title: str, app_id: str) -> float:
     tflat = re.sub(r"\s+", "", (title or "").lower())
     if slug == "letgo" and "letgoo" in tflat:
         score -= 450.0
+    aid_l = str(app_id).lower()
+    if "inclub" in aid_l:
+        score -= 175.0
+    if "grup" in aid_l.replace(".", "") and slug in aid_l and f"com.{slug}." not in aid_l and f"{slug}.com" != aid_l:
+        score -= 210.0
     return score
 
 
@@ -432,6 +532,7 @@ def search_play_store(query: str, n_hits: int = 80) -> List[dict[str, Any]]:
 
     out = _inject_missing_main_play_row(out, q)
     out = _inject_canonical_alias_row(out, q)
+    out = _inject_play_main_discovery(out, q)
     return _stable_sort_android_play(query, out)
 
 

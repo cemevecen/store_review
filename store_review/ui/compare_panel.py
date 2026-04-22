@@ -240,17 +240,20 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
         st.session_state[f"{p}search_performed"] = True
 
     if st.session_state.get(f"{p}search_performed"):
-        pc1, pc2 = st.columns(2)
-        with pc1:
-            if st.button("Android", use_container_width=True, key=f"cmp_pf_a_{slot}"):
-                st.session_state[f"{p}last_filter"] = "Android"
-                st.session_state[f"{p}last_query"] = ""
-                st.rerun()
-        with pc2:
-            if st.button("iOS", use_container_width=True, key=f"cmp_pf_i_{slot}"):
-                st.session_state[f"{p}last_filter"] = "iOS"
-                st.session_state[f"{p}last_query"] = ""
-                st.rerun()
+
+        def _cmp_plat_changed() -> None:
+            st.session_state[f"{p}last_query"] = ""
+
+        st.markdown('<div class="sl-plat-radio-wrap">', unsafe_allow_html=True)
+        st.radio(
+            "Platform",
+            ["Android", "iOS"],
+            horizontal=True,
+            key=f"{p}last_filter",
+            label_visibility="collapsed",
+            on_change=_cmp_plat_changed,
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
 
         filt = st.session_state.get(f"{p}last_filter", "Android")
         if looks_like_search_keyword(text) and len(text) >= 2:
@@ -314,12 +317,11 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
     splat = st.session_state.get(f"{p}selected_platform")
     if sid:
         st.caption(f"Seçili: `{sid}` · **{splat or '—'}**")
+        if st.button("Bu uygulamayı sıfırla", key=f"cmp_slot_reset_{slot}"):
+            _reset_cmp_slot(slot)
+            st.rerun()
     elif looks_pkg or (resolved is not None):
         st.caption("Doğrudan paket / ID / link ile devam edebilirsiniz; aşağıdan karşılaştırmayı başlatın.")
-
-    if st.button("Bu uygulamayı sıfırla", key=f"cmp_slot_reset_{slot}"):
-        _reset_cmp_slot(slot)
-        st.rerun()
 
 
 def render_compare_tab(

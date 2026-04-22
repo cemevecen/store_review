@@ -56,6 +56,38 @@ def _inject_store_search_css() -> None:
   background: #fff !important;
   color: #0f172a !important;
 }
+/* Android / iOS — radyo ile seçili durum net */
+.sl-plat-radio-wrap { margin: 10px 0 14px; }
+.sl-plat-radio-wrap [data-testid="stRadio"] > div { width: 100% !important; }
+.sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] {
+  display: flex !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+}
+.sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label {
+  flex: 1 1 0 !important;
+  min-height: 48px !important;
+  margin: 0 !important;
+  padding: 12px 18px !important;
+  border-radius: 14px !important;
+  border: 2px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+  font-weight: 600 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+.sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.28) !important;
+}
+.sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) p,
+.sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) span {
+  color: #ffffff !important;
+}
 .sl-results-head {
   font-size:0.82rem; color:#64748b; font-weight:700; text-transform:uppercase;
   letter-spacing:0.06em; margin:6px 0 10px;
@@ -308,17 +340,20 @@ def render_store_link_tab() -> None:
         st.session_state.sl_search_performed = True
 
     if st.session_state.sl_search_performed:
-        pc1, pc2 = st.columns(2)
-        with pc1:
-            if st.button("Android", use_container_width=True, key="sl_pf_android"):
-                st.session_state.sl_last_filter = "Android"
-                st.session_state.sl_last_query = ""
-                st.rerun()
-        with pc2:
-            if st.button("iOS", use_container_width=True, key="sl_pf_ios"):
-                st.session_state.sl_last_filter = "iOS"
-                st.session_state.sl_last_query = ""
-                st.rerun()
+
+        def _sl_plat_changed() -> None:
+            st.session_state["sl_last_query"] = ""
+
+        st.markdown('<div class="sl-plat-radio-wrap">', unsafe_allow_html=True)
+        st.radio(
+            "Platform",
+            ["Android", "iOS"],
+            horizontal=True,
+            key="sl_last_filter",
+            label_visibility="collapsed",
+            on_change=_sl_plat_changed,
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
 
         filt = st.session_state.sl_last_filter
         if looks_like_search_keyword(text) and len(text) >= 2:
