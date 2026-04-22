@@ -307,13 +307,14 @@ div[data-testid="stDataFrame"] {
 .hero-masthead-brand {
   display: flex !important;
   flex-direction: column !important;
-  align-items: flex-end !important;
+  align-items: center !important;
   justify-content: center !important;
   min-width: 0 !important;
   width: 100% !important;
   max-width: min(100%, 720px) !important;
   margin-left: auto !important;
-  text-align: right !important;
+  margin-right: auto !important;
+  text-align: center !important;
 }
 
 .hero-masthead-brand .hero-title {
@@ -323,7 +324,7 @@ div[data-testid="stDataFrame"] {
   color: #ffffff;
   margin: 0 !important;
   letter-spacing: -0.02em;
-  text-align: right !important;
+  text-align: center !important;
   line-height: 1.2;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
@@ -331,29 +332,37 @@ div[data-testid="stDataFrame"] {
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"],
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] {
   width: 100% !important;
-  align-items: center !important;
+  align-items: stretch !important;
+  min-height: 78px !important;
 }
 
-/* Masthead — sağ sütun: başlık + pills sağa hizalı, dikeyde header bandında ortalı */
-[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(3),
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(3) {
+/* Masthead — orta sütun: başlık + pills tam ortada (yatay + dikey) */
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2),
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2) {
   display: flex !important;
   flex-direction: column !important;
-  align-items: flex-end !important;
+  align-items: center !important;
   justify-content: center !important;
-  gap: 14px !important;
-  text-align: right !important;
+  gap: 12px !important;
+  text-align: center !important;
+  min-height: 78px !important;
 }
 
-/* Masthead — st.pills satırı sağa hizalı */
+/* Masthead — st.pills satırı ortada */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-main_data_source_tab,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-main_data_source_tab {
   display: flex !important;
-  justify-content: flex-end !important;
+  justify-content: center !important;
   align-items: center !important;
   width: 100% !important;
   margin-left: auto !important;
-  margin-right: 0 !important;
+  margin-right: auto !important;
+}
+
+/* Masthead markdown kutusu üst boşluk sıfır — dikey ortalamayı bozmasın */
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stMarkdownContainer"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stMarkdownContainer"] {
+  margin-top: 0 !important;
 }
 
 .metric-strip {
