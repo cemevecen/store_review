@@ -24,7 +24,7 @@ from dotenv import load_dotenv
 load_dotenv(ROOT / ".env", override=True)
 
 from store_review.config.settings import Settings
-from store_review.config.theme import APP_CSS, APP_VERSION
+from store_review.config.theme import APP_CSS
 from store_review.core.ai_providers import DEFAULT_MODELS, RichAnalyzer, resolve_api_keys
 from store_review.core.analyzer import analyze_batch, dedupe_reviews
 from store_review.fetchers.file_loader import load_reviews_from_dataframe
@@ -86,21 +86,9 @@ def main():
     _inject_css()
 
     st.markdown(
-        f"""
+        """
 <div class="hero-card">
   <h1 class="hero-title">🧠 AI Mağaza Yorumu Analizi</h1>
-  <p class="hero-sub">Google Play ve App Store yorumları · Hızlı (heuristic) veya zengin mod (Gemini / Groq / OpenAI)</p>
-  <p class="hero-version">Sürüm: {APP_VERSION}</p>
-</div>
-""",
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        """
-<div class="intro-blurb">
-Bu uygulama mağaza yorumlarını <strong>üç sınıfta</strong> (olumlu, olumsuz, istek/görüş) analiz eder.
-<strong>Hızlı analiz</strong> kelime ve kural tabanlıdır; <strong>zengin analiz</strong> yapay zeka ile güçlendirilir.
 </div>
 """,
         unsafe_allow_html=True,
@@ -336,12 +324,6 @@ Bu uygulama mağaza yorumlarını <strong>üç sınıfta</strong> (olumlu, olums
             mime="text/csv",
             use_container_width=True,
         )
-
-    st.divider()
-    st.markdown(
-        '<p class="app-footer">🧠 AI destekli mağaza yorumu analizi · Bitirme projesi</p>',
-        unsafe_allow_html=True,
-    )
 
 
 if __name__ == "__main__":

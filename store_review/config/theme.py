@@ -1,6 +1,4 @@
-"""Streamlit görünüm katmanı — açık tema, yüksek kontrast, kart + turuncu CTA (eski arayüz referansı)."""
-
-APP_VERSION = "2026-04-22-ui"
+"""Streamlit görünüm katmanı — açık tema, yüksek kontrast, kart + turuncu CTA."""
 
 APP_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
@@ -162,18 +160,6 @@ div[data-testid="stDataFrame"] {
   margin: 0;
   letter-spacing: -0.02em;
 }
-.hero-sub {
-  font-family: 'Poppins', sans-serif;
-  color: #64748b;
-  font-size: 0.95rem;
-  margin: 10px 0 0 0;
-  line-height: 1.45;
-}
-.hero-version {
-  font-size: 0.78rem;
-  color: #94a3b8;
-  margin-top: 12px;
-}
 
 .fancy-divider {
   height: 1px;
@@ -217,27 +203,5 @@ div[data-testid="stDataFrame"] {
   font-weight: 600;
   color: #0f172a;
   margin: 18px 0 8px;
-}
-
-/* Giriş paragrafı (Desktop streamlit_app.py üst açıklama stili) */
-.intro-blurb {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 14px 18px;
-  margin: 0 0 18px 0;
-  color: #475569;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  text-align: center;
-}
-
-/* Alt bilgi (footer caption) */
-.app-footer {
-  text-align: center;
-  color: #94a3b8;
-  font-size: 0.8rem;
-  margin-top: 2rem;
-  padding-top: 0.5rem;
 }
 """
