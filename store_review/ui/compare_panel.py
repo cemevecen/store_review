@@ -13,10 +13,21 @@ import streamlit as st
 
 from store_review.core.ai_providers import RichAnalyzer
 from store_review.core.analyzer import analyze_batch, dedupe_reviews
-from store_review.fetchers.app_discovery import ResolvedApp, resolve_direct_input
+from store_review.fetchers.app_discovery import (
+    ResolvedApp,
+    looks_like_search_keyword,
+    resolve_direct_input,
+    search_app_store_itunes,
+    search_play_store,
+)
 from store_review.fetchers.app_store import get_app_store_reviews
 from store_review.fetchers.google_play import fetch_google_play_reviews
-from store_review.ui.store_link_panel import RANGE_DAYS, RANGE_OPTIONS
+from store_review.ui.review_cards import render_analyzed_review_cards
+from store_review.ui.store_link_panel import (
+    RANGE_DAYS,
+    RANGE_OPTIONS,
+    _inject_store_search_css,
+)
 
 
 def _prepare_pool(rows: list[dict]) -> list[dict]:
@@ -144,13 +155,171 @@ def _aggregate_rows(rows: list[dict]) -> dict[str, int | float]:
     }
 
 
-def _detail_df(rows: list[dict]) -> pd.DataFrame:
-    if not rows:
-        return pd.DataFrame()
-    df = pd.DataFrame(rows)
-    pref = ["Yorum", "Baskın Duygu", "Tarih", "Puan", "Olumlu %", "Olumsuz %", "İstek/Görüş %"]
-    cols = [c for c in pref if c in df.columns]
-    return df[cols] if cols else df
+def _cmp_pick_prefix(slot: int) -> str:
+    return f"cmp_pick_{slot}_"
+
+
+def _init_cmp_pick_defaults(slot: int) -> None:
+    p = _cmp_pick_prefix(slot)
+    pairs: list[tuple[str, Any]] = [
+        ("selected_id", None),
+        ("selected_platform", None),
+        ("search_results", []),
+        ("last_query", ""),
+        ("last_filter", "Android"),
+        ("display_n", 12),
+        ("search_performed", False),
+        ("prev_filter", ""),
+    ]
+    for name, val in pairs:
+        k = f"{p}{name}"
+        if k not in st.session_state:
+            st.session_state[k] = val
+
+
+def _apply_pending_cmp_store_in(slot: int) -> None:
+    pk = f"_pending_cmp_store_in_{slot}"
+    if pk not in st.session_state:
+        return
+    val = st.session_state.pop(pk)
+    st.session_state[f"cmp_store_in_{slot}"] = val
+
+
+def _reset_cmp_slot(slot: int) -> None:
+    p = _cmp_pick_prefix(slot)
+    st.session_state[f"cmp_store_in_{slot}"] = ""
+    st.session_state[f"{p}selected_id"] = None
+    st.session_state[f"{p}selected_platform"] = None
+    st.session_state[f"{p}search_results"] = []
+    st.session_state[f"{p}last_query"] = ""
+    st.session_state[f"{p}display_n"] = 12
+    st.session_state[f"{p}search_performed"] = False
+    st.session_state[f"{p}prev_filter"] = ""
+
+
+def _cmp_slot_effective_raw(slot: int) -> str:
+    p = _cmp_pick_prefix(slot)
+    sid = st.session_state.get(f"{p}selected_id")
+    if sid:
+        return str(sid).strip()
+    return (st.session_state.get(f"cmp_store_in_{slot}") or "").strip()
+
+
+def _render_compare_app_picker(slot: int, heading: str) -> None:
+    """Mağaza sekmesiyle aynı: isim araması + Android/iOS + sonuç listesi + Seç; paket/ID/link doğrudan."""
+    _apply_pending_cmp_store_in(slot)
+    _init_cmp_pick_defaults(slot)
+    p = _cmp_pick_prefix(slot)
+    in_key = f"cmp_store_in_{slot}"
+
+    st.text_input(
+        f"{heading} — uygulama ara veya mağaza linki / ID",
+        key=in_key,
+        placeholder="Örn. trendyol, com.example, App Store ID veya mağaza linki",
+        label_visibility="visible",
+    )
+    text = (st.session_state.get(in_key) or "").strip()
+
+    sel_id = st.session_state.get(f"{p}selected_id")
+    if sel_id and text != str(sel_id):
+        st.session_state[f"{p}selected_id"] = None
+        st.session_state[f"{p}selected_platform"] = None
+
+    resolved, resolve_msg = resolve_direct_input(text)
+    if resolve_msg:
+        st.info(resolve_msg)
+
+    looks_pkg = text.startswith(("com.", "org.", "net.", "io.")) and "." in text
+    is_selected = st.session_state.get(f"{p}selected_id") is not None
+
+    if not text and not is_selected:
+        st.session_state[f"{p}search_results"] = []
+        st.session_state[f"{p}last_query"] = ""
+
+    if looks_like_search_keyword(text):
+        st.session_state[f"{p}search_performed"] = True
+
+    if st.session_state.get(f"{p}search_performed"):
+        pc1, pc2 = st.columns(2)
+        with pc1:
+            if st.button("Android", use_container_width=True, key=f"cmp_pf_a_{slot}"):
+                st.session_state[f"{p}last_filter"] = "Android"
+                st.session_state[f"{p}last_query"] = ""
+                st.rerun()
+        with pc2:
+            if st.button("iOS", use_container_width=True, key=f"cmp_pf_i_{slot}"):
+                st.session_state[f"{p}last_filter"] = "iOS"
+                st.session_state[f"{p}last_query"] = ""
+                st.rerun()
+
+        filt = st.session_state.get(f"{p}last_filter", "Android")
+        if looks_like_search_keyword(text) and len(text) >= 2:
+            if text != st.session_state.get(f"{p}last_query") or filt != st.session_state.get(f"{p}prev_filter"):
+                combined: list = []
+                if filt == "iOS":
+                    combined.extend(search_app_store_itunes(text))
+                else:
+                    combined.extend(search_play_store(text))
+                st.session_state[f"{p}search_results"] = combined
+                st.session_state[f"{p}last_query"] = text
+                st.session_state[f"{p}display_n"] = 12
+                st.session_state[f"{p}prev_filter"] = filt
+
+            results = st.session_state.get(f"{p}search_results") or []
+            if results:
+                st.markdown(
+                    f'<p class="sl-results-head">Bulunan uygulamalar ({len(results)})</p>',
+                    unsafe_allow_html=True,
+                )
+                n_show = min(int(st.session_state.get(f"{p}display_n") or 12), len(results))
+                for idx, app in enumerate(results[:n_show]):
+                    ic, inf, bt = st.columns([0.14, 0.62, 0.24])
+                    with ic:
+                        icon = app.get("icon") or ""
+                        if isinstance(icon, str) and icon.startswith("http"):
+                            st.markdown(
+                                f'<div class="sl-row-icon"><img src="{html.escape(icon)}" alt=""/></div>',
+                                unsafe_allow_html=True,
+                            )
+                        else:
+                            st.markdown('<div class="sl-row-noicon">app</div>', unsafe_allow_html=True)
+                    with inf:
+                        t_esc = html.escape(str(app.get("title", "—")))
+                        id_esc = html.escape(str(app.get("appId", "")))
+                        st.markdown(
+                            f'<div class="sl-row-title">{t_esc}</div><div class="sl-row-id">{id_esc}</div>',
+                            unsafe_allow_html=True,
+                        )
+                    with bt:
+                        aid = app.get("appId", "")
+                        plat = app.get("platform", "Android")
+                        if st.button("Seç", key=f"cmp_sel_{slot}_{idx}_{aid}", use_container_width=True):
+                            st.session_state[f"{p}selected_id"] = aid
+                            st.session_state[f"{p}selected_platform"] = plat
+                            st.session_state[f"{p}search_results"] = []
+                            st.session_state[f"{p}last_query"] = ""
+                            st.session_state[f"_pending_cmp_store_in_{slot}"] = aid
+                            st.rerun()
+                if len(results) > n_show:
+                    if st.button("Daha fazla göster", key=f"cmp_more_{slot}"):
+                        st.session_state[f"{p}display_n"] = min(
+                            int(st.session_state.get(f"{p}display_n") or 12) + 12,
+                            len(results),
+                        )
+                        st.rerun()
+            elif len(text) >= 2 and looks_like_search_keyword(text):
+                st.warning("Sonuç bulunamadı. Farklı anahtar kelime veya platform deneyin.")
+
+    sid = st.session_state.get(f"{p}selected_id")
+    splat = st.session_state.get(f"{p}selected_platform")
+    if sid:
+        st.caption(f"Seçili: `{sid}` · **{splat or '—'}**")
+    elif looks_pkg or (resolved is not None):
+        st.caption("Doğrudan paket / ID / link ile devam edebilirsiniz; aşağıdan karşılaştırmayı başlatın.")
+
+    if st.button("Bu uygulamayı sıfırla", key=f"cmp_slot_reset_{slot}"):
+        _reset_cmp_slot(slot)
+        st.rerun()
 
 
 def render_compare_tab(
@@ -164,26 +333,16 @@ def render_compare_tab(
     if "cmp_detail_rows" not in st.session_state:
         st.session_state.cmp_detail_rows = {}
 
+    _inject_store_search_css()
     st.caption(
-        "Her iki alana **paket adı** (`com…`), **App Store sayısal ID** veya **mağaza ürün linki** girin. "
-        "İsim ile arama bu sekmede yok; Mağaza sekmesinden seçebilirsiniz."
+        "Her uygulama için **Mağaza** sekmesindeki gibi isim yazıp **Android / iOS** seçin; sonuçlardan **Seç** deyin. "
+        "İsterseniz **paket** (`com…`), **App Store ID** veya **mağaza linki** de yapıştırabilirsiniz."
     )
 
-    c1, c2 = st.columns(2)
-    with c1:
-        u1 = st.text_input(
-            "Uygulama 1",
-            key="cmp_url_0",
-            placeholder="com.example veya App Store ID / link",
-            label_visibility="visible",
-        )
-    with c2:
-        u2 = st.text_input(
-            "Uygulama 2",
-            key="cmp_url_1",
-            placeholder="com.example veya App Store ID / link",
-            label_visibility="visible",
-        )
+    _render_compare_app_picker(0, "Uygulama 1")
+    st.divider()
+    _render_compare_app_picker(1, "Uygulama 2")
+    st.divider()
 
     time_label = st.selectbox("Tarih aralığı", RANGE_OPTIONS, index=1, key="cmp_time_range")
     days = RANGE_DAYS[time_label]
@@ -211,24 +370,8 @@ def render_compare_tab(
             )
             mode_idx = 0 if depth == "Standart" else 1
 
-    if not use_fast:
-        p1, p2 = st.columns(2)
-        with p1:
-            provider = st.selectbox(
-                "Öncelikli sağlayıcı",
-                ["Google Gemini", "Groq AI", "OpenAI"],
-                key="cmp_provider",
-            )
-        with p2:
-            model = st.text_input(
-                "Model",
-                value=default_models.get(provider, ""),
-                key="cmp_model",
-                help="Boşsa sağlayıcı varsayılanı.",
-            )
-    else:
-        provider = "Google Gemini"
-        model = default_models.get("Google Gemini", "")
+    provider = "Google Gemini"
+    model = default_models.get("Google Gemini", "")
 
     def _resolve_one(raw: str) -> tuple[Optional[ResolvedApp], Optional[str]]:
         s = (raw or "").strip()
@@ -237,7 +380,7 @@ def render_compare_tab(
         return resolve_direct_input(s)
 
     if st.button("Karşılaştırmayı başlat", type="primary", use_container_width=True, key="cmp_start"):
-        inputs = [(u1 or "").strip(), (u2 or "").strip()]
+        inputs = [_cmp_slot_effective_raw(0), _cmp_slot_effective_raw(1)]
         if sum(1 for x in inputs if x) < 2:
             st.warning("İki uygulama için de ID veya link girin.")
         elif not use_fast and not has_llm_keys:
@@ -377,21 +520,17 @@ def render_compare_tab(
                 unsafe_allow_html=True,
             )
         else:
-            dc1, dc2 = st.columns(2, gap="medium")
             key_list = list(res.keys())[:2]
             for idx, slug in enumerate(key_list):
                 data = res.get(slug) or {}
                 title = html.escape(str(data.get("title") or slug))
                 rows_d = detail.get(slug) or []
-                tgt = dc1 if idx == 0 else dc2
-                with tgt:
-                    st.markdown(
-                        f'<p style="font-weight:700;color:#334155;margin:0 0 8px 0;">{title}</p>',
-                        unsafe_allow_html=True,
-                    )
-                    st.caption(f"{int(data.get('total', 0))} yorum · {data.get('chart_label', '')}")
-                    ddf = _detail_df(rows_d)
-                    if ddf.empty:
-                        st.write("—")
-                    else:
-                        st.dataframe(ddf, use_container_width=True, height=320)
+                st.markdown(
+                    f'<p style="font-weight:700;color:#334155;margin:16px 0 8px 0;">{title}</p>',
+                    unsafe_allow_html=True,
+                )
+                st.caption(f"{int(data.get('total', 0))} yorum · {data.get('chart_label', '')}")
+                if not rows_d:
+                    st.write("—")
+                else:
+                    render_analyzed_review_cards(rows_d, key_prefix=f"cmp_{idx}")

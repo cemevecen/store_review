@@ -282,4 +282,74 @@ div[data-testid="stDataFrame"] {
   color: #0f172a;
   margin: 18px 0 8px;
 }
+
+/* Yorum kartları — tek sütun, tablo yerine */
+.review-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 14px 0 8px;
+}
+.review-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+.review-card-app {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6366f1;
+  margin: 0 0 8px 0;
+}
+.review-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.86rem;
+  color: #475569;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.review-card-head-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-weight: 600;
+  color: #334155;
+}
+.review-card-no {
+  font-variant-numeric: tabular-nums;
+}
+.review-card-sep {
+  color: #cbd5e1;
+  font-weight: 400;
+  user-select: none;
+}
+.review-card-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.06);
+}
+.review-card-date {
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.86rem;
+  margin-left: auto;
+}
+.review-card-body {
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: #1e293b;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 """

@@ -30,6 +30,7 @@ from store_review.core.ai_providers import DEFAULT_MODELS, RichAnalyzer, resolve
 from store_review.core.analyzer import analyze_batch, dedupe_reviews
 from store_review.fetchers.file_loader import load_reviews_from_dataframe
 from store_review.ui.compare_panel import render_compare_tab
+from store_review.ui.review_cards import render_analyzed_review_cards
 from store_review.ui.store_link_panel import render_store_link_tab
 from store_review.utils.exporters import df_to_csv_bytes, df_to_excel_bytes
 from store_review.utils.validators import is_valid_comment
@@ -272,27 +273,15 @@ def main():
     )
 
     use_fast = method == "Hızlı (heuristic)"
-    col_d, col_p = st.columns(2)
-    with col_d:
-        depth = st.radio(
-            "Derinlik (yalnız zengin)",
-            ["Standart", "Gelişmiş"],
-            horizontal=True,
-            disabled=use_fast,
-        )
-    with col_p:
-        provider = st.selectbox(
-            "Öncelikli sağlayıcı",
-            ["Google Gemini", "Groq AI", "OpenAI"],
-            disabled=use_fast,
-        )
-
-    model = st.text_input(
-        "Model adı",
-        value=DEFAULT_MODELS.get(provider, ""),
+    depth = st.radio(
+        "Derinlik (yalnız zengin)",
+        ["Standart", "Gelişmiş"],
+        horizontal=True,
         disabled=use_fast,
-        help="Boş bırakırsanız sağlayıcı varsayılanı kullanılır.",
     )
+    # Zengin analiz: önce Gemini, kota / hata olursa RichAnalyzer zincirinde Groq → OpenAI.
+    provider = "Google Gemini"
+    model = DEFAULT_MODELS["Google Gemini"]
 
     mode_idx = 0 if depth == "Standart" else 1
 
@@ -379,7 +368,8 @@ def main():
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        st.dataframe(df, use_container_width=True, height=420)
+        st.markdown('<p class="section-title" style="margin-top:1.25rem;">Yorumlar</p>', unsafe_allow_html=True)
+        render_analyzed_review_cards(rows, key_prefix="main_analiz")
 
         out_df = df.drop(columns=["Tarih"], errors="ignore") if "Tarih" in df.columns else df
         st.download_button(

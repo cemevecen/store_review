@@ -15,13 +15,170 @@ import requests
 Platform = Literal["android", "ios"]
 
 
+def _relevance_score(query: str, title: str, app_id: str) -> float:
+    """Sorgu ile başlık / kimlik eşleşmesi; Play ve iTunes sıralamasını yerel olarak iyileştirir."""
+    q = (query or "").strip().lower()
+    if not q:
+        return 0.0
+    t = (title or "").lower()
+    aid = (app_id or "").lower()
+    s = 0.0
+    if q in t:
+        s += 120.0
+    if q in aid:
+        s += 100.0
+    q_compact = re.sub(r"\s+", "", q)
+    aid_flat = re.sub(r"[._-]", "", aid)
+    if len(q_compact) >= 4 and q_compact in aid_flat:
+        s += 85.0
+    for w in q.split():
+        w = w.strip()
+        if len(w) < 2:
+            continue
+        if w in t:
+            s += 22.0 + min(len(w), 12) * 0.6
+        if w in aid:
+            s += 18.0
+    pref = q[: min(len(q), 16)]
+    if pref and t.startswith(pref):
+        s += 38.0
+    return s
+
+
+# Tek kelimelik marka sorgularında Play: ana mağaza paketi (com.marka / marka.com) öne, Pro/Go/Satıcı cezası.
+_PLAY_SATELLITE_SEGMENTS = frozenset(
+    {
+        "pro",
+        "go",
+        "milla",
+        "lite",
+        "beta",
+        "dev",
+        "debug",
+        "hd",
+        "pad",
+        "tv",
+        "wear",
+        "sellercenter",
+        "seller",
+        "partner",
+        "business",
+        "b2b",
+        "internal",
+    }
+)
+
+
+def _play_brand_slug(query: str) -> Optional[str]:
+    """Boşluksuz tek parça marka (örn. trendyol, sahibinden); çok kelimede None."""
+    q = (query or "").strip().lower()
+    if not q or " " in q or "\t" in q:
+        return None
+    slug = re.sub(r"[^a-z0-9]", "", q)
+    return slug if len(slug) >= 4 else None
+
+
+def _play_canonical_package_bonus(slug: str, app_id: str) -> float:
+    """Ana tüketici uygulaması paket kalıplarına yüksek bonus."""
+    aid = (app_id or "").lower().strip()
+    if not aid:
+        return 0.0
+    b = 0.0
+    if aid == f"{slug}.com":
+        b += 560.0
+    if aid == f"com.{slug}":
+        b += 560.0
+    if aid == f"com.{slug}.android":
+        b += 540.0
+    parts = aid.split(".")
+    if len(parts) == 2 and parts[0] == slug and parts[1] == "com":
+        b += 560.0
+    if aid.startswith(f"com.{slug}."):
+        rest = aid[len(f"com.{slug}.") :]
+        head = (rest.split(".")[0] or "").lower()
+        if head in _PLAY_SATELLITE_SEGMENTS:
+            b -= 220.0
+        elif head == "android" and rest.lower() in ("android", "android.beta", "android.dev"):
+            b += 80.0
+        elif head and head not in ("android",) and head not in _PLAY_SATELLITE_SEGMENTS:
+            b -= 55.0
+    return b
+
+
+def _play_title_satellite_adjustment(slug: str, title: str) -> float:
+    """Başlıkta Pro / Go / Satıcı vb. → tek kelimeli marka aramasında hafif ceza."""
+    t = (title or "").lower()
+    if not t or slug not in t:
+        return 0.0
+    penalties = (
+        " pro",
+        ": pro",
+        "(pro",
+        " go:",
+        " go ",
+        " go\n",
+        "satıcı",
+        "seller",
+        "paneli",
+        " milla",
+        "partner",
+        "b2b",
+    )
+    adj = 0.0
+    for p in penalties:
+        if p in t:
+            adj -= 95.0
+            break
+    if t.startswith(slug) and adj == 0.0:
+        adj += 35.0
+    return adj
+
+
+def _android_play_relevance_score(query: str, title: str, app_id: str) -> float:
+    base = _relevance_score(query, title, app_id)
+    slug = _play_brand_slug(query)
+    if not slug:
+        return base
+    return base + _play_canonical_package_bonus(slug, app_id) + _play_title_satellite_adjustment(slug, title)
+
+
+def _stable_sort_android_play(query: str, rows: List[dict[str, Any]]) -> List[dict[str, Any]]:
+    if not rows:
+        return rows
+    q = query.strip()
+    decorated = [
+        (
+            -_android_play_relevance_score(q, str(r.get("title", "")), str(r.get("appId", ""))),
+            i,
+            r,
+        )
+        for i, r in enumerate(rows)
+    ]
+    decorated.sort()
+    return [r for _, _, r in decorated]
+
+
+def _stable_sort_by_query_relevance(query: str, rows: List[dict[str, Any]]) -> List[dict[str, Any]]:
+    if not rows:
+        return rows
+    q = query.strip()
+    if not q:
+        return rows
+    decorated = [
+        (-_relevance_score(q, str(r.get("title", "")), str(r.get("appId", ""))), i, r)
+        for i, r in enumerate(rows)
+    ]
+    decorated.sort()
+    return [r for _, _, r in decorated]
+
+
 @dataclass
 class ResolvedApp:
     platform: Platform
     app_id: str
 
 
-def search_play_store(query: str, n_hits: int = 50) -> List[dict[str, Any]]:
+def search_play_store(query: str, n_hits: int = 80) -> List[dict[str, Any]]:
     try:
         from google_play_scraper import search as play_search
     except ImportError:
@@ -44,7 +201,7 @@ def search_play_store(query: str, n_hits: int = 50) -> List[dict[str, Any]]:
                 "icon": icon,
             }
         )
-    return out
+    return _stable_sort_android_play(query, out)
 
 
 def search_app_store_itunes(query: str, country: str = "TR", limit: int = 50) -> List[dict[str, Any]]:
@@ -79,7 +236,7 @@ def search_app_store_itunes(query: str, country: str = "TR", limit: int = 50) ->
                 "icon": (app.get("artworkUrl512") or app.get("artworkUrl100") or "").strip(),
             }
         )
-    return out
+    return _stable_sort_by_query_relevance(query, out)
 
 
 def _first_play_search_package(search_query: str) -> Optional[str]:
