@@ -50,6 +50,10 @@ _CMP_COMPACT_CSS = """
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
+[data-testid="stVerticalBlock"].st-key-cmp_shell .cmp-selected-summary,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell .cmp-selected-summary {
+  margin-top: -4px !important;
+}
 [data-testid="stVerticalBlock"].st-key-cmp_shell .sl-plat-radio-wrap,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell .sl-plat-radio-wrap {
   margin: 4px 0 6px !important;
@@ -476,14 +480,23 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
         stitle = (st.session_state.get(f"{p}selected_title") or "").strip()
         if stitle:
             st.markdown(
+                '<div class="cmp-selected-summary">'
                 f'<p style="margin:0;font-size:0.88rem;color:#0f172a;line-height:1.3;"><b>{html.escape(stitle)}</b></p>'
                 f'<p style="margin:2px 0 0 0;font-size:0.75rem;color:#64748b;line-height:1.25;word-break:break-all;">'
                 f'<code style="font-size:0.72rem;">{html.escape(str(sid))}</code> · '
-                f"<b>{html.escape(str(splat or '—'))}</b></p>",
+                f"<b>{html.escape(str(splat or '—'))}</b></p>"
+                "</div>",
                 unsafe_allow_html=True,
             )
         else:
-            st.caption(f"Seçili: `{sid}` · **{splat or '—'}**")
+            sid_e = html.escape(str(sid))
+            sp_e = html.escape(str(splat or "—"))
+            st.markdown(
+                '<div class="cmp-selected-summary">'
+                f'<p style="margin:0;font-size:0.82rem;color:#64748b;">Seçili: <code>{sid_e}</code> · <b>{sp_e}</b></p>'
+                "</div>",
+                unsafe_allow_html=True,
+            )
 
 
 def merge_compare_details_for_dashboard() -> list[dict[str, Any]]:
