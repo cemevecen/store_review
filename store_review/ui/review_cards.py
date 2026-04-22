@@ -80,11 +80,94 @@ def _one_card_html(row: dict[str, Any], fallback_index: int) -> str:
     )
 
 
+PAGE_SIZE = 50
+_MAX_PAGE_BUTTONS = 15
+
+
+def _list_sig(rows: list[dict[str, Any]]) -> tuple[int, str, str]:
+    n = len(rows)
+    if n == 0:
+        return (0, "", "")
+    a = str(rows[0].get("Yorum", rows[0].get("text", "")))[:120]
+    b = str(rows[-1].get("Yorum", rows[-1].get("text", "")))[:120]
+    return (n, a, b)
+
+
 def render_analyzed_review_cards(rows: list[dict[str, Any]], *, key_prefix: str = "cards") -> None:
-    """Analiz satırlarını (No, Yorum, Baskın Duygu, Puan, Tarih, …) kart listesi olarak basar."""
+    """Analiz satırlarını kart listesi olarak basar; 50'den fazlaysa sayfalama + Tümünü gör."""
     if not rows:
         return
-    inner = "".join(_one_card_html(r, i) for i, r in enumerate(rows))
+
+    sig_k = f"{key_prefix}_review_list_sig"
+    page_k = f"{key_prefix}_review_cards_page"
+    show_all_k = f"{key_prefix}_review_cards_show_all"
+    sig = _list_sig(rows)
+    if st.session_state.get(sig_k) != sig:
+        st.session_state[sig_k] = sig
+        st.session_state[page_k] = 0
+        st.session_state[show_all_k] = False
+
+    n = len(rows)
+    show_all = bool(st.session_state.get(show_all_k, False))
+
+    if n <= PAGE_SIZE:
+        slice_rows = rows
+    elif show_all:
+        slice_rows = rows
+    else:
+        page = int(st.session_state.get(page_k, 0))
+        total_pages = max(1, (n + PAGE_SIZE - 1) // PAGE_SIZE)
+        page = max(0, min(page, total_pages - 1))
+        st.session_state[page_k] = page
+        start = page * PAGE_SIZE
+        slice_rows = rows[start : start + PAGE_SIZE]
+
+    if n > PAGE_SIZE:
+        if show_all:
+            if st.button("50'şer göster", key=f"{key_prefix}_collapse_list"):
+                st.session_state[show_all_k] = False
+                st.session_state[page_k] = 0
+                st.rerun()
+        else:
+            page = int(st.session_state.get(page_k, 0))
+            total_pages = max(1, (n + PAGE_SIZE - 1) // PAGE_SIZE)
+            start = page * PAGE_SIZE
+            end = min(start + PAGE_SIZE, n)
+
+            c_prev, c_info, c_next = st.columns([1, 3, 1])
+            with c_prev:
+                if st.button("Önceki", key=f"{key_prefix}_prev_page", disabled=page <= 0):
+                    st.session_state[page_k] = page - 1
+                    st.rerun()
+            with c_info:
+                st.caption(f"**{start + 1}–{end}** / {n} yorum · sayfa **{page + 1}** / **{total_pages}**")
+            with c_next:
+                if st.button("Sonraki", key=f"{key_prefix}_next_page", disabled=page >= total_pages - 1):
+                    st.session_state[page_k] = page + 1
+                    st.rerun()
+
+            if total_pages <= _MAX_PAGE_BUTTONS:
+                cols = st.columns(total_pages)
+                for i in range(total_pages):
+                    with cols[i]:
+                        is_cur = i == page
+                        if st.button(
+                            str(i + 1),
+                            key=f"{key_prefix}_pgnum_{i}",
+                            type="primary" if is_cur else "secondary",
+                            use_container_width=True,
+                            disabled=is_cur,
+                        ):
+                            st.session_state[page_k] = i
+                            st.rerun()
+            else:
+                st.caption(f"Çok sayfa ({total_pages}); **Önceki** / **Sonraki** ile gezinin.")
+
+            if st.button("Tümünü gör", key=f"{key_prefix}_show_all_reviews", use_container_width=True):
+                st.session_state[show_all_k] = True
+                st.rerun()
+
+    inner = "".join(_one_card_html(r, i) for i, r in enumerate(slice_rows))
     st.markdown(
         f'<div class="review-card-list" data-cards="{html.escape(key_prefix)}">{inner}</div>',
         unsafe_allow_html=True,
