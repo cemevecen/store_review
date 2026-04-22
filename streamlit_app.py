@@ -286,7 +286,26 @@ def main():
     if st.button("Duygu analizini başlat", type="primary", use_container_width=True):
         prepared = _prepare_pool(pool)
         if not prepared:
-            st.warning("Önce yorum yükleyin.")
+            src_now = st.session_state.get("main_data_source_tab") or SOURCE_OPTIONS[0]
+            if src_now == "Karşılaştır":
+                detail_cmp = st.session_state.get("cmp_detail_rows") or {}
+                meta_cmp = st.session_state.get("cmp_results") or {}
+                merged: list[dict] = []
+                n = 1
+                for slug, app_rows in detail_cmp.items():
+                    title = (meta_cmp.get(slug) or {}).get("title", slug)
+                    for r in app_rows:
+                        row = dict(r)
+                        row["No"] = n
+                        n += 1
+                        row["Uygulama"] = title
+                        merged.append(row)
+                if merged:
+                    st.session_state.analysis_rows = merged
+                else:
+                    st.warning("Önce yorum yükleyin.")
+            else:
+                st.warning("Önce yorum yükleyin.")
         elif not use_fast and not (gk or gqk or ok):
             st.error("Zengin analiz için en az bir API anahtarı gerekir.")
         else:
