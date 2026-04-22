@@ -75,6 +75,16 @@ _CMP_COMPACT_CSS = """
 [data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [data-testid="stHorizontalBlock"] {
   gap: 0.35rem !important;
 }
+[data-testid="stVerticalBlock"].st-key-cmp_shell [data-baseweb="segmented-control"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [data-baseweb="segmented-control"] {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+[data-testid="stVerticalBlock"].st-key-cmp_shell [data-baseweb="segmented-control"] button,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [data-baseweb="segmented-control"] button {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+}
 </style>
 """
 
@@ -202,6 +212,13 @@ def _aggregate_rows(rows: list[dict]) -> dict[str, int | float]:
         "neu_pct": neu_pct,
         "score": score,
     }
+
+
+def _cmp_review_chip_label(meta_by_slug: dict[str, Any], slug: str, letter: str, *, max_len: int = 30) -> str:
+    t = str((meta_by_slug.get(slug) or {}).get("title") or slug).strip()
+    if len(t) > max_len:
+        t = t[: max_len - 1] + "…"
+    return f"{letter} · {t}"
 
 
 def _cmp_pick_prefix(slot: int) -> str:
@@ -675,12 +692,46 @@ def render_compare_tab(
                 )
             else:
                 key_list = list(res.keys())[:2]
-                for idx, slug in enumerate(key_list):
+                if len(key_list) == 1:
+                    slug = key_list[0]
                     data = res.get(slug) or {}
                     title = html.escape(str(data.get("title") or slug))
                     rows_d = detail.get(slug) or []
                     st.markdown(
-                        f'<p style="font-weight:700;color:#334155;margin:10px 0 6px 0;">{title}</p>',
+                        f'<p style="font-weight:700;color:#334155;margin:8px 0 4px 0;">{title}</p>',
+                        unsafe_allow_html=True,
+                    )
+                    aid_disp = str(data.get("app_id", "") or "")
+                    ch_disp = str(data.get("chart_label", "") or "")
+                    st.caption(f"{int(data.get('total', 0))} · {aid_disp} · {ch_disp}")
+                    if not rows_d:
+                        st.write("—")
+                    else:
+                        render_analyzed_review_cards(rows_d, key_prefix="cmp_0")
+                else:
+                    slugs = key_list
+
+                    def _seg_label(s: str) -> str:
+                        i = slugs.index(s)
+                        return _cmp_review_chip_label(res, s, "A" if i == 0 else "B")
+
+                    pick = st.segmented_control(
+                        "Yorumlar",
+                        options=slugs,
+                        format_func=_seg_label,
+                        selection_mode="single",
+                        default=slugs[0],
+                        key="cmp_review_segment",
+                        label_visibility="collapsed",
+                        width="stretch",
+                    )
+                    slug = pick if pick is not None else slugs[0]
+                    idx = slugs.index(slug)
+                    data = res.get(slug) or {}
+                    title = html.escape(str(data.get("title") or slug))
+                    rows_d = detail.get(slug) or []
+                    st.markdown(
+                        f'<p style="font-weight:700;color:#334155;margin:10px 0 4px 0;">{title}</p>',
                         unsafe_allow_html=True,
                     )
                     aid_disp = str(data.get("app_id", "") or "")
