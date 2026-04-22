@@ -8,8 +8,3 @@ font = "sans serif"
 
 [client]
 toolbarMode = "minimal"
-
-# medicalsearch vb. ile çakışmaması için (varsayılan 8501 yerine)
-[server]
-port = 9517
-address = "localhost"
