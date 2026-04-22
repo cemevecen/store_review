@@ -7,7 +7,6 @@ Run from project root:
 
 from __future__ import annotations
 
-import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -28,9 +27,8 @@ from store_review.config.settings import Settings
 from store_review.config.theme import APP_CSS, APP_VERSION
 from store_review.core.ai_providers import DEFAULT_MODELS, RichAnalyzer, resolve_api_keys
 from store_review.core.analyzer import analyze_batch, dedupe_reviews
-from store_review.fetchers.app_store import get_app_store_reviews
 from store_review.fetchers.file_loader import load_reviews_from_dataframe
-from store_review.fetchers.google_play import fetch_google_play_reviews
+from store_review.ui.store_link_panel import render_store_link_tab
 from store_review.utils.exporters import df_to_csv_bytes, df_to_excel_bytes
 from store_review.utils.validators import is_valid_comment
 
@@ -40,26 +38,6 @@ def _secrets_get(key: str):
         return st.secrets.get(key)
     except Exception:
         return None
-
-
-def _parse_play_id(raw: str) -> str | None:
-    s = raw.strip()
-    m = re.search(r"id=([\w.]+)", s)
-    if m:
-        return m.group(1)
-    if re.match(r"^[\w.]+$", s):
-        return s
-    return None
-
-
-def _parse_ios_id(raw: str) -> str | None:
-    s = raw.strip()
-    m = re.search(r"id(\d{6,})", s, re.I)
-    if m:
-        return m.group(1)
-    if re.match(r"^\d{6,}$", s):
-        return s
-    return None
 
 
 def _prepare_pool(rows: list[dict]) -> list[dict]:
@@ -118,55 +96,12 @@ def main():
         st.session_state.analysis_rows = []
 
     st.markdown('<p class="section-title">Veri kaynağı</p>', unsafe_allow_html=True)
-    tab_play, tab_ios, tab_file, tab_text = st.tabs(
-        ["Mağaza linki · Play", "Mağaza linki · App Store", "Dosya yükle", "Metin yapıştır"]
+    tab_store, tab_file, tab_text = st.tabs(
+        ["Mağaza (ara / link)", "Dosya yükle", "Metin yapıştır"]
     )
 
-    with tab_play:
-        st.caption("Play Store: paket adı (`com…`) veya mağaza URL’si.")
-        st.text_input(
-            "Uygulama paketi veya link",
-            key="play_input",
-            placeholder="com.whatsapp veya …id=com.whatsapp",
-        )
-        d_play = st.number_input("Son kaç güne ait yorumlar", min_value=1, max_value=365, value=30, key="play_days")
-        if st.button("Yorumları çek (Play)", use_container_width=True, key="btn_play"):
-            pid = _parse_play_id(st.session_state.play_input)
-            if not pid:
-                st.error("Geçerli bir uygulama kimliği veya URL girin.")
-            else:
-                prog = st.progress(0.0)
-                st.session_state.review_pool = fetch_google_play_reviews(
-                    pid,
-                    int(d_play),
-                    _progress_callback=lambda x: prog.progress(min(float(x), 1.0)),
-                )
-                prog.empty()
-                st.success(f"{len(st.session_state.review_pool)} benzersiz yorum yüklendi.")
-                st.session_state.analysis_rows = []
-
-    with tab_ios:
-        st.caption("App Store: uygulama sayısal ID’si veya mağaza URL’si (`…/id123456789`).")
-        st.text_input(
-            "App Store ID veya link",
-            key="ios_input",
-            placeholder="284882215 veya …/id284882215…",
-        )
-        d_ios = st.number_input("Son kaç güne ait yorumlar (iOS)", min_value=1, max_value=365, value=30, key="ios_days")
-        if st.button("Yorumları çek (App Store)", use_container_width=True, key="btn_ios"):
-            aid = _parse_ios_id(st.session_state.ios_input)
-            if not aid:
-                st.error("Geçerli bir App Store id veya URL girin.")
-            else:
-                prog = st.progress(0.0)
-                st.session_state.review_pool = get_app_store_reviews(
-                    aid,
-                    _progress_callback=lambda x: prog.progress(min(float(x), 1.0)),
-                    _days_limit=int(d_ios),
-                )
-                prog.empty()
-                st.success(f"{len(st.session_state.review_pool)} benzersiz yorum yüklendi.")
-                st.session_state.analysis_rows = []
+    with tab_store:
+        render_store_link_tab()
 
     with tab_file:
         st.caption("CSV veya Excel; metin sütunu otomatik eşlenir (ör. Yorum, review, text).")
