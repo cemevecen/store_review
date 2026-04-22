@@ -36,6 +36,20 @@ _CMP_COMPACT_CSS = """
   margin-top: 0 !important;
   margin-bottom: 0.2rem !important;
 }
+[data-testid="stVerticalBlock"].st-key-cmp_shell [data-testid="stSelectbox"] [data-testid="stWidgetLabel"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [data-testid="stSelectbox"] [data-testid="stWidgetLabel"] {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+[data-testid="stVerticalBlock"].st-key-cmp_shell [data-testid="stSelectbox"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [data-testid="stSelectbox"] {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
 [data-testid="stVerticalBlock"].st-key-cmp_shell .sl-plat-radio-wrap,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell .sl-plat-radio-wrap {
   margin: 4px 0 6px !important;
@@ -598,12 +612,18 @@ def render_compare_tab(
         with cb:
             _render_compare_app_picker(1, "Uygulama 2")
 
-        tcol, mcol = st.columns([1, 1.2], gap="small")
+        tcol, mcol = st.columns([1, 1.2], gap="small", vertical_alignment="center")
         with tcol:
-            time_label = st.selectbox("Tarih aralığı", RANGE_OPTIONS, index=1, key="cmp_time_range")
+            time_label = st.selectbox(
+                "Tarih",
+                RANGE_OPTIONS,
+                index=1,
+                key="cmp_time_range",
+                label_visibility="hidden",
+            )
         days = RANGE_DAYS[time_label]
         with mcol:
-            mm1, mm2 = st.columns(2, gap="small")
+            mm1, mm2 = st.columns(2, gap="small", vertical_alignment="center")
             with mm1:
                 cmp_method = st.radio(
                     "Karşılaştırma analiz yöntemi",
@@ -623,6 +643,7 @@ def render_compare_tab(
                         ["Standart", "Gelişmiş"],
                         horizontal=True,
                         key="cmp_depth",
+                        label_visibility="collapsed",
                     )
                     mode_idx = 0 if depth == "Standart" else 1
 
