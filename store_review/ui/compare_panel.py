@@ -262,9 +262,13 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
     text = (st.session_state.get(in_key) or "").strip()
 
     sel_id = st.session_state.get(f"{p}selected_id")
-    if sel_id and text != str(sel_id):
-        st.session_state[f"{p}selected_id"] = None
-        st.session_state[f"{p}selected_platform"] = None
+    # Metin kutusu listeden seçilen paketten farklı olabilir (örn. hâlâ "letgo" yazıyor);
+    # arama kelimesi iken seçimi silme — yoksa Karşılaştır yalnızca kelimeye düşer ve çözülemez.
+    if sel_id and text and text != str(sel_id):
+        direct_res, _ = resolve_direct_input(text)
+        if direct_res is not None and str(direct_res.app_id) != str(sel_id):
+            st.session_state[f"{p}selected_id"] = None
+            st.session_state[f"{p}selected_platform"] = None
 
     resolved, resolve_msg = resolve_direct_input(text)
     if resolve_msg:
