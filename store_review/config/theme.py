@@ -302,6 +302,7 @@ div[data-testid="stDataFrame"] {
 [data-testid="stVerticalBlock"].st-key-pg_masthead div[data-testid="stMarkdownContainer"]:has(.hero-band-target),
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead div[data-testid="stMarkdownContainer"]:has(.hero-band-target) {
   margin-bottom: 0 !important;
+  margin-top: 14px !important;
 }
 
 .hero-masthead-brand {
@@ -359,9 +360,9 @@ div[data-testid="stDataFrame"] {
   margin-right: auto !important;
 }
 
-/* Masthead markdown kutusu üst boşluk sıfır — dikey ortalamayı bozmasın */
-[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stMarkdownContainer"],
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stMarkdownContainer"] {
+/* Masthead: başlık dışındaki markdown kutularında üst margin sıfır (başlık kutusu yukarıda 14px alır) */
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stMarkdownContainer"]:not(:has(.hero-masthead-brand)),
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stMarkdownContainer"]:not(:has(.hero-masthead-brand)) {
   margin-top: 0 !important;
 }
 
