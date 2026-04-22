@@ -23,6 +23,7 @@ from dotenv import load_dotenv
 
 load_dotenv(ROOT / ".env", override=True)
 
+from store_review.branding import ensure_branding_assets, favicon_abs_path, header_logo_data_uri
 from store_review.config.settings import Settings
 from store_review.config.theme import APP_CSS
 from store_review.core.ai_providers import DEFAULT_MODELS, RichAnalyzer, resolve_api_keys
@@ -132,12 +133,23 @@ def _havuz_metric_visible(src: str, pool_display_count: int) -> bool:
 
 
 def main():
+    ensure_branding_assets()
+    _fav = favicon_abs_path()
     st.set_page_config(
         page_title="ai store review analysis",
         layout="wide",
         initial_sidebar_state="collapsed",
+        page_icon=_fav if _fav else None,
     )
     _inject_css()
+
+    _hdr_uri = header_logo_data_uri()
+    _logo_html = ""
+    if _hdr_uri:
+        _logo_html = (
+            f'<img class="hero-brand-logo" src="{_hdr_uri}" width="48" height="48" alt="" '
+            'loading="lazy" decoding="async" />'
+        )
 
     with st.container(border=True, key="pg_masthead", width="stretch"):
         _spacer_l, col_center, _spacer_r = st.columns([1, 10, 1], vertical_alignment="center")
@@ -145,6 +157,7 @@ def main():
             st.markdown(
                 '<span class="hero-band-target" aria-hidden="true"></span>'
                 '<div class="hero-masthead-brand">'
+                f"{_logo_html}"
                 '<h1 class="hero-title">ai store review analysis</h1>'
                 "</div>",
                 unsafe_allow_html=True,

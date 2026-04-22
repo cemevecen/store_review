@@ -311,15 +311,27 @@ div[data-testid="stDataFrame"] {
 
 .hero-masthead-brand {
   display: flex !important;
-  flex-direction: column !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
   align-items: center !important;
   justify-content: center !important;
+  gap: 12px !important;
   min-width: 0 !important;
   width: 100% !important;
   max-width: min(100%, 720px) !important;
   margin-left: auto !important;
   margin-right: auto !important;
   text-align: center !important;
+}
+
+.hero-brand-logo {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 12px !important;
+  object-fit: contain !important;
+  flex-shrink: 0 !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.25) !important;
 }
 
 .hero-masthead-brand .hero-title {
@@ -656,6 +668,10 @@ div[data-testid="stDataFrame"] {
 @media (max-width: 480px) {
   .hero-masthead-brand .hero-title {
     font-size: 1rem !important;
+  }
+  .hero-brand-logo {
+    width: 40px !important;
+    height: 40px !important;
   }
 }
 """
