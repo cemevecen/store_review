@@ -116,7 +116,7 @@ def _on_data_source_change() -> None:
 def main():
     st.set_page_config(
         page_title="ai store review analysis",
-        layout="centered",
+        layout="wide",
         initial_sidebar_state="collapsed",
     )
     _inject_css()

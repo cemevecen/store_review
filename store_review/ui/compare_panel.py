@@ -67,6 +67,14 @@ _CMP_COMPACT_CSS = """
   margin-top: 0.35rem !important;
   margin-bottom: 0.15rem !important;
 }
+[data-testid="stVerticalBlock"].st-key-cmp_shell [data-testid="column"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [data-testid="column"] {
+  min-width: 0 !important;
+}
+[data-testid="stVerticalBlock"].st-key-cmp_shell [data-testid="stHorizontalBlock"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [data-testid="stHorizontalBlock"] {
+  gap: 0.35rem !important;
+}
 </style>
 """
 
@@ -364,20 +372,23 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
     sid = st.session_state.get(f"{p}selected_id")
     splat = st.session_state.get(f"{p}selected_platform")
     if sid:
-        stitle = (st.session_state.get(f"{p}selected_title") or "").strip()
-        if stitle:
-            st.markdown(
-                f'<p style="margin:0;font-size:0.92rem;color:#0f172a;"><b>{html.escape(stitle)}</b></p>'
-                f'<p style="margin:2px 0 0 0;font-size:0.82rem;color:#64748b;">'
-                f'<code style="font-size:0.78rem;">{html.escape(str(sid))}</code> · '
-                f"<b>{html.escape(str(splat or '—'))}</b></p>",
-                unsafe_allow_html=True,
-            )
-        else:
-            st.caption(f"Seçili: `{sid}` · **{splat or '—'}**")
-        if st.button("Bu uygulamayı sıfırla", key=f"cmp_slot_reset_{slot}"):
-            _reset_cmp_slot(slot)
-            st.rerun()
+        csel, creset = st.columns([5, 1], gap="small")
+        with csel:
+            stitle = (st.session_state.get(f"{p}selected_title") or "").strip()
+            if stitle:
+                st.markdown(
+                    f'<p style="margin:0;font-size:0.88rem;color:#0f172a;line-height:1.3;"><b>{html.escape(stitle)}</b></p>'
+                    f'<p style="margin:2px 0 0 0;font-size:0.75rem;color:#64748b;line-height:1.25;word-break:break-all;">'
+                    f'<code style="font-size:0.72rem;">{html.escape(str(sid))}</code> · '
+                    f"<b>{html.escape(str(splat or '—'))}</b></p>",
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.caption(f"Seçili: `{sid}` · **{splat or '—'}**")
+        with creset:
+            if st.button("Sıfırla", key=f"cmp_slot_reset_{slot}", use_container_width=True):
+                _reset_cmp_slot(slot)
+                st.rerun()
 
 
 def merge_compare_details_for_dashboard() -> list[dict[str, Any]]:
@@ -512,60 +523,68 @@ def render_compare_tab(
     _inject_store_search_css()
     st.markdown(_CMP_COMPACT_CSS, unsafe_allow_html=True)
     with st.container(key="cmp_shell"):
-        _render_compare_app_picker(0, "Uygulama 1")
-        _render_compare_app_picker(1, "Uygulama 2")
+        ca, cb = st.columns(2, gap="small")
+        with ca:
+            _render_compare_app_picker(0, "Uygulama 1")
+        with cb:
+            _render_compare_app_picker(1, "Uygulama 2")
 
-        time_label = st.selectbox("Tarih aralığı", RANGE_OPTIONS, index=1, key="cmp_time_range")
+        tcol, mcol = st.columns([1, 1.2], gap="small")
+        with tcol:
+            time_label = st.selectbox("Tarih aralığı", RANGE_OPTIONS, index=1, key="cmp_time_range")
         days = RANGE_DAYS[time_label]
-
-        m1, m2 = st.columns(2)
-        with m1:
-            cmp_method = st.radio(
-                "Karşılaştırma analiz yöntemi",
-                ["Hızlı (heuristic)", "Zengin (LLM)"],
-                horizontal=True,
-                key="cmp_method",
-                label_visibility="collapsed",
-            )
-        use_fast = cmp_method == "Hızlı (heuristic)"
-        with m2:
-            if use_fast:
-                mode_idx = 0
-                st.caption("Heuristic için derinlik sabit.")
-            else:
-                depth = st.radio(
-                    "Derinlik",
-                    ["Standart", "Gelişmiş"],
+        with mcol:
+            mm1, mm2 = st.columns(2, gap="small")
+            with mm1:
+                cmp_method = st.radio(
+                    "Karşılaştırma analiz yöntemi",
+                    ["Hızlı (heuristic)", "Zengin (LLM)"],
                     horizontal=True,
-                    key="cmp_depth",
+                    key="cmp_method",
+                    label_visibility="collapsed",
                 )
-                mode_idx = 0 if depth == "Standart" else 1
-
-        if st.button("Karşılaştırmayı başlat", type="primary", use_container_width=True, key="cmp_start"):
-            if sum(1 for x in (_cmp_slot_effective_raw(0), _cmp_slot_effective_raw(1)) if x) < 2:
-                st.warning("İki uygulama için de ID veya link girin.")
-            elif not use_fast and not has_llm_keys:
-                st.error("Zengin analiz için en az bir API anahtarı gerekir (.env veya Streamlit secrets).")
-            else:
-                with st.spinner("Uygulamalar analiz ediliyor…"):
-                    n_ok, errs = execute_compare_analysis(
-                        rich=rich,
-                        has_llm_keys=has_llm_keys,
-                        default_models=default_models,
-                        use_heuristic_only=use_fast,
-                        analysis_mode=mode_idx,
+            use_fast = cmp_method == "Hızlı (heuristic)"
+            with mm2:
+                if use_fast:
+                    mode_idx = 0
+                    st.caption("Heuristic: derinlik sabit.")
+                else:
+                    depth = st.radio(
+                        "Derinlik",
+                        ["Standart", "Gelişmiş"],
+                        horizontal=True,
+                        key="cmp_depth",
                     )
-                for er in errs:
-                    st.error(er)
+                    mode_idx = 0 if depth == "Standart" else 1
+
         res = st.session_state.get("cmp_results") or {}
-        if res:
-            if st.button("Karşılaştırma sonuçlarını temizle", key="cmp_clear"):
+        b1, b2 = st.columns([2.2, 1], gap="small")
+        with b1:
+            if st.button("Karşılaştırmayı başlat", type="primary", use_container_width=True, key="cmp_start"):
+                if sum(1 for x in (_cmp_slot_effective_raw(0), _cmp_slot_effective_raw(1)) if x) < 2:
+                    st.warning("İki uygulama için de ID veya link girin.")
+                elif not use_fast and not has_llm_keys:
+                    st.error("Zengin analiz için en az bir API anahtarı gerekir (.env veya Streamlit secrets).")
+                else:
+                    with st.spinner("Uygulamalar analiz ediliyor…"):
+                        n_ok, errs = execute_compare_analysis(
+                            rich=rich,
+                            has_llm_keys=has_llm_keys,
+                            default_models=default_models,
+                            use_heuristic_only=use_fast,
+                            analysis_mode=mode_idx,
+                        )
+                    for er in errs:
+                        st.error(er)
+        with b2:
+            if res and st.button("Sonuçları temizle", key="cmp_clear", use_container_width=True):
                 st.session_state.cmp_results = {}
                 st.session_state.cmp_detail_rows = {}
                 st.session_state.pop("cmp_range_label", None)
                 st.session_state.pop("cmp_days_used", None)
                 st.rerun()
 
+        if res:
             st.markdown("#### Özet")
             days_u = st.session_state.get("cmp_days_used")
             rng_lbl = st.session_state.get("cmp_range_label") or time_label

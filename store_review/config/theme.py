@@ -18,7 +18,11 @@ APP_CSS = """
 .block-container {
   padding-top: 0.35rem !important;
   padding-bottom: 0.65rem !important;
-  max-width: 820px;
+  padding-left: clamp(0.75rem, 2vw, 1.5rem) !important;
+  padding-right: clamp(0.75rem, 2vw, 1.5rem) !important;
+  max-width: min(1240px, calc(100vw - 1.5rem)) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 /* Ana sütun — widget aralıklarını sıkılaştır */
