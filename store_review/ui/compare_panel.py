@@ -680,7 +680,6 @@ def render_compare_tab(
                 use_fast = pick == "Hızlı (heuristic)"
                 if use_fast:
                     mode_idx = 0
-                    st.caption("Heuristic: derinlik sabit.")
                 else:
                     depth = st.radio(
                         "Derinlik",
