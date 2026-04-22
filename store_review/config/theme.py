@@ -250,7 +250,7 @@ div[data-testid="stDataFrame"] {
   margin-right: 0 !important;
   margin-top: -1.25rem !important;
   margin-bottom: 6px !important;
-  padding: 18px clamp(18px, 4vw, 44px) 20px !important;
+  padding: 30px clamp(18px, 4vw, 44px) 20px !important;
   box-sizing: border-box !important;
   min-height: 108px !important;
   display: flex !important;
