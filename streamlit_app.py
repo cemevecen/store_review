@@ -56,8 +56,7 @@ def _prepare_pool(rows: list[dict]) -> list[dict]:
 
 
 def _inject_css() -> None:
-    """Stil yalnızca <style> olduğunda st.html event container'a gider (Streamlit 1.28+)."""
-    st.html(f"<style>{APP_CSS}</style>")
+    st.markdown(f"<style>{APP_CSS}</style>", unsafe_allow_html=True)
 
 
 SOURCE_OPTIONS = [

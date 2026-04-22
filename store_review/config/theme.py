@@ -191,13 +191,11 @@ div[data-testid="stDataFrame"] {
 }
 
 /*
- * Masthead — Streamlit 1.55+ bordered st.container → data-testid="stVerticalBlock" + .st-key-*.
- * Eski sürümler: stVerticalBlockBorderWrapper. Her kuralda dörtlü kök + aynı alt seçici tekrarlanır.
+ * Masthead — yalnızca .st-key-pg_masthead (+ eski BorderWrapper). :has(.hero-masthead-brand) kullanma:
+ * üst stVerticalBlock tüm sayfayı sarınca sayfa içi tüm radyolara da uygulanıyordu.
  */
 [data-testid="stVerticalBlock"].st-key-pg_masthead,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand),
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead {
   width: 100vw !important;
   min-width: 100vw !important;
   max-width: 100vw !important;
@@ -228,9 +226,7 @@ div[data-testid="stDataFrame"] {
 }
 
 [data-testid="stVerticalBlock"].st-key-pg_masthead::after,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead::after,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand)::after,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand)::after {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead::after {
   content: "" !important;
   position: absolute !important;
   inset: 0 !important;
@@ -254,9 +250,7 @@ div[data-testid="stDataFrame"] {
 }
 
 [data-testid="stVerticalBlock"].st-key-pg_masthead div[data-testid="stMarkdownContainer"]:has(.hero-band-target),
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead div[data-testid="stMarkdownContainer"]:has(.hero-band-target),
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) div[data-testid="stMarkdownContainer"]:has(.hero-band-target),
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) div[data-testid="stMarkdownContainer"]:has(.hero-band-target) {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead div[data-testid="stMarkdownContainer"]:has(.hero-band-target) {
   margin-bottom: 0 !important;
 }
 
@@ -279,26 +273,20 @@ div[data-testid="stDataFrame"] {
 }
 
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"],
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"],
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stHorizontalBlock"],
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stHorizontalBlock"] {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] {
   width: 100% !important;
   align-items: center !important;
 }
 
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:first-child,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:first-child,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:first-child,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:first-child {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:first-child {
   display: flex !important;
   align-items: center !important;
   min-width: 0 !important;
 }
 
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:last-child,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:last-child,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:last-child,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:last-child {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:last-child {
   display: flex !important;
   justify-content: flex-end !important;
   align-items: center !important;
@@ -307,9 +295,7 @@ div[data-testid="stDataFrame"] {
 }
 
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadio"],
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadio"],
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadio"],
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadio"] {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadio"] {
   display: flex !important;
   flex-direction: column !important;
   align-items: flex-end !important;
@@ -318,12 +304,8 @@ div[data-testid="stDataFrame"] {
 
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"],
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"],
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"],
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"],
 [data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"],
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"],
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"],
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] {
   display: inline-flex !important;
   flex-wrap: wrap !important;
   justify-content: flex-end !important;
@@ -343,12 +325,8 @@ div[data-testid="stDataFrame"] {
 
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label,
 [data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label {
   position: relative !important;
   display: inline-flex !important;
   align-items: center !important;
@@ -367,20 +345,12 @@ div[data-testid="stDataFrame"] {
 
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label span,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label span,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label span,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label span,
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label p,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label p,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label p,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label p,
 [data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label span,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label span,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label span,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label span,
 [data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label p,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label p,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label p,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label p {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label p {
   color: #ffffff !important;
   font-weight: 500 !important;
   font-size: 0.82rem !important;
@@ -388,23 +358,15 @@ div[data-testid="stDataFrame"] {
 
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label:hover:not(:has(input:checked)),
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label:hover:not(:has(input:checked)),
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:hover:not(:has(input:checked)),
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:hover:not(:has(input:checked)),
 [data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:hover:not(:has(input:checked)),
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:hover:not(:has(input:checked)),
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:hover:not(:has(input:checked)),
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:hover:not(:has(input:checked)) {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:hover:not(:has(input:checked)) {
   background: rgba(255, 255, 255, 0.08) !important;
 }
 
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label:has(input:checked),
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label:has(input:checked),
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:has(input:checked),
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:has(input:checked),
 [data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:has(input:checked),
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:has(input:checked),
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:has(input:checked),
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:has(input:checked) {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:has(input:checked) {
   background: #ffffff !important;
   border-radius: 20px !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18) !important;
@@ -412,32 +374,20 @@ div[data-testid="stDataFrame"] {
 
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label:has(input:checked) span,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label:has(input:checked) span,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:has(input:checked) span,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:has(input:checked) span,
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label:has(input:checked) p,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label:has(input:checked) p,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:has(input:checked) p,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label:has(input:checked) p,
 [data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:has(input:checked) span,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:has(input:checked) span,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:has(input:checked) span,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:has(input:checked) span,
 [data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:has(input:checked) p,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:has(input:checked) p,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:has(input:checked) p,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label:has(input:checked) p {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label:has(input:checked) p {
   color: #0b2f2c !important;
   font-weight: 600 !important;
 }
 
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label input[type="radio"],
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label input[type="radio"],
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label input[type="radio"],
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label input[type="radio"],
 [data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label input[type="radio"],
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label input[type="radio"],
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label input[type="radio"],
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label input[type="radio"] {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label input[type="radio"] {
   position: absolute !important;
   opacity: 0 !important;
   width: 0 !important;
@@ -448,12 +398,8 @@ div[data-testid="stDataFrame"] {
 
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stRadioGroup"] label > input[type="radio"] + div,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stRadioGroup"] label > input[type="radio"] + div,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label > input[type="radio"] + div,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) [data-testid="stRadioGroup"] label > input[type="radio"] + div,
 [data-testid="stVerticalBlock"].st-key-pg_masthead .stRadio div[role="radiogroup"] label > input[type="radio"] + div,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label > input[type="radio"] + div,
-[data-testid="stVerticalBlock"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label > input[type="radio"] + div,
-[data-testid="stVerticalBlockBorderWrapper"]:has(.hero-masthead-brand) .stRadio div[role="radiogroup"] label > input[type="radio"] + div {
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .stRadio div[role="radiogroup"] label > input[type="radio"] + div {
   display: none !important;
 }
 
