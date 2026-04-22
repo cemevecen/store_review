@@ -16,9 +16,53 @@ APP_CSS = """
 }
 
 .block-container {
-  padding-top: 1.25rem;
-  padding-bottom: 2rem;
+  padding-top: 0.35rem !important;
+  padding-bottom: 0.65rem !important;
   max-width: 820px;
+}
+
+/* Ana sütun — widget aralıklarını sıkılaştır */
+[data-testid="stAppViewContainer"] .main [data-testid="element-container"] {
+  margin-top: 0 !important;
+  margin-bottom: 0.2rem !important;
+}
+[data-testid="stAppViewContainer"] .main hr {
+  margin: 0.25rem 0 !important;
+}
+[data-testid="stAppViewContainer"] .main .stMarkdown {
+  margin-bottom: 0.15rem !important;
+}
+[data-testid="stAppViewContainer"] .main .stRadio {
+  margin-bottom: 0.1rem !important;
+  padding-bottom: 0 !important;
+}
+[data-testid="stAppViewContainer"] .main .stButton {
+  margin-bottom: 0.15rem !important;
+}
+[data-testid="stAppViewContainer"] .main [data-testid="stMetricContainer"] {
+  margin-bottom: 0 !important;
+  padding-top: 0.2rem !important;
+  padding-bottom: 0.2rem !important;
+}
+[data-testid="stAppViewContainer"] .main [data-testid="stPlotlyChart"] {
+  margin-top: 0.2rem !important;
+  margin-bottom: 0.2rem !important;
+}
+[data-testid="stAppViewContainer"] .main [data-testid="stColumn"] {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+[data-testid="stAppViewContainer"] .main .streamlit-expander {
+  margin-top: 0.15rem !important;
+  margin-bottom: 0.15rem !important;
+}
+[data-testid="stAppViewContainer"] .main [data-testid="stCaption"] {
+  margin-top: 0.1rem !important;
+  margin-bottom: 0.1rem !important;
+}
+[data-testid="stAppViewContainer"] .main .stProgress {
+  margin-top: 0.15rem !important;
+  margin-bottom: 0.15rem !important;
 }
 
 /* Widget etiketleri — beyaz yazı / soluk yazı sorununu gider */
@@ -205,7 +249,7 @@ div[data-testid="stDataFrame"] {
   margin-left: 0 !important;
   margin-right: 0 !important;
   margin-top: -1.25rem !important;
-  margin-bottom: 16px !important;
+  margin-bottom: 6px !important;
   padding: 18px clamp(18px, 4vw, 44px) 20px !important;
   box-sizing: border-box !important;
   min-height: 108px !important;
@@ -312,25 +356,19 @@ div[data-testid="stDataFrame"] {
   margin-right: 0 !important;
 }
 
-.fancy-divider {
-  height: 1px;
-  margin: 20px 0;
-  background: linear-gradient(90deg, transparent, #93c5fd, transparent);
-}
-
 .metric-strip {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 14px;
-  padding: 16px 20px;
-  margin: 12px 0;
+  padding: 10px 14px;
+  margin: 2px 0 4px;
   box-shadow: 0 2px 12px rgba(15,23,42,0.04);
 }
 .metric-strip-label {
   font-size: 0.85rem;
   font-weight: 600;
   color: #475569;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .metric-strip-value {
   font-size: 1.85rem;
@@ -342,15 +380,19 @@ div[data-testid="stDataFrame"] {
   font-size: 1.05rem;
   font-weight: 600;
   color: #0f172a;
-  margin: 18px 0 8px;
+  margin: 4px 0 2px;
+}
+.section-title--tight {
+  margin-top: 2px !important;
+  margin-bottom: 2px !important;
 }
 
 /* Yorum kartları — tek sütun, tablo yerine */
 .review-card-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin: 14px 0 8px;
+  gap: 8px;
+  margin: 4px 0 4px;
 }
 .review-card {
   background: #ffffff;

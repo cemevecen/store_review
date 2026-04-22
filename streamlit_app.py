@@ -243,8 +243,6 @@ def main():
             default_models=DEFAULT_MODELS,
         )
 
-    st.markdown('<div class="fancy-divider"></div>', unsafe_allow_html=True)
-
     pool = _active_review_pool()
     src_cur = _session_main_data_source()
     if src_cur == "Karşılaştır":
@@ -350,11 +348,9 @@ def main():
                 st.session_state.analysis_rows = rows
                 bar.empty()
                 status.empty()
-            st.divider()
 
     rows = st.session_state.analysis_rows
     if rows:
-        st.divider()
         st.markdown('<p class="section-title">Sonuçlar</p>', unsafe_allow_html=True)
         df = pd.DataFrame(rows)
         vc = df["Baskın Duygu"].value_counts()
@@ -382,10 +378,11 @@ def main():
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             font=dict(color="#334155"),
+            margin=dict(l=8, r=8, t=8, b=8),
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        st.markdown('<p class="section-title" style="margin-top:1.25rem;">Yorumlar</p>', unsafe_allow_html=True)
+        st.markdown('<p class="section-title section-title--tight">Yorumlar</p>', unsafe_allow_html=True)
         render_analyzed_review_cards(rows, key_prefix="main_analiz")
 
         out_df = df.drop(columns=["Tarih"], errors="ignore") if "Tarih" in df.columns else df
