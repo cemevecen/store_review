@@ -41,6 +41,11 @@ from store_review.ui.compare_panel import (
 from store_review.ui.review_cards import render_analyzed_review_cards
 from store_review.ui.store_link_panel import render_store_link_tab
 from store_review.utils.exporters import df_to_csv_bytes, df_to_excel_bytes
+from store_review.utils.pdf_export import (
+    build_analysis_pdf_bytes,
+    build_raw_pool_pdf_bytes,
+    safe_pdf_filename,
+)
 from store_review.utils.validators import is_valid_comment
 
 
@@ -385,7 +390,7 @@ def main():
     if pool:
         raw_df = pd.DataFrame(pool)
         with st.expander("Ham veriyi indir (analiz öncesi)", expanded=False):
-            c1, c2 = st.columns(2)
+            c1, c2, c3 = st.columns(3)
             with c1:
                 st.download_button(
                     "CSV indir",
@@ -402,6 +407,23 @@ def main():
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     use_container_width=True,
                 )
+            with c3:
+                try:
+                    _raw_pdf = build_raw_pool_pdf_bytes(
+                        raw_df.to_dict("records"),
+                        source_label=src_cur,
+                    )
+                    st.download_button(
+                        "PDF indir (UTF-8)",
+                        data=_raw_pdf,
+                        file_name=safe_pdf_filename(f"yorum_havuzu_{src_cur}"),
+                        mime="application/pdf",
+                        use_container_width=True,
+                    )
+                except FileNotFoundError as e:
+                    st.caption(str(e))
+                except Exception as e:
+                    st.caption(f"PDF: {e}")
 
     st.markdown('<p class="section-title">Analiz ayarları</p>', unsafe_allow_html=True)
 
@@ -489,13 +511,29 @@ def main():
         render_analyzed_review_cards(rows, key_prefix="main_analiz")
 
         out_df = df.drop(columns=["Tarih"], errors="ignore") if "Tarih" in df.columns else df
-        st.download_button(
-            "Sonuçları CSV indir",
-            data=df_to_csv_bytes(out_df),
-            file_name=f"analiz_{datetime.now():%Y%m%d_%H%M}.csv",
-            mime="text/csv",
-            use_container_width=True,
-        )
+        d_csv, d_pdf = st.columns(2)
+        with d_csv:
+            st.download_button(
+                "Sonuçları CSV indir",
+                data=df_to_csv_bytes(out_df),
+                file_name=f"analiz_{datetime.now():%Y%m%d_%H%M}.csv",
+                mime="text/csv",
+                use_container_width=True,
+            )
+        with d_pdf:
+            try:
+                _analiz_pdf = build_analysis_pdf_bytes(rows, source_label=src_cur)
+                st.download_button(
+                    "Sonuçları PDF indir (UTF-8)",
+                    data=_analiz_pdf,
+                    file_name=safe_pdf_filename(f"analiz_{src_cur}"),
+                    mime="application/pdf",
+                    use_container_width=True,
+                )
+            except FileNotFoundError as e:
+                st.caption(str(e))
+            except Exception as e:
+                st.caption(f"PDF: {e}")
 
 
 if __name__ == "__main__":

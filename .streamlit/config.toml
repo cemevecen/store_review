@@ -1,3 +1,6 @@
+[server]
+port = 9517
+
 [theme]
 base = "light"
 primaryColor = "#ea580c"
