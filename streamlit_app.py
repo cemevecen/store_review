@@ -8,12 +8,14 @@ Run from project root:
 from __future__ import annotations
 
 import io
+import json
 import sys
 from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
@@ -63,6 +65,79 @@ def _prepare_pool(rows: list[dict]) -> list[dict]:
 
 def _inject_css() -> None:
     st.markdown(f"<style>{APP_CSS}</style>", unsafe_allow_html=True)
+
+
+def _max_upload_mb() -> int:
+    try:
+        from streamlit import config as st_config
+
+        v = st_config.get_option("server.maxUploadSize")
+        return int(v) if v is not None else 200
+    except Exception:
+        return 200
+
+
+def _inject_file_uploader_labels_once() -> None:
+    """st.file_uploader iç metinleri Streamlit API ile değiştirilemediği için üst belgede yamalama."""
+    if st.session_state.get("_sr_file_uploader_label_js"):
+        return
+    st.session_state["_sr_file_uploader_label_js"] = True
+    mb = _max_upload_mb()
+    limit_txt = f"en fazla {mb} mb • csv, xlsx"
+    btn_txt = "yükle"
+    html = f"""
+<script>
+(function () {{
+  const root = window.parent;
+  if (!root || root.__srFileUploadLabelPatch) return;
+  root.__srFileUploadLabelPatch = true;
+  const doc = root.document;
+  const LIMIT = {json.dumps(limit_txt)};
+  const BTN = {json.dumps(btn_txt)};
+  function patch() {{
+    doc.querySelectorAll('[data-testid="stFileUploader"]').forEach((w) => {{
+      const zone = w.querySelector('[data-testid="stFileUploaderDropzone"]');
+      const b = zone && zone.querySelector("button");
+      if (b) {{
+        const tw = doc.createTreeWalker(b, NodeFilter.SHOW_TEXT, null);
+        let n;
+        while ((n = tw.nextNode())) {{
+          const v = (n.nodeValue || "").trim();
+          if (!v) continue;
+          if (/browse|upload|choose file|select file|dizin|directory|files here/i.test(v))
+            n.nodeValue = BTN;
+        }}
+      }}
+      const ins = w.querySelector('[data-testid="stFileUploaderDropzoneInstructions"]');
+      if (ins) {{
+        let hit = false;
+        const tw = doc.createTreeWalker(ins, NodeFilter.SHOW_TEXT, null);
+        let n;
+        while ((n = tw.nextNode())) {{
+          if (/per\\s*file/i.test(n.nodeValue || "")) {{
+            n.nodeValue = LIMIT;
+            hit = true;
+            break;
+          }}
+        }}
+        if (!hit) {{
+          ins.querySelectorAll("*").forEach((el) => {{
+            if (el.children.length === 0 && /per\\s*file/i.test(el.textContent || ""))
+              el.textContent = LIMIT;
+          }});
+        }}
+      }}
+    }});
+  }}
+  const obs = new MutationObserver(() => patch());
+  if (doc.body) {{
+    obs.observe(doc.body, {{ childList: true, subtree: true }});
+    patch();
+  }}
+}})();
+</script>
+"""
+    components.html(html, height=0, width=0)
 
 
 SOURCE_OPTIONS = [
@@ -151,6 +226,7 @@ def main():
         page_icon=_fav if _fav else None,
     )
     _inject_css()
+    _inject_file_uploader_labels_once()
 
     _hdr_uri = header_logo_data_uri()
     _logo_html = ""
