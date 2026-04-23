@@ -19,7 +19,7 @@ A Streamlit application for ingesting mobile store reviews, classifying sentimen
 
 ### Run locally
 
-Default HTTP port is **9517** (`.streamlit/config.toml` and `run_local.sh`). Override with `STREAMLIT_LOCAL_PORT=9520 ./run_local.sh` if the port is busy.
+For local development, `./run_local.sh` listens on **9517** by default (`STREAMLIT_LOCAL_PORT` overrides). Plain `streamlit run` uses the default port (**8501**), which matches Streamlit Community Cloud health checks—do not commit a repo-wide `[server] port` override if you deploy there.
 
 ```bash
 python3 -m venv .venv
@@ -73,7 +73,7 @@ Mağaza yorumlarını toplayan, duygu sınıflandırmasını üç kategoride (ol
 
 ### Yerelde çalıştırma
 
-Varsayılan HTTP portu **9517** (`.streamlit/config.toml` ve `run_local.sh`). Port meşgulse: `STREAMLIT_LOCAL_PORT=9520 ./run_local.sh`
+Yerelde `./run_local.sh` varsayılan olarak **9517** portunu kullanır (`STREAMLIT_LOCAL_PORT` ile değişir). Düz `streamlit run` varsayılan **8501**; Streamlit Community Cloud da sağlık kontrolü için bunu bekler—Cloud’a deploy ediyorsanız depoda genel `[server] port` yönlendirmesi tutmayın.
 
 ```bash
 python3 -m venv .venv

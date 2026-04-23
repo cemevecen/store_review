@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-from fpdf import FPDF
 
 _FONT_PATH = Path(__file__).resolve().parent.parent / "data" / "fonts" / "NotoSans-Regular.ttf"
 
@@ -63,6 +62,8 @@ def _ordered_columns(df: pd.DataFrame) -> list[str]:
 
 def build_analysis_pdf_bytes(rows: list[dict[str, Any]], *, source_label: str) -> bytes:
     """Analiz sonuç tablosu (satır listesi) → PDF baytları."""
+    from fpdf import FPDF  # PyPI: fpdf2
+
     if not rows:
         raise ValueError("rows boş olamaz")
     font = _ensure_font()
@@ -112,6 +113,8 @@ def build_analysis_pdf_bytes(rows: list[dict[str, Any]], *, source_label: str) -
 
 def build_raw_pool_pdf_bytes(rows: list[dict[str, Any]], *, source_label: str) -> bytes:
     """Ham havuz (analiz öncesi) yorumları → PDF."""
+    from fpdf import FPDF  # PyPI: fpdf2
+
     if not rows:
         raise ValueError("rows boş olamaz")
     font = _ensure_font()
