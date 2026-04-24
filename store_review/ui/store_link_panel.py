@@ -5,6 +5,7 @@ Eski monolitik streamlit_app "Mağaza Linki" akışının sadeleştirilmiş hali
 
 from __future__ import annotations
 
+import concurrent.futures
 import html
 import time
 
@@ -21,19 +22,29 @@ from store_review.fetchers.google_play import fetch_google_play_reviews
 
 
 def _run_store_search_with_progress(query: str, platform_filter: str) -> list:
-    """Arama sırasında spinner yerine aşamalı ilerleme göster."""
+    """Aramayı arka thread'de çalıştırıp kademeli canlı ilerleme göster."""
     bar = st.progress(0.0)
     status = st.empty()
-    try:
-        status.caption("arama hazırlanıyor…")
-        bar.progress(0.14)
-        status.caption("mağaza sonuçları taranıyor…")
-        bar.progress(0.44)
+    start = time.perf_counter()
+
+    def _search() -> list:
         if platform_filter == "iOS":
-            results = list(search_app_store_itunes(query))
-        else:
-            results = list(search_play_store(query))
-        bar.progress(0.82)
+            return list(search_app_store_itunes(query))
+        return list(search_play_store(query))
+
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+            future = ex.submit(_search)
+            # Görev bitene kadar akıcı şekilde yaklaşan bir ilerleme eğrisi.
+            while not future.done():
+                elapsed = time.perf_counter() - start
+                staged = min(0.92, 1.0 - (2.71828 ** (-elapsed / 1.35)))
+                status.caption("mağaza sonuçları taranıyor…")
+                bar.progress(staged)
+                time.sleep(0.12)
+            results = future.result()
+
+        bar.progress(0.98)
         status.caption(f"{len(results)} sonuç işlendi…")
         bar.progress(1.0)
         return results

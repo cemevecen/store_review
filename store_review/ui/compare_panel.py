@@ -4,7 +4,9 @@
 
 from __future__ import annotations
 
+import concurrent.futures
 import html
+import time
 from typing import Any, Optional
 
 import pandas as pd
@@ -175,18 +177,28 @@ def _prepare_pool(rows: list[dict]) -> list[dict]:
 
 
 def _run_compare_search_with_progress(query: str, platform_filter: str, slot: int) -> list:
-    """Karşılaştırma slot araması sırasında aşamalı ilerleme göster."""
+    """Karşılaştırma slot aramasını arka thread'de çalıştırıp kademeli göster."""
     bar = st.progress(0.0)
     status = st.empty()
-    try:
-        status.caption(f"uygulama {slot + 1} araması hazırlanıyor…")
-        bar.progress(0.16)
-        status.caption("mağaza sonuçları taranıyor…")
-        bar.progress(0.48)
+    start = time.perf_counter()
+
+    def _search() -> list:
         if platform_filter == "iOS":
-            results = list(search_app_store_itunes(query))
-        else:
-            results = list(search_play_store(query))
+            return list(search_app_store_itunes(query))
+        return list(search_play_store(query))
+
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+            future = ex.submit(_search)
+            while not future.done():
+                elapsed = time.perf_counter() - start
+                staged = min(0.92, 1.0 - (2.71828 ** (-elapsed / 1.35)))
+                status.caption(f"uygulama {slot + 1} için mağaza sonuçları taranıyor…")
+                bar.progress(staged)
+                time.sleep(0.12)
+            results = future.result()
+
+        bar.progress(0.98)
         status.caption(f"{len(results)} sonuç işlendi…")
         bar.progress(1.0)
         return results
