@@ -141,6 +141,17 @@ _FOOTER_CSS = """
   fill: #4b5563 !important;
   color: #4b5563 !important;
 }
+/* Dil dropdown'ı yazılabilir olmasın: caret/imleç gizli, metin alanı read-only hissi. */
+[data-testid="stVerticalBlock"].st-key-pg_footer div[data-baseweb="select"] input,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer div[data-baseweb="select"] input {
+  caret-color: transparent !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_footer div[data-baseweb="select"] input:focus,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer div[data-baseweb="select"] input:focus {
+  outline: none !important;
+}
 
 .foot-col-right {
   display: flex;
