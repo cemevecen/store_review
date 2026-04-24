@@ -17,27 +17,47 @@ from store_review.config.i18n import LANGUAGES, get_lang, lang_query_suffix, set
 _FOOTER_CSS = """
 <style>
 /*
- * Sticky footer — pin yok (`position: fixed` yok). Kısa sayfada viewport
- * dibine yapışır; uzun sayfada içerikle birlikte aşağı kayar.
- * (1d42dcd ile kanıtlanan düzen; bf2a2c5'teki sabit 48px margin bunu bozuyordu.)
+ * Sticky footer — `position: fixed` yok. Kısa sayfada (analiz öncesi, karşılaştırma,
+ * boş formlar) footer viewport dibine yapışır; uzun sayfada scroll ile iner.
+ * Zincir: stAppViewContainer → section.main → stMainBlockContainer → block-container
+ * → kök sütun → footer margin-top:auto.
  */
-html, body,
-[data-testid="stAppViewContainer"],
+html, body {
+  min-height: 100dvh !important;
+}
+[data-testid="stAppViewContainer"] {
+  min-height: 100dvh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
 [data-testid="stAppViewContainer"] > .main,
 [data-testid="stAppViewContainer"] section.main {
-  min-height: 100vh;
-}
-[data-testid="stAppViewContainer"] .main,
-[data-testid="stAppViewContainer"] section.main {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
   align-items: stretch !important;
+  align-content: stretch !important;
+  min-height: 100dvh !important;
+  min-width: 0 !important;
 }
-[data-testid="stAppViewContainer"] .main .block-container,
-[data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"] {
+[data-testid="stAppViewContainer"] .main [data-testid="stMainBlockContainer"] {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  padding-bottom: 0 !important;
+}
+[data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"] > .block-container,
+[data-testid="stAppViewContainer"] .main > .block-container {
   display: flex !important;
   flex-direction: column !important;
   flex: 1 1 auto !important;
-  min-height: calc(100vh - 2rem) !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  padding-bottom: 0 !important;
 }
+/* Kök içerik sütunu — doğrudan stVerticalBlock veya ara div sarmalayıcı */
 [data-testid="stAppViewContainer"] .main .block-container > [data-testid="stVerticalBlock"],
 [data-testid="stAppViewContainer"] .main .block-container > [data-testid="stVerticalBlockBorderWrapper"],
 [data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"],
@@ -47,10 +67,18 @@ html, body,
   flex-direction: column !important;
   min-height: 0 !important;
 }
+[data-testid="stAppViewContainer"] .main .block-container > *:first-child {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  align-self: stretch !important;
+}
 
 /* Footer — masthead ile aynı bordo gradient, aynı pattern overlay. */
 [data-testid="stVerticalBlock"].st-key-pg_footer,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer {
+  flex-shrink: 0 !important;
   width: 100vw !important;
   min-width: 100vw !important;
   max-width: 100vw !important;
