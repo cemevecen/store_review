@@ -294,347 +294,348 @@ def main():
     )
     _inject_css()
     _inject_file_uploader_labels_once()
-    render_masthead(on_about=False)
+    with st.container(key="app_main"):
+        render_masthead(on_about=False)
 
-    env_settings = Settings.from_env()
-    gk, gqk, ok = resolve_api_keys(
-        env_settings.gemini_api_key,
-        env_settings.groq_api_key,
-        env_settings.openai_api_key,
-        _secrets_get,
-    )
-    rich = RichAnalyzer(gemini_key=gk, groq_key=gqk, openai_key=ok)
-    has_llm_keys = bool(gk or gqk or ok)
+        env_settings = Settings.from_env()
+        gk, gqk, ok = resolve_api_keys(
+            env_settings.gemini_api_key,
+            env_settings.groq_api_key,
+            env_settings.openai_api_key,
+            _secrets_get,
+        )
+        rich = RichAnalyzer(gemini_key=gk, groq_key=gqk, openai_key=ok)
+        has_llm_keys = bool(gk or gqk or ok)
 
-    if "analysis_rows" not in st.session_state:
-        st.session_state.analysis_rows = []
-    _init_split_pools()
+        if "analysis_rows" not in st.session_state:
+            st.session_state.analysis_rows = []
+        _init_split_pools()
 
-    src = _session_main_data_source()
+        src = _session_main_data_source()
 
-    if src == "Mağaza":
-        render_store_link_tab()
-    elif src == "Dosya":
-        fu_key = f"main_file_uploader_{st.session_state._file_uploader_gen}"
-        up = st.file_uploader(t("file.upload_label"), type=["csv", "xlsx"], key=fu_key)
-        if up is not None:
-            try:
-                raw = up.getvalue()
-                sig = (up.name, len(raw))
-                if st.session_state.get("_file_pool_sig") != sig:
-                    if up.name.lower().endswith(".csv"):
-                        df = pd.read_csv(io.BytesIO(raw))
+        if src == "Mağaza":
+            render_store_link_tab()
+        elif src == "Dosya":
+            fu_key = f"main_file_uploader_{st.session_state._file_uploader_gen}"
+            up = st.file_uploader(t("file.upload_label"), type=["csv", "xlsx"], key=fu_key)
+            if up is not None:
+                try:
+                    raw = up.getvalue()
+                    sig = (up.name, len(raw))
+                    if st.session_state.get("_file_pool_sig") != sig:
+                        if up.name.lower().endswith(".csv"):
+                            df = pd.read_csv(io.BytesIO(raw))
+                        else:
+                            df = pd.read_excel(io.BytesIO(raw))
+                        new_rows = load_reviews_from_dataframe(df)
+                        existing = list(st.session_state.get("review_pool_file") or [])
+                        st.session_state.review_pool_file = dedupe_reviews(existing + new_rows)
+                        st.session_state._file_pool_sig = sig
+                        srcs = list(st.session_state.get("_file_pool_sources") or [])
+                        srcs.append(up.name)
+                        st.session_state._file_pool_sources = srcs
+                        st.session_state.analysis_rows = []
+                except Exception as e:
+                    st.error(str(e))
+            elif st.session_state.review_pool_file:
+                srcs = st.session_state.get("_file_pool_sources") or []
+                n = len(st.session_state.review_pool_file)
+                if len(srcs) > 1:
+                    shown = ", ".join(srcs[-5:])
+                    more = "…" if len(srcs) > 5 else ""
+                    st.caption(
+                        t("file.loaded_merged", count=len(srcs), files=shown, more=more, n=n)
+                    )
+                else:
+                    fn = srcs[0] if srcs else (
+                        st.session_state.get("_file_pool_sig", ("—",))[0]
+                        if isinstance(st.session_state.get("_file_pool_sig"), tuple)
+                        else "—"
+                    )
+                    st.caption(t("file.loaded_single", file=fn, n=n))
+            if st.session_state.review_pool_file and st.button(
+                t("file.clear_pool"), use_container_width=True, key="btn_clear_file_pool"
+            ):
+                st.session_state.review_pool_file = []
+                st.session_state.pop("_file_pool_sig", None)
+                st.session_state._file_pool_sources = []
+                st.session_state.analysis_rows = []
+                st.session_state._file_uploader_gen = int(st.session_state._file_uploader_gen) + 1
+                st.rerun()
+        elif src == "Metin":
+            ta = st.text_area(
+                t("paste.label"),
+                height=200,
+                key="paste_reviews",
+                label_visibility="visible",
+                placeholder=t("paste.placeholder"),
+            )
+            if st.button(t("paste.upload_btn"), use_container_width=True, key="btn_paste"):
+                pool = parse_pasted_reviews(ta)
+                st.session_state.review_pool_paste = pool
+                st.session_state.analysis_rows = []
+        else:
+            render_compare_tab(
+                rich=rich,
+                has_llm_keys=has_llm_keys,
+                default_models=DEFAULT_MODELS,
+            )
+
+        pool = _active_review_pool()
+        src_cur = _session_main_data_source()
+        _is_compare_src_early = src_cur == "Uygulama karşılaştır"
+        if _is_compare_src_early:
+            # Compare panel kendi "havuzdaki yorum" özetini (uygulama başına ayrı) gösteriyor.
+            pool_display_count = 0
+        else:
+            pool_display_count = len(pool)
+        if (not _is_compare_src_early) and _havuz_metric_visible(src_cur, pool_display_count):
+            st.markdown(
+                f'<div class="metric-strip"><div class="metric-strip-label">{t("metric.pool_count")}</div>'
+                f'<div class="metric-strip-value">{pool_display_count}</div></div>',
+                unsafe_allow_html=True,
+            )
+        if (not _is_compare_src_early) and pool:
+            raw_df = pd.DataFrame(pool)
+            with st.expander(t("download.raw_section"), expanded=False):
+                c1, c2 = st.columns(2)
+                with c1:
+                    st.download_button(
+                        t("download.csv"),
+                        data=df_to_csv_bytes(raw_df),
+                        file_name=f"reviews_raw_{datetime.now():%Y%m%d_%H%M}.csv",
+                        mime="text/csv",
+                        use_container_width=True,
+                    )
+                with c2:
+                    st.download_button(
+                        t("download.excel"),
+                        data=df_to_excel_bytes(raw_df),
+                        file_name=f"reviews_raw_{datetime.now():%Y%m%d_%H%M}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        use_container_width=True,
+                    )
+
+        _is_compare_src = src_cur == "Uygulama karşılaştır"
+
+        # Compare kaynağında "Analiz ayarları" ve "Duygu analizini başlat" butonu
+        # compare panel içinde kendi akışı olarak render edilir — burada gösterilmez.
+        if not _is_compare_src:
+            st.markdown(
+                f'<p class="section-title">{t("section.analysis_settings")}</p>',
+                unsafe_allow_html=True,
+            )
+
+            _method_labels_main = {
+                "Hızlı (heuristic)": t("compare.method_fast"),
+                "Zengin (LLM)": t("compare.method_rich"),
+            }
+            method_pick = st.segmented_control(
+                t("section.analysis_settings"),
+                options=["Hızlı (heuristic)", "Zengin (LLM)"],
+                format_func=lambda v: _method_labels_main.get(v, v),
+                selection_mode="single",
+                default="Hızlı (heuristic)",
+                key="main_analysis_method",
+                label_visibility="collapsed",
+                width="stretch",
+            )
+            method = method_pick if method_pick is not None else st.session_state.get(
+                "main_analysis_method", "Hızlı (heuristic)"
+            )
+            use_fast = method == "Hızlı (heuristic)"
+            depth = "Standart"
+            if not use_fast:
+                _depth_labels_main = {
+                    "Standart": t("compare.depth_std"),
+                    "Gelişmiş": t("compare.depth_adv"),
+                }
+                depth = st.radio(
+                    t("compare.depth_label"),
+                    ["Standart", "Gelişmiş"],
+                    horizontal=True,
+                    key="main_depth",
+                    format_func=lambda v: _depth_labels_main.get(v, v),
+                )
+        else:
+            method = st.session_state.get("main_analysis_method", "Hızlı (heuristic)") or "Hızlı (heuristic)"
+            use_fast = method == "Hızlı (heuristic)"
+            depth = st.session_state.get("main_depth", "Standart") or "Standart"
+
+        # Zengin analiz: önce Gemini, kota / hata olursa RichAnalyzer zincirinde Groq → OpenAI.
+        provider = "Google Gemini"
+        model = DEFAULT_MODELS["Google Gemini"]
+
+        mode_idx = 0 if depth == "Standart" else 1
+
+        # --- Analiz akışı: ilk parti + isteğe bağlı "devam et" partileri ---
+        if not _is_compare_src:
+            prepared = _prepare_pool(pool)
+            prep_sig = _pool_signature(prepared)
+            prev_sig = st.session_state.get("_analyzed_pool_sig")
+
+            # Havuz değiştiyse birikmiş durumu sıfırla — rerun'a gerek yok, aynı akış
+            # start butonunu gösterecek.
+            if prev_sig is not None and prev_sig != prep_sig:
+                _reset_incremental_state()
+
+            # Yöntem değişimi de birikmiş analizi geçersiz kılar (hızlı↔zengin).
+            prev_fast = st.session_state.get("_last_analysis_use_fast")
+            if (
+                prev_fast is not None
+                and bool(prev_fast) != bool(use_fast)
+                and (st.session_state.get("analysis_rows") or [])
+            ):
+                _reset_incremental_state()
+
+            analyzed_offset = int(st.session_state.get("_analyzed_offset") or 0)
+            rows_existing = list(st.session_state.get("analysis_rows") or [])
+            total_pool = len(prepared)
+            remaining = max(0, total_pool - analyzed_offset)
+            has_partial = bool(rows_existing) and analyzed_offset > 0
+            batched_llm = (not use_fast) and total_pool > LLM_BATCH_SIZE
+
+            # 1) İlk başlat butonu — henüz hiçbir parti analiz edilmediyse.
+            if not has_partial and st.button(
+                t("analysis.start"), type="primary", use_container_width=True
+            ):
+                if not prepared:
+                    st.warning(t("analysis.warn_load_first"))
+                elif not use_fast and not (gk or gqk or ok):
+                    st.error(t("analysis.err_need_api"))
+                else:
+                    _reset_incremental_state()
+                    if batched_llm:
+                        segment = prepared[:LLM_BATCH_SIZE]
+                        kind = "first"
                     else:
-                        df = pd.read_excel(io.BytesIO(raw))
-                    new_rows = load_reviews_from_dataframe(df)
-                    existing = list(st.session_state.get("review_pool_file") or [])
-                    st.session_state.review_pool_file = dedupe_reviews(existing + new_rows)
-                    st.session_state._file_pool_sig = sig
-                    srcs = list(st.session_state.get("_file_pool_sources") or [])
-                    srcs.append(up.name)
-                    st.session_state._file_pool_sources = srcs
-                    st.session_state.analysis_rows = []
-            except Exception as e:
-                st.error(str(e))
-        elif st.session_state.review_pool_file:
-            srcs = st.session_state.get("_file_pool_sources") or []
-            n = len(st.session_state.review_pool_file)
-            if len(srcs) > 1:
-                shown = ", ".join(srcs[-5:])
-                more = "…" if len(srcs) > 5 else ""
-                st.caption(
-                    t("file.loaded_merged", count=len(srcs), files=shown, more=more, n=n)
-                )
-            else:
-                fn = srcs[0] if srcs else (
-                    st.session_state.get("_file_pool_sig", ("—",))[0]
-                    if isinstance(st.session_state.get("_file_pool_sig"), tuple)
-                    else "—"
-                )
-                st.caption(t("file.loaded_single", file=fn, n=n))
-        if st.session_state.review_pool_file and st.button(
-            t("file.clear_pool"), use_container_width=True, key="btn_clear_file_pool"
-        ):
-            st.session_state.review_pool_file = []
-            st.session_state.pop("_file_pool_sig", None)
-            st.session_state._file_pool_sources = []
-            st.session_state.analysis_rows = []
-            st.session_state._file_uploader_gen = int(st.session_state._file_uploader_gen) + 1
-            st.rerun()
-    elif src == "Metin":
-        ta = st.text_area(
-            t("paste.label"),
-            height=200,
-            key="paste_reviews",
-            label_visibility="visible",
-            placeholder=t("paste.placeholder"),
-        )
-        if st.button(t("paste.upload_btn"), use_container_width=True, key="btn_paste"):
-            pool = parse_pasted_reviews(ta)
-            st.session_state.review_pool_paste = pool
-            st.session_state.analysis_rows = []
-    else:
-        render_compare_tab(
-            rich=rich,
-            has_llm_keys=has_llm_keys,
-            default_models=DEFAULT_MODELS,
-        )
+                        segment = prepared
+                        kind = "plain"
+                    _run_analysis_segment(
+                        segment,
+                        offset=0,
+                        kind=kind,
+                        use_fast=use_fast,
+                        rich=rich,
+                        provider=provider,
+                        model=model,
+                        mode_idx=mode_idx,
+                        pool_sig=prep_sig,
+                    )
+                    st.rerun()
 
-    pool = _active_review_pool()
-    src_cur = _session_main_data_source()
-    _is_compare_src_early = src_cur == "Uygulama karşılaştır"
-    if _is_compare_src_early:
-        # Compare panel kendi "havuzdaki yorum" özetini (uygulama başına ayrı) gösteriyor.
-        pool_display_count = 0
-    else:
-        pool_display_count = len(pool)
-    if (not _is_compare_src_early) and _havuz_metric_visible(src_cur, pool_display_count):
-        st.markdown(
-            f'<div class="metric-strip"><div class="metric-strip-label">{t("metric.pool_count")}</div>'
-            f'<div class="metric-strip-value">{pool_display_count}</div></div>',
-            unsafe_allow_html=True,
-        )
-    if (not _is_compare_src_early) and pool:
-        raw_df = pd.DataFrame(pool)
-        with st.expander(t("download.raw_section"), expanded=False):
-            c1, c2 = st.columns(2)
-            with c1:
+            # 2) Devam et butonu — kısmi analiz var ve havuzda daha yorum kaldıysa.
+            if has_partial and remaining > 0 and not use_fast:
+                if remaining > LLM_BATCH_SIZE:
+                    next_n = LLM_BATCH_SIZE
+                    btn_label = t("analysis.continue_next", n=next_n)
+                    kind = "next"
+                else:
+                    next_n = remaining
+                    btn_label = t("analysis.continue_remaining", n=next_n)
+                    kind = "last"
+
+                cont_c, reset_c = st.columns([3, 1])
+                with cont_c:
+                    do_continue = st.button(
+                        btn_label,
+                        type="primary",
+                        use_container_width=True,
+                        key="btn_analysis_continue",
+                    )
+                with reset_c:
+                    do_reset = st.button(
+                        t("analysis.restart"),
+                        type="secondary",
+                        use_container_width=True,
+                        key="btn_analysis_restart",
+                    )
+                if do_reset:
+                    _reset_incremental_state()
+                    st.rerun()
+                if do_continue:
+                    segment = prepared[analyzed_offset : analyzed_offset + next_n]
+                    _run_analysis_segment(
+                        segment,
+                        offset=analyzed_offset,
+                        kind=kind,
+                        use_fast=use_fast,
+                        rich=rich,
+                        provider=provider,
+                        model=model,
+                        mode_idx=mode_idx,
+                        pool_sig=prep_sig,
+                    )
+                    st.rerun()
+
+                # Kullanıcı ilerlemeyi net görsün: şu ana kadar toplam analiz edilen.
+                st.caption(t("analysis.batch_caption", done=analyzed_offset, total=total_pool))
+
+        rows = st.session_state.analysis_rows
+        if rows:
+            use_fast_last = bool(st.session_state.get("_last_analysis_use_fast", True))
+            if _is_compare_src:
+                # Split: iki uygulama için dashboard/dağılım grafiklerini yan yana render et.
+                cmp_detail = st.session_state.get("cmp_detail_rows") or {}
+                cmp_res = st.session_state.get("cmp_results") or {}
+                slugs = [s for s in cmp_res.keys() if (cmp_detail.get(s) or [])][:2]
+                if len(slugs) == 2:
+                    st.markdown(
+                        f'<h2 class="sr-analysis-page-title">{t("dash.page_title")}</h2>',
+                        unsafe_allow_html=True,
+                    )
+                    col_a, col_b = st.columns(2, gap="medium")
+                    for col, slug in zip((col_a, col_b), slugs):
+                        meta = cmp_res.get(slug) or {}
+                        rows_slug = cmp_detail.get(slug) or []
+                        app_title = str(meta.get("title") or slug)
+                        with col:
+                            render_analysis_results_dashboard(
+                                rows_slug,
+                                use_fast=use_fast_last,
+                                key_suffix=slug,
+                                compact=True,
+                                section_title=app_title,
+                            )
+                else:
+                    render_analysis_results_dashboard(rows, use_fast=use_fast_last)
+            else:
+                render_analysis_results_dashboard(rows, use_fast=use_fast_last)
+            df = pd.DataFrame(rows)
+
+            # Compare akışında yorumları compare_panel kendi a/b seçicisiyle üstte
+            # zaten gösteriyor; dashboard altında tekrar basmayalım.
+            if not _is_compare_src:
+                st.markdown(
+                    f'<p class="section-title section-title--tight">{t("section.reviews")}</p>',
+                    unsafe_allow_html=True,
+                )
+                render_analyzed_review_cards(rows, key_prefix="main_analiz")
+
+            out_df = df.drop(columns=["Tarih"], errors="ignore") if "Tarih" in df.columns else df
+            d_csv, d_pdf = st.columns(2)
+            with d_csv:
                 st.download_button(
-                    t("download.csv"),
-                    data=df_to_csv_bytes(raw_df),
-                    file_name=f"reviews_raw_{datetime.now():%Y%m%d_%H%M}.csv",
+                    t("download.analysis_csv"),
+                    data=df_to_csv_bytes(out_df),
+                    file_name=f"analiz_{datetime.now():%Y%m%d_%H%M}.csv",
                     mime="text/csv",
                     use_container_width=True,
                 )
-            with c2:
-                st.download_button(
-                    t("download.excel"),
-                    data=df_to_excel_bytes(raw_df),
-                    file_name=f"reviews_raw_{datetime.now():%Y%m%d_%H%M}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True,
-                )
-
-    _is_compare_src = src_cur == "Uygulama karşılaştır"
-
-    # Compare kaynağında "Analiz ayarları" ve "Duygu analizini başlat" butonu
-    # compare panel içinde kendi akışı olarak render edilir — burada gösterilmez.
-    if not _is_compare_src:
-        st.markdown(
-            f'<p class="section-title">{t("section.analysis_settings")}</p>',
-            unsafe_allow_html=True,
-        )
-
-        _method_labels_main = {
-            "Hızlı (heuristic)": t("compare.method_fast"),
-            "Zengin (LLM)": t("compare.method_rich"),
-        }
-        method_pick = st.segmented_control(
-            t("section.analysis_settings"),
-            options=["Hızlı (heuristic)", "Zengin (LLM)"],
-            format_func=lambda v: _method_labels_main.get(v, v),
-            selection_mode="single",
-            default="Hızlı (heuristic)",
-            key="main_analysis_method",
-            label_visibility="collapsed",
-            width="stretch",
-        )
-        method = method_pick if method_pick is not None else st.session_state.get(
-            "main_analysis_method", "Hızlı (heuristic)"
-        )
-        use_fast = method == "Hızlı (heuristic)"
-        depth = "Standart"
-        if not use_fast:
-            _depth_labels_main = {
-                "Standart": t("compare.depth_std"),
-                "Gelişmiş": t("compare.depth_adv"),
-            }
-            depth = st.radio(
-                t("compare.depth_label"),
-                ["Standart", "Gelişmiş"],
-                horizontal=True,
-                key="main_depth",
-                format_func=lambda v: _depth_labels_main.get(v, v),
-            )
-    else:
-        method = st.session_state.get("main_analysis_method", "Hızlı (heuristic)") or "Hızlı (heuristic)"
-        use_fast = method == "Hızlı (heuristic)"
-        depth = st.session_state.get("main_depth", "Standart") or "Standart"
-
-    # Zengin analiz: önce Gemini, kota / hata olursa RichAnalyzer zincirinde Groq → OpenAI.
-    provider = "Google Gemini"
-    model = DEFAULT_MODELS["Google Gemini"]
-
-    mode_idx = 0 if depth == "Standart" else 1
-
-    # --- Analiz akışı: ilk parti + isteğe bağlı "devam et" partileri ---
-    if not _is_compare_src:
-        prepared = _prepare_pool(pool)
-        prep_sig = _pool_signature(prepared)
-        prev_sig = st.session_state.get("_analyzed_pool_sig")
-
-        # Havuz değiştiyse birikmiş durumu sıfırla — rerun'a gerek yok, aynı akış
-        # start butonunu gösterecek.
-        if prev_sig is not None and prev_sig != prep_sig:
-            _reset_incremental_state()
-
-        # Yöntem değişimi de birikmiş analizi geçersiz kılar (hızlı↔zengin).
-        prev_fast = st.session_state.get("_last_analysis_use_fast")
-        if (
-            prev_fast is not None
-            and bool(prev_fast) != bool(use_fast)
-            and (st.session_state.get("analysis_rows") or [])
-        ):
-            _reset_incremental_state()
-
-        analyzed_offset = int(st.session_state.get("_analyzed_offset") or 0)
-        rows_existing = list(st.session_state.get("analysis_rows") or [])
-        total_pool = len(prepared)
-        remaining = max(0, total_pool - analyzed_offset)
-        has_partial = bool(rows_existing) and analyzed_offset > 0
-        batched_llm = (not use_fast) and total_pool > LLM_BATCH_SIZE
-
-        # 1) İlk başlat butonu — henüz hiçbir parti analiz edilmediyse.
-        if not has_partial and st.button(
-            t("analysis.start"), type="primary", use_container_width=True
-        ):
-            if not prepared:
-                st.warning(t("analysis.warn_load_first"))
-            elif not use_fast and not (gk or gqk or ok):
-                st.error(t("analysis.err_need_api"))
-            else:
-                _reset_incremental_state()
-                if batched_llm:
-                    segment = prepared[:LLM_BATCH_SIZE]
-                    kind = "first"
-                else:
-                    segment = prepared
-                    kind = "plain"
-                _run_analysis_segment(
-                    segment,
-                    offset=0,
-                    kind=kind,
-                    use_fast=use_fast,
-                    rich=rich,
-                    provider=provider,
-                    model=model,
-                    mode_idx=mode_idx,
-                    pool_sig=prep_sig,
-                )
-                st.rerun()
-
-        # 2) Devam et butonu — kısmi analiz var ve havuzda daha yorum kaldıysa.
-        if has_partial and remaining > 0 and not use_fast:
-            if remaining > LLM_BATCH_SIZE:
-                next_n = LLM_BATCH_SIZE
-                btn_label = t("analysis.continue_next", n=next_n)
-                kind = "next"
-            else:
-                next_n = remaining
-                btn_label = t("analysis.continue_remaining", n=next_n)
-                kind = "last"
-
-            cont_c, reset_c = st.columns([3, 1])
-            with cont_c:
-                do_continue = st.button(
-                    btn_label,
-                    type="primary",
-                    use_container_width=True,
-                    key="btn_analysis_continue",
-                )
-            with reset_c:
-                do_reset = st.button(
-                    t("analysis.restart"),
-                    type="secondary",
-                    use_container_width=True,
-                    key="btn_analysis_restart",
-                )
-            if do_reset:
-                _reset_incremental_state()
-                st.rerun()
-            if do_continue:
-                segment = prepared[analyzed_offset : analyzed_offset + next_n]
-                _run_analysis_segment(
-                    segment,
-                    offset=analyzed_offset,
-                    kind=kind,
-                    use_fast=use_fast,
-                    rich=rich,
-                    provider=provider,
-                    model=model,
-                    mode_idx=mode_idx,
-                    pool_sig=prep_sig,
-                )
-                st.rerun()
-
-            # Kullanıcı ilerlemeyi net görsün: şu ana kadar toplam analiz edilen.
-            st.caption(t("analysis.batch_caption", done=analyzed_offset, total=total_pool))
-
-    rows = st.session_state.analysis_rows
-    if rows:
-        use_fast_last = bool(st.session_state.get("_last_analysis_use_fast", True))
-        if _is_compare_src:
-            # Split: iki uygulama için dashboard/dağılım grafiklerini yan yana render et.
-            cmp_detail = st.session_state.get("cmp_detail_rows") or {}
-            cmp_res = st.session_state.get("cmp_results") or {}
-            slugs = [s for s in cmp_res.keys() if (cmp_detail.get(s) or [])][:2]
-            if len(slugs) == 2:
-                st.markdown(
-                    f'<h2 class="sr-analysis-page-title">{t("dash.page_title")}</h2>',
-                    unsafe_allow_html=True,
-                )
-                col_a, col_b = st.columns(2, gap="medium")
-                for col, slug in zip((col_a, col_b), slugs):
-                    meta = cmp_res.get(slug) or {}
-                    rows_slug = cmp_detail.get(slug) or []
-                    app_title = str(meta.get("title") or slug)
-                    with col:
-                        render_analysis_results_dashboard(
-                            rows_slug,
-                            use_fast=use_fast_last,
-                            key_suffix=slug,
-                            compact=True,
-                            section_title=app_title,
-                        )
-            else:
-                render_analysis_results_dashboard(rows, use_fast=use_fast_last)
-        else:
-            render_analysis_results_dashboard(rows, use_fast=use_fast_last)
-        df = pd.DataFrame(rows)
-
-        # Compare akışında yorumları compare_panel kendi a/b seçicisiyle üstte
-        # zaten gösteriyor; dashboard altında tekrar basmayalım.
-        if not _is_compare_src:
-            st.markdown(
-                f'<p class="section-title section-title--tight">{t("section.reviews")}</p>',
-                unsafe_allow_html=True,
-            )
-            render_analyzed_review_cards(rows, key_prefix="main_analiz")
-
-        out_df = df.drop(columns=["Tarih"], errors="ignore") if "Tarih" in df.columns else df
-        d_csv, d_pdf = st.columns(2)
-        with d_csv:
-            st.download_button(
-                t("download.analysis_csv"),
-                data=df_to_csv_bytes(out_df),
-                file_name=f"analiz_{datetime.now():%Y%m%d_%H%M}.csv",
-                mime="text/csv",
-                use_container_width=True,
-            )
-        with d_pdf:
-            try:
-                _analiz_pdf = build_analysis_pdf_bytes(rows, source_label=src_cur)
-                st.download_button(
-                    t("download.analysis_pdf"),
-                    data=_analiz_pdf,
-                    file_name=safe_pdf_filename(f"analiz_{src_cur}"),
-                    mime="application/pdf",
-                    use_container_width=True,
-                )
-            except FileNotFoundError as e:
-                st.caption(str(e))
-            except Exception as e:
-                st.caption(f"PDF: {e}")
+            with d_pdf:
+                try:
+                    _analiz_pdf = build_analysis_pdf_bytes(rows, source_label=src_cur)
+                    st.download_button(
+                        t("download.analysis_pdf"),
+                        data=_analiz_pdf,
+                        file_name=safe_pdf_filename(f"analiz_{src_cur}"),
+                        mime="application/pdf",
+                        use_container_width=True,
+                    )
+                except FileNotFoundError as e:
+                    st.caption(str(e))
+                except Exception as e:
+                    st.caption(f"PDF: {e}")
 
     render_footer(on_about=False)
 
