@@ -411,8 +411,8 @@ div[data-testid="stDataFrame"] {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background: rgba(255, 255, 255, 0.96) !important;
-  border: 2px solid rgba(15, 23, 42, 0.14) !important;
+  background-color: rgba(241, 245, 249, 0.98) !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1) !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button svg,
@@ -448,8 +448,8 @@ div[data-testid="stDataFrame"] {
   justify-content: center !important;
   border-radius: 50% !important;
   overflow: hidden !important;
-  font-size: 2.88rem !important;
-  line-height: 1 !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
   letter-spacing: 0 !important;
 }
 
@@ -471,8 +471,9 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  border: 2px solid rgba(15, 23, 42, 0.14) !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+  background-color: rgba(241, 245, 249, 0.98) !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
 }
 div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button > div {
   margin: 0 !important;
@@ -498,8 +499,8 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   justify-content: center !important;
   border-radius: 50% !important;
   overflow: hidden !important;
-  font-size: 2.42rem !important;
-  line-height: 1 !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
   letter-spacing: 0 !important;
 }
 

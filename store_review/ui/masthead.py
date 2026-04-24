@@ -6,6 +6,7 @@ import streamlit as st
 
 from store_review.branding import header_logo_data_uri
 from store_review.config.i18n import LANGUAGES, get_lang, lang_query_suffix, set_lang, t
+from store_review.ui.masthead_flags import masthead_flag_css_block
 
 SOURCE_OPTIONS = [
     "Mağaza",
@@ -81,10 +82,10 @@ def render_masthead(*, on_about: bool) -> None:
         with row_lang:
             with st.container(key="masthead_lang_slot"):
                 cur = get_lang()
-                cur_flag = next(f for c, _, f in LANGUAGES if c == cur)
                 cur_name = next(n for c, n, _ in LANGUAGES if c == cur)
+                st.markdown(masthead_flag_css_block(cur), unsafe_allow_html=True)
                 with st.popover(
-                    cur_flag,
+                    "\u00a0",
                     key="masthead_lang_pop",
                     width=52,
                     help=cur_name,
@@ -94,9 +95,9 @@ def render_masthead(*, on_about: bool) -> None:
                     for i in range(0, len(LANGUAGES), _per_row):
                         chunk = LANGUAGES[i : i + _per_row]
                         cols = st.columns(len(chunk))
-                        for col, (code, name, flag) in zip(cols, chunk):
+                        for col, (code, name, _) in zip(cols, chunk):
                             with col:
-                                if st.button(flag, key=f"masthead_pick_{code}", help=name):
+                                if st.button("\u200b", key=f"masthead_pick_{code}", help=name):
                                     set_lang(code)
                                     st.rerun()
 
