@@ -415,11 +415,14 @@ def main():
         render_analysis_results_dashboard(rows, use_fast=use_fast_last)
         df = pd.DataFrame(rows)
 
-        st.markdown(
-            f'<p class="section-title section-title--tight">{t("section.reviews")}</p>',
-            unsafe_allow_html=True,
-        )
-        render_analyzed_review_cards(rows, key_prefix="main_analiz")
+        # Compare akışında yorumları compare_panel kendi a/b seçicisiyle üstte
+        # zaten gösteriyor; dashboard altında tekrar basmayalım.
+        if not _is_compare_src:
+            st.markdown(
+                f'<p class="section-title section-title--tight">{t("section.reviews")}</p>',
+                unsafe_allow_html=True,
+            )
+            render_analyzed_review_cards(rows, key_prefix="main_analiz")
 
         out_df = df.drop(columns=["Tarih"], errors="ignore") if "Tarih" in df.columns else df
         d_csv, d_pdf = st.columns(2)
