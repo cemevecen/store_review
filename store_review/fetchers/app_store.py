@@ -6,6 +6,8 @@ from typing import Any, Callable, Dict, List, Optional
 
 import requests
 
+from .lang_filter import filter_local_reviews
+
 
 def get_app_store_reviews(
     app_id: str,
@@ -134,4 +136,10 @@ def get_app_store_reviews(
 
     if _progress_callback:
         _progress_callback(1.0)
-    return list(all_reviews_map.values())
+
+    results = list(all_reviews_map.values())
+    # TR storefront yabancı-dildeki yorumları da döndürebiliyor; "yerel"
+    # semantiğini garantilemek için script-filtresi uygulanır.
+    if scope == "local":
+        results, _dropped = filter_local_reviews(results, locale="tr")
+    return results

@@ -6,6 +6,8 @@ from typing import Any, Callable, List, Optional, cast
 
 from google_play_scraper import Sort, reviews as play_reviews
 
+from .lang_filter import filter_local_reviews
+
 
 def fetch_google_play_reviews(
     app_id: str,
@@ -222,4 +224,11 @@ def fetch_google_play_reviews(
 
     if _progress_callback:
         _progress_callback(1.0)
-    return list(all_fetched_map.values())
+
+    results = list(all_fetched_map.values())
+    # Storefront `country=tr` olsa bile Google Play yabancı dildeki yorumları
+    # da döndürebiliyor; "yerel" semantiğini garanti altına almak için
+    # sonuçta bir script-filtresi uygulanır.
+    if scope == "local":
+        results, _dropped = filter_local_reviews(results, locale="tr")
+    return results
