@@ -44,8 +44,12 @@ def _cell_text(x: Any) -> str:
     if isinstance(x, float) and pd.isna(x):
         return ""
     s = str(x).replace("\r\n", "\n").replace("\r", "\n")
-    if len(s) > 12000:
-        s = s[:12000] + "…"
+    # PDF layout bozulmalarını önlemek için kontrol karakterlerini temizle
+    # ve aşırı satır kırılımlarını tek boşluğa indir.
+    s = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", "", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    if len(s) > 8000:
+        s = s[:8000] + "…"
     return s
 
 
@@ -76,6 +80,7 @@ def build_analysis_pdf_bytes(rows: list[dict[str, Any]], *, source_label: str) -
     pdf.add_font("NotoSans", "", str(font))
     pdf.add_page()
     pdf.set_font("NotoSans", "", 11)
+    pdf.set_text_color(17, 24, 39)
 
     pdf.set_title("duygu analizi sonuç raporu")
     pdf.set_creator("store_review")
@@ -127,6 +132,7 @@ def build_raw_pool_pdf_bytes(rows: list[dict[str, Any]], *, source_label: str) -
     pdf.add_font("NotoSans", "", str(font))
     pdf.add_page()
     pdf.set_font("NotoSans", "", 11)
+    pdf.set_text_color(17, 24, 39)
     pdf.set_title("yorum havuzu (ham)")
     pdf.set_creator("store_review")
 
