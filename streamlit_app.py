@@ -38,6 +38,7 @@ from store_review.ui.compare_panel import (
     merge_compare_details_for_dashboard,
     render_compare_tab,
 )
+from store_review.ui.footer import render_footer
 from store_review.ui.masthead import (
     SOURCE_OPTIONS,
     SOURCE_POOL_KEY,
@@ -463,6 +464,8 @@ def main():
                 st.caption(str(e))
             except Exception as e:
                 st.caption(f"PDF: {e}")
+
+    render_footer()
 
 
 if __name__ == "__main__":

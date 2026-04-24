@@ -9,6 +9,7 @@ from __future__ import annotations
 import streamlit as st
 
 from store_review.branding import header_logo_data_uri
+from store_review.config.i18n import t
 
 SOURCE_OPTIONS = [
     "Mağaza",
@@ -94,11 +95,18 @@ def render_masthead(*, on_about: bool) -> None:
 
             col_pills, col_about = st.columns([10, 2], vertical_alignment="center")
             with col_pills:
+                _source_labels = {
+                    "Mağaza": t("source.store"),
+                    "Dosya": t("source.file"),
+                    "Metin": t("source.text"),
+                    "Uygulama karşılaştır": t("source.compare"),
+                }
                 st.pills(
-                    "Veri kaynağı",
+                    t("nav.data_source"),
                     SOURCE_OPTIONS,
                     selection_mode="single",
                     default=SOURCE_OPTIONS[0],
+                    format_func=lambda v: _source_labels.get(v, v),
                     key="main_data_source_tab",
                     label_visibility="collapsed",
                     width="stretch",
@@ -108,17 +116,17 @@ def render_masthead(*, on_about: bool) -> None:
                 if on_about:
                     chip_html = (
                         '<div class="hero-about-chip-wrap">'
-                        '<a class="hero-about-chip" href="./" '
-                        'aria-label="Ana sayfaya dön" title="Ana sayfa">'
-                        '<span class="hero-about-chip-dot">x</span>ana sayfa'
+                        f'<a class="hero-about-chip" href="./" '
+                        f'aria-label="{t("nav.home")}" title="{t("nav.home")}">'
+                        f'<span class="hero-about-chip-dot">x</span>{t("nav.home")}'
                         "</a></div>"
                     )
                 else:
                     chip_html = (
                         '<div class="hero-about-chip-wrap">'
-                        '<a class="hero-about-chip" href="about" '
-                        'aria-label="Hakkında sayfasına git" title="Hakkında">'
-                        '<span class="hero-about-chip-dot">i</span>hakkında'
+                        f'<a class="hero-about-chip" href="about" '
+                        f'aria-label="{t("nav.about")}" title="{t("nav.about")}">'
+                        f'<span class="hero-about-chip-dot">i</span>{t("nav.about")}'
                         "</a></div>"
                     )
                 st.markdown(chip_html, unsafe_allow_html=True)

@@ -13,6 +13,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+from store_review.config.i18n import t
 from store_review.core.ai_providers import RichAnalyzer
 from store_review.core.analyzer import analyze_batch, dedupe_reviews
 from store_review.fetchers.app_discovery import (
@@ -28,6 +29,7 @@ from store_review.ui.review_cards import render_analyzed_review_cards
 from store_review.ui.store_link_panel import (
     RANGE_DAYS,
     RANGE_OPTIONS,
+    _fmt_date_range,
     _inject_store_search_css,
 )
 
@@ -307,7 +309,7 @@ def _fetch_compare_pools(days: int) -> tuple[dict[str, dict[str, Any]], list[str
 
     with st.container(key="cmp_prepare_box"):
         st.markdown(
-            '<p class="cmp-prepare-title">yorum havuzu hazırlanıyor</p>',
+            f'<p class="cmp-prepare-title">{html.escape(t("compare.prep_title"))}</p>',
             unsafe_allow_html=True,
         )
         col1, col2 = st.columns(2, gap="small")
@@ -369,7 +371,7 @@ def _fetch_compare_pools(days: int) -> tuple[dict[str, dict[str, Any]], list[str
                     (
                         '<div class="cmp-prepare-status">'
                         f'<span class="cmp-prepare-chip cmp-prepare-chip--pct">%{int(pct_now * 100)}</span>'
-                        f'<span class="cmp-prepare-chip cmp-prepare-chip--elapsed">geçen {_fmt_cmp_duration(elapsed)}</span>'
+                        f'<span class="cmp-prepare-chip cmp-prepare-chip--elapsed">{html.escape(t("compare.elapsed"))} {_fmt_cmp_duration(elapsed)}</span>'
                         "</div>"
                     ),
                     unsafe_allow_html=True,
@@ -630,7 +632,7 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
     in_key = f"cmp_store_in_{slot}"
 
     st.text_input(
-        f"{heading} — uygulama ara veya mağaza linki / ID",
+        t("store.slot_input_label", heading=heading),
         key=in_key,
         placeholder="Örn. trendyol, com.example, App Store ID veya mağaza linki",
         label_visibility="visible",
@@ -673,7 +675,7 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
             with plat_c:
                 st.markdown('<div class="sl-plat-radio-wrap">', unsafe_allow_html=True)
                 st.radio(
-                    "Platform",
+                    t("platform.label"),
                     ["Android", "iOS"],
                     horizontal=True,
                     key=f"{p}last_filter",
@@ -682,24 +684,26 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
                 )
                 st.markdown("</div>", unsafe_allow_html=True)
             with reset_c:
-                if sid and st.button("Sıfırla", key=f"cmp_slot_reset_{slot}", use_container_width=False):
+                if sid and st.button(t("common.reset"), key=f"cmp_slot_reset_{slot}", use_container_width=False):
                     _reset_cmp_slot(slot)
                     st.rerun()
 
         with st.container(key=f"cmp_scope_row_{slot}"):
             st.markdown(
-                '<p class="sl-scope-label">Yorum kaynağı</p>',
+                f'<p class="sl-scope-label">{t("scope.label")}</p>',
                 unsafe_allow_html=True,
             )
+            _scope_label_map = {"Yerel": t("scope.local"), "Global": t("scope.global")}
             st.segmented_control(
-                "Yorum kaynağı",
+                t("scope.label"),
                 options=["Yerel", "Global"],
+                format_func=lambda v: _scope_label_map.get(v, v),
                 selection_mode="single",
                 default="Global",
                 key=f"cmp_scope_{slot}",
                 label_visibility="collapsed",
                 width="stretch",
-                help="yerel: yalnızca türkiye storefront'u. global: tüm ülkelerden birleşik havuz (varsayılan).",
+                help=t("scope.help"),
             )
 
         filt = st.session_state.get(f"{p}last_filter", "Android")
@@ -739,7 +743,7 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
                     with bt:
                         aid = app.get("appId", "")
                         plat = app.get("platform", "Android")
-                        if st.button("Seç", key=f"cmp_sel_{slot}_{idx}_{aid}", use_container_width=True):
+                        if st.button(t("common.select"), key=f"cmp_sel_{slot}_{idx}_{aid}", use_container_width=True):
                             st.session_state[f"{p}selected_id"] = aid
                             st.session_state[f"{p}selected_platform"] = plat
                             st.session_state[f"{p}selected_title"] = str(app.get("title") or "")[:120]
@@ -748,7 +752,7 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
                             st.session_state[f"_pending_cmp_store_in_{slot}"] = aid
                             st.rerun()
                 if len(results) > n_show:
-                    if st.button("Daha fazla göster", key=f"cmp_more_{slot}"):
+                    if st.button(t("common.show_more"), key=f"cmp_more_{slot}"):
                         st.session_state[f"{p}display_n"] = min(
                             int(st.session_state.get(f"{p}display_n") or 12) + 12,
                             len(results),
@@ -760,7 +764,7 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
         with st.container(key=f"cmp_reset_row_{slot}"):
             _, reset_c = st.columns([4, 1], gap="small", vertical_alignment="center")
             with reset_c:
-                if st.button("Sıfırla", key=f"cmp_slot_reset_{slot}", use_container_width=False):
+                if st.button(t("common.reset"), key=f"cmp_slot_reset_{slot}", use_container_width=False):
                     _reset_cmp_slot(slot)
                     st.rerun()
 
@@ -901,20 +905,21 @@ def render_compare_tab(
     with st.container(key="cmp_shell"):
         ca, cb = st.columns(2, gap="small")
         with ca:
-            _render_compare_app_picker(0, "Uygulama 1")
+            _render_compare_app_picker(0, t("compare.slot_heading", i=1))
         with cb:
-            _render_compare_app_picker(1, "Uygulama 2")
+            _render_compare_app_picker(1, t("compare.slot_heading", i=2))
 
         with st.container(key="cmp_date_method_row"):
             tcol, _sp = st.columns([1, 2.2], gap="medium", vertical_alignment="center")
             with tcol:
                 time_label = st.selectbox(
-                    "Tarih",
+                    t("date.range"),
                     RANGE_OPTIONS,
                     index=None,
-                    placeholder="tarih aralığı seç",
+                    placeholder=t("date.placeholder"),
                     key="cmp_time_range",
                     label_visibility="hidden",
+                    format_func=_fmt_date_range,
                 )
             with _sp:
                 st.empty()
@@ -929,7 +934,7 @@ def render_compare_tab(
         #    otomatik hazırla. Açılış sırasında ön-seçili bir tarih yok; böylece
         #    kullanıcı tarih aralığına bilinçli karar vermeden çekim başlamaz.
         if both_selected and not date_chosen:
-            st.caption("iki uygulamayı seçtikten sonra tarih aralığı seçince havuzlar otomatik hazırlanır.")
+            st.caption(t("compare.hint_pick_date"))
         current_key = _cmp_prepared_key() if date_chosen else ""
         prepared_pools = st.session_state.get("cmp_prepared_pools") or {}
         if (
@@ -968,7 +973,7 @@ def render_compare_tab(
                 )
             st.markdown(
                 '<div class="cmp-pool-summary">'
-                '<p class="cmp-pool-summary-head">havuzdaki yorum</p>'
+                f'<p class="cmp-pool-summary-head">{html.escape(t("compare.pool_summary_head"))}</p>'
                 '<div class="cmp-pool-summary-list">'
                 + "".join(rows_html_parts)
                 + "</div></div>",
@@ -977,12 +982,17 @@ def render_compare_tab(
 
         # 3) Analiz yöntemi seçimi — "Karşılaştırmayı başlat" butonunun hemen üstünde.
         st.markdown(
-            '<p class="section-title section-title--tight">Analiz ayarları</p>',
+            f'<p class="section-title section-title--tight">{html.escape(t("compare.analysis_settings"))}</p>',
             unsafe_allow_html=True,
         )
+        _method_label_map = {
+            "Hızlı (heuristic)": t("compare.method_fast"),
+            "Zengin (LLM)": t("compare.method_rich"),
+        }
         _method_pick_cmp = st.segmented_control(
-            "Analiz yöntemi",
+            t("compare.analysis_settings"),
             options=["Hızlı (heuristic)", "Zengin (LLM)"],
+            format_func=lambda v: _method_label_map.get(v, v),
             selection_mode="single",
             default="Hızlı (heuristic)",
             key="main_analysis_method",
@@ -993,18 +1003,23 @@ def render_compare_tab(
             "main_analysis_method", "Hızlı (heuristic)"
         )
         if _method_cmp != "Hızlı (heuristic)":
+            _depth_label_map = {
+                "Standart": t("compare.depth_std"),
+                "Gelişmiş": t("compare.depth_adv"),
+            }
             st.radio(
-                "Derinlik (yalnız zengin)",
+                t("compare.depth_label"),
                 ["Standart", "Gelişmiş"],
                 horizontal=True,
                 key="main_depth",
+                format_func=lambda v: _depth_label_map.get(v, v),
             )
 
         # 4) Tek buton: "Karşılaştırmayı başlat". Basıldığında analiz + merge.
         _ready_to_start = bool(prepared_pools) and len(prepared_pools) >= 2
         with st.container(key="cmp_start_method_row"):
             if st.button(
-                "Karşılaştırmayı başlat",
+                t("common.start_compare"),
                 type="primary",
                 use_container_width=True,
                 key="cmp_start",
@@ -1038,7 +1053,7 @@ def render_compare_tab(
 
         _, c_clear = st.columns([3, 1], gap="small")
         with c_clear:
-            if res and st.button("Sonuçları temizle", key="cmp_clear", use_container_width=True):
+            if res and st.button(t("common.clear_results"), key="cmp_clear", use_container_width=True):
                 st.session_state.cmp_results = {}
                 st.session_state.cmp_detail_rows = {}
                 st.session_state.pop("cmp_range_label", None)

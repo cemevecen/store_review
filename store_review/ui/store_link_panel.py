@@ -12,6 +12,7 @@ from typing import Any
 
 import streamlit as st
 
+from store_review.config.i18n import t
 from store_review.fetchers.app_discovery import (
     looks_like_search_keyword,
     resolve_direct_input,
@@ -20,6 +21,21 @@ from store_review.fetchers.app_discovery import (
 )
 from store_review.fetchers.app_store import get_app_store_reviews
 from store_review.fetchers.google_play import fetch_google_play_reviews
+
+
+_DATE_I18N_KEYS = {
+    "Son 1 hafta": "date.week",
+    "Son 1 ay": "date.month1",
+    "Son 3 ay": "date.month3",
+    "Son 6 ay": "date.month6",
+    "Son 1 yıl": "date.year1",
+    "Son 2 yıl": "date.year2",
+}
+
+
+def _fmt_date_range(lbl: str) -> str:
+    k = _DATE_I18N_KEYS.get(lbl)
+    return t(k) if k else lbl
 
 
 def _run_store_search_with_progress(query: str, platform_filter: str) -> list:
@@ -526,7 +542,7 @@ def render_store_link_tab() -> None:
                     with                     bt:
                         aid = app.get("appId", "")
                         plat = app.get("platform", "Android")
-                        if st.button("Seç", key=f"sl_sel_{idx}_{aid}", use_container_width=True):
+                        if st.button(t("common.select"), key=f"sl_sel_{idx}_{aid}", use_container_width=True):
                             st.session_state.sl_selected_id = aid
                             st.session_state.sl_selected_platform = plat
                             st.session_state.sl_show_search = False
@@ -539,14 +555,14 @@ def render_store_link_tab() -> None:
                             st.session_state._sl_pool_owner = None
                             st.rerun()
                 if len(results) > n_show:
-                    if st.button("Daha fazla göster", key="sl_more"):
+                    if st.button(t("common.show_more"), key="sl_more"):
                         st.session_state.sl_display_n = min(st.session_state.sl_display_n + 12, len(results))
                         st.rerun()
             elif len(text) >= 2:
                 st.warning("Sonuç bulunamadı. Farklı anahtar kelime veya platform deneyin.")
 
     if text or st.session_state.sl_selected_id:
-        if st.button("Seçimi sıfırla", key="sl_reset"):
+        if st.button(t("common.reset_selection"), key="sl_reset"):
             st.session_state.sl_selected_id = None
             st.session_state.sl_selected_platform = None
             st.session_state.sl_show_search = True
@@ -576,24 +592,33 @@ def render_store_link_tab() -> None:
         else:
             _banner_play(resolved.app_id)
 
-    time_label = st.selectbox("Tarih aralığı", RANGE_OPTIONS, index=1, key="sl_time_range")
+    time_label = st.selectbox(
+        t("date.range"),
+        RANGE_OPTIONS,
+        index=1,
+        key="sl_time_range",
+        format_func=_fmt_date_range,
+    )
     days = RANGE_DAYS[time_label]
 
-    st.markdown('<p class="sl-scope-label">Yorum kaynağı</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="sl-scope-label">{t("scope.label")}</p>', unsafe_allow_html=True)
+    _scope_opts = ["Yerel", "Global"]
+    _scope_label_map = {"Yerel": t("scope.local"), "Global": t("scope.global")}
     scope_pick = st.segmented_control(
-        "Yorum kaynağı",
-        options=["Yerel", "Global"],
+        t("scope.label"),
+        options=_scope_opts,
+        format_func=lambda v: _scope_label_map.get(v, v),
         selection_mode="single",
         default="Global",
         key="sl_scope",
         label_visibility="collapsed",
         width="stretch",
-        help="yerel: yalnızca türkiye storefront'u. global: tüm ülkelerden birleşik havuz (varsayılan).",
+        help=t("scope.help"),
     )
     scope_lbl = scope_pick if scope_pick is not None else st.session_state.get("sl_scope", "Global")
     scope_val = "local" if scope_lbl == "Yerel" else "global"
 
-    if st.button("Yorumları çek", type="secondary", use_container_width=True, key="sl_fetch_btn"):
+    if st.button(t("common.fetch_reviews"), type="secondary", use_container_width=True, key="sl_fetch_btn"):
         app_id: str | None = None
         platform: str | None = None
 

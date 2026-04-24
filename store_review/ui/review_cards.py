@@ -10,6 +10,8 @@ from typing import Any
 import pandas as pd
 import streamlit as st
 
+from store_review.config.i18n import t
+
 
 def _format_tr_date(val: Any) -> str:
     if val is None or val == "":
@@ -136,7 +138,7 @@ def render_analyzed_review_cards(rows: list[dict[str, Any]], *, key_prefix: str 
                 unsafe_allow_html=True,
             )
             if st.button(
-                f"genişlet · {n - PREVIEW_SIZE} yorum daha göster",
+                t("cards.expand_with_count", n=n - PREVIEW_SIZE),
                 key=f"{key_prefix}_expand_reviews",
                 use_container_width=True,
             ):
@@ -160,7 +162,7 @@ def render_analyzed_review_cards(rows: list[dict[str, Any]], *, key_prefix: str 
 
     if n > PAGE_SIZE:
         if show_all:
-            if st.button("50'şer göster", key=f"{key_prefix}_collapse_list"):
+            if st.button(t("cards.collapse_list"), key=f"{key_prefix}_collapse_list"):
                 st.session_state[show_all_k] = False
                 st.session_state[page_k] = 0
                 st.rerun()
@@ -173,13 +175,13 @@ def render_analyzed_review_cards(rows: list[dict[str, Any]], *, key_prefix: str 
             with st.container(key=f"{key_prefix}_review_pager"):
                 c_prev, c_info, c_next = st.columns([1, 3, 1])
                 with c_prev:
-                    if st.button("Önceki", key=f"{key_prefix}_prev_page", disabled=page <= 0):
+                    if st.button(t("cards.prev"), key=f"{key_prefix}_prev_page", disabled=page <= 0):
                         st.session_state[page_k] = page - 1
                         st.rerun()
                 with c_info:
-                    st.caption(f"**{start + 1}–{end}** / {n} yorum · sayfa **{page + 1}** / **{total_pages}**")
+                    st.caption(t("cards.page_info", start=start + 1, end=end, n=n, page=page + 1, total=total_pages))
                 with c_next:
-                    if st.button("Sonraki", key=f"{key_prefix}_next_page", disabled=page >= total_pages - 1):
+                    if st.button(t("cards.next"), key=f"{key_prefix}_next_page", disabled=page >= total_pages - 1):
                         st.session_state[page_k] = page + 1
                         st.rerun()
 
@@ -198,9 +200,9 @@ def render_analyzed_review_cards(rows: list[dict[str, Any]], *, key_prefix: str 
                                 st.session_state[page_k] = i
                                 st.rerun()
                 else:
-                    st.caption(f"Çok sayfa ({total_pages}); **Önceki** / **Sonraki** ile gezinin.")
+                    st.caption(t("cards.paging_hint", n=total_pages))
 
-                if st.button("Tümünü gör", key=f"{key_prefix}_show_all_reviews", use_container_width=True):
+                if st.button(t("common.show_all"), key=f"{key_prefix}_show_all_reviews", use_container_width=True):
                     st.session_state[show_all_k] = True
                     st.rerun()
 
@@ -224,7 +226,7 @@ def render_analyzed_review_cards(rows: list[dict[str, Any]], *, key_prefix: str 
                 unsafe_allow_html=True,
             )
             if st.button(
-                "daralt · ilk 5 yoruma dön",
+                t("cards.collapse_to_preview"),
                 key=f"{key_prefix}_collapse_preview_btn",
                 use_container_width=True,
             ):
