@@ -21,7 +21,8 @@ _FLAG_CC: dict[str, str] = {
 }
 
 
-def flag_png_url(lang_code: str, *, width: int = 107) -> str:
+def flag_png_url(lang_code: str, *, width: int = 80) -> str:
+    """flagcdn yalnızca belirli ``w*`` genişlikleri sunar (ör. 20, 40, 80, 160, 320); ara değer 404."""
     cc = _FLAG_CC.get(lang_code, lang_code)
     return f"https://flagcdn.com/w{width}/{cc}.png"
 
