@@ -273,6 +273,10 @@ STRINGS: dict[str, dict[str, str]] = {
         "de": "Rezensionen im Pool", "fr": "avis dans le pool", "ar": "المراجعات في التجمع",
         "zh": "池中评论数", "ru": "отзывов в пуле", "pt": "avaliações no pool",
     },
+    "compare.results_summary_heading": {
+        "tr": "Özet", "en": "Summary", "es": "Resumen", "de": "Zusammenfassung",
+        "fr": "Synthèse", "ar": "ملخص", "zh": "摘要", "ru": "Сводка", "pt": "Resumo",
+    },
     "compare.hint_pick_date": {
         "tr": "iki uygulamayı seçtikten sonra tarih aralığı seçince havuzlar otomatik hazırlanır.",
         "en": "after picking both apps, choosing a date range will automatically prepare the pools.",
@@ -960,7 +964,7 @@ STRINGS: dict[str, dict[str, str]] = {
         "de": "Unbestimmt", "fr": "Indéterminé", "ar": "غير محدد",
         "zh": "未确定", "ru": "Не определено", "pt": "Indeterminado",
     },
-    "dash.summary_footer": {
+    "dash.summary_counts_line": {
         "tr": "{pos} olumlu · {neg} olumsuz · {neu} görüş analiz edildi",
         "en": "{pos} positive · {neg} negative · {neu} opinions analyzed",
         "es": "{pos} positivos · {neg} negativos · {neu} opiniones analizadas",
@@ -1077,24 +1081,6 @@ STRINGS: dict[str, dict[str, str]] = {
         "zh": "{heading} — 搜索应用或粘贴商店链接 / ID",
         "ru": "{heading} — поиск приложения либо ссылка / ID",
         "pt": "{heading} — busque um app ou cole link / ID",
-    },
-    # --------- Footer ---------
-    "footer.language_options": {
-        "tr": "Dil seçenekleri", "en": "Language options", "es": "Opciones de idioma",
-        "de": "Spracheinstellungen", "fr": "Options de langue", "ar": "خيارات اللغة",
-        "zh": "语言选项", "ru": "Выбор языка", "pt": "Opções de idioma",
-    },
-    "footer.quick_access": {
-        "tr": "Hızlı erişim", "en": "Quick access", "es": "Acceso rápido",
-        "de": "Schnellzugriff", "fr": "Accès rapide", "ar": "وصول سريع",
-        "zh": "快速访问", "ru": "Быстрый доступ", "pt": "Acesso rápido",
-    },
-    "footer.developed_by": {
-        "tr": "geliştiren: cem evecen", "en": "developer: cem evecen",
-        "es": "desarrollador: cem evecen", "de": "Entwickler: cem evecen",
-        "fr": "développeur : cem evecen", "ar": "المطور: جيم إيڤجن",
-        "zh": "开发者：cem evecen", "ru": "разработчик: cem evecen",
-        "pt": "desenvolvedor: cem evecen",
     },
 }
 

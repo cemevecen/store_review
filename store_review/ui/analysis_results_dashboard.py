@@ -297,13 +297,13 @@ def _render_sentiment_summary(
     <div style="font-size:0.82rem;font-weight:700;color:{title_color};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">{html.escape(summary_title)}</div>
     <div style="font-size:0.9rem;color:#1E293B;line-height:1.75;margin:0;">{summary_body}</div>
     {persona_html}
-    <div class="sr-summary-footer" style="margin-top:18px;padding-top:12px;border-top:1px solid #E2E8F0;display:flex;gap:12px;align-items:center;">
+    <div class="sr-summary-counts-line" style="margin-top:18px;padding-top:12px;border-top:1px solid #E2E8F0;display:flex;gap:12px;align-items:center;">
         <div style="display:flex;gap:4px;">
             <div style="width:8px;height:8px;border-radius:50%;background:#10b981;"></div>
             <div style="width:8px;height:8px;border-radius:50%;background:#f43f5e;"></div>
             <div style="width:8px;height:8px;border-radius:50%;background:#818cf8;"></div>
         </div>
-        <span style="font-size:0.7rem;color:#94A3B8;font-weight:500;">{html.escape(_t("dash.summary_footer", pos=m_olumlu, neg=m_olumsuz, neu=m_istek))}</span>
+        <span style="font-size:0.7rem;color:#94A3B8;font-weight:500;">{html.escape(_t("dash.summary_counts_line", pos=m_olumlu, neg=m_olumsuz, neu=m_istek))}</span>
     </div>
 </div>
 """,

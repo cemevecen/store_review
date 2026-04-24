@@ -71,6 +71,7 @@ def analyze_batch(
     max_workers: int = 24,
     progress: Optional[Callable[[int, int], None]] = None,
     max_rich_items: int = 500,
+    ui_lang: str = "tr",
 ) -> list[dict[str, Any]]:
     data = dedupe_reviews(entries)
     if not use_heuristic_only and len(data) > max_rich_items:
@@ -101,6 +102,7 @@ def analyze_batch(
                 model=model,
                 analysis_mode=analysis_mode,
                 rating=rating,
+                output_lang=ui_lang,
             )
         verdict = dominant_sentiment(res)
         return _row(i, entry, res, verdict)

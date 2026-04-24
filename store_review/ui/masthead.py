@@ -1,15 +1,11 @@
-"""Ortak üst bant (masthead): hero başlığı, veri kaynağı pill'leri ve hakkında chip'i.
-
-Ana sayfa ve /about sayfası tarafından paylaşılır. Streamlit multi-page yapısında
-her iki sayfada da aynı görünüm / aynı session state key'leriyle çalışır.
-"""
+"""Ortak üst bant (masthead): hero başlığı, veri kaynağı pill'leri, dil (bayrak) ve hakkında."""
 
 from __future__ import annotations
 
 import streamlit as st
 
 from store_review.branding import header_logo_data_uri
-from store_review.config.i18n import t
+from store_review.config.i18n import LANGUAGES, get_lang, lang_query_suffix, set_lang, t
 
 SOURCE_OPTIONS = [
     "Mağaza",
@@ -54,15 +50,25 @@ def _on_about_source_change() -> None:
     try:
         st.switch_page("streamlit_app.py")
     except Exception:
-        # st.switch_page failsa ana sayfa linkine düşeriz — gerekirse kullanıcı chip'le döner
         pass
+
+
+def _on_masthead_lang_change() -> None:
+    """Selectbox seçenekleri yalnızca bayrak emojisi."""
+    label = st.session_state.get("_masthead_lang")
+    if not isinstance(label, str):
+        return
+    for code, _name, flag in LANGUAGES:
+        if label == flag:
+            set_lang(code)
+            return
 
 
 def render_masthead(*, on_about: bool) -> None:
     """Ana sayfa ve /about sayfasında paylaşılan üst bant.
 
-    Pill'ler her iki sayfada da görünür durumda render edilir; about sayfasında
-    seçim yapılırsa otomatik olarak ana sayfaya dönülür ve o kaynak aktifleşir.
+    Pill'ler her iki sayfada da görünür; about sayfasında seçim yapılırsa
+    ana sayfaya dönülür. Dil seçimi yalnızca bayrak gösterir.
     """
     _hdr_uri = header_logo_data_uri()
     logo_html = ""
@@ -84,7 +90,6 @@ def render_masthead(*, on_about: bool) -> None:
                 unsafe_allow_html=True,
             )
 
-            # Pills — eski etiket normalizasyonu
             _pill_raw = st.session_state.get("main_data_source_tab")
             if isinstance(_pill_raw, (list, tuple)):
                 _pill_raw = _pill_raw[0] if _pill_raw else None
@@ -110,3 +115,38 @@ def render_masthead(*, on_about: bool) -> None:
                 width="stretch",
                 on_change=_on_about_source_change if on_about else _on_data_source_change,
             )
+
+            _q = lang_query_suffix()
+            _, _ctrl, _ = st.columns([2, 3, 2], vertical_alignment="center")
+            with _ctrl:
+                c_lang, c_link = st.columns(2, vertical_alignment="center", gap="small")
+                with c_lang:
+                    cur = get_lang()
+                    flag_options = [flag for _c, _n, flag in LANGUAGES]
+                    cur_idx = next((i for i, (c, _, _) in enumerate(LANGUAGES) if c == cur), 0)
+                    st.selectbox(
+                        "lang",
+                        options=flag_options,
+                        index=cur_idx,
+                        key="_masthead_lang",
+                        label_visibility="collapsed",
+                        on_change=_on_masthead_lang_change,
+                    )
+                with c_link:
+                    if on_about:
+                        chip_html = (
+                            '<div class="hero-about-chip-wrap">'
+                            f'<a class="hero-about-chip" href="./{_q}" '
+                            f'aria-label="{t("nav.home")}" title="{t("nav.home")}">'
+                            f'<span class="hero-about-chip-dot">x</span>{t("nav.home")}'
+                            "</a></div>"
+                        )
+                    else:
+                        chip_html = (
+                            '<div class="hero-about-chip-wrap">'
+                            f'<a class="hero-about-chip" href="about{_q}" '
+                            f'aria-label="{t("nav.about")}" title="{t("nav.about")}">'
+                            f'<span class="hero-about-chip-dot">i</span>{t("nav.about")}'
+                            "</a></div>"
+                        )
+                    st.markdown(chip_html, unsafe_allow_html=True)

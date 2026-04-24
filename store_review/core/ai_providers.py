@@ -40,6 +40,7 @@ def _call_groq(
     model: str,
     analysis_mode: int,
     rating: Optional[str | int],
+    output_lang: str,
 ) -> Optional[dict[str, Any]]:
     try:
         from groq import Groq
@@ -47,7 +48,7 @@ def _call_groq(
         if not _rpm_ok("Groq AI"):
             return None
         client = Groq(api_key=api_key)
-        prompt = build_prompt(text, analysis_mode, rating=rating)
+        prompt = build_prompt(text, analysis_mode, rating=rating, output_lang=output_lang)
         resp = client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
@@ -67,6 +68,7 @@ def _call_gemini(
     model: str,
     analysis_mode: int,
     rating: Optional[str | int],
+    output_lang: str,
 ) -> Optional[dict[str, Any]]:
     try:
         from google import genai
@@ -75,7 +77,7 @@ def _call_gemini(
         if not _rpm_ok("Google Gemini"):
             return None
         client = genai.Client(api_key=api_key)
-        prompt = build_prompt(text, analysis_mode, rating=rating)
+        prompt = build_prompt(text, analysis_mode, rating=rating, output_lang=output_lang)
         resp = client.models.generate_content(
             model=model,
             contents=prompt,
@@ -94,6 +96,7 @@ def _call_openai(
     model: str,
     analysis_mode: int,
     rating: Optional[str | int],
+    output_lang: str,
 ) -> Optional[dict[str, Any]]:
     try:
         from openai import OpenAI
@@ -101,7 +104,7 @@ def _call_openai(
         if not _rpm_ok("OpenAI"):
             return None
         client = OpenAI(api_key=api_key)
-        prompt = build_prompt(text, analysis_mode, rating=rating)
+        prompt = build_prompt(text, analysis_mode, rating=rating, output_lang=output_lang)
         resp = client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
@@ -135,13 +138,21 @@ class RichAnalyzer:
         self.groq_key = groq_key
         self.openai_key = openai_key
 
-    def _try(self, provider: str, model: str, text: str, mode: int, rating: Optional[str | int]):
+    def _try(
+        self,
+        provider: str,
+        model: str,
+        text: str,
+        mode: int,
+        rating: Optional[str | int],
+        output_lang: str,
+    ):
         if provider == "Google Gemini" and self.gemini_key:
-            return _call_gemini(text, self.gemini_key, model, mode, rating)
+            return _call_gemini(text, self.gemini_key, model, mode, rating, output_lang)
         if provider == "Groq AI" and self.groq_key:
-            return _call_groq(text, self.groq_key, model, mode, rating)
+            return _call_groq(text, self.groq_key, model, mode, rating, output_lang)
         if provider == "OpenAI" and self.openai_key:
-            return _call_openai(text, self.openai_key, model, mode, rating)
+            return _call_openai(text, self.openai_key, model, mode, rating, output_lang)
         return None
 
     def analyze(
@@ -152,6 +163,7 @@ class RichAnalyzer:
         model: str,
         analysis_mode: int,
         rating: Optional[str | int] = None,
+        output_lang: str = "tr",
     ) -> dict[str, Any]:
         t = str(text).strip()
         if len(t) < 2:
@@ -164,7 +176,7 @@ class RichAnalyzer:
 
         for p in build_provider_chain(provider):
             m = model if p == provider else DEFAULT_MODELS.get(p, model)
-            res = self._try(p, m, t, analysis_mode, rating)
+            res = self._try(p, m, t, analysis_mode, rating, output_lang)
             if res:
                 return res
 

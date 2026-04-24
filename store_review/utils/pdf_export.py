@@ -588,7 +588,7 @@ def _draw_summary_block(
     _set_rgb(pdf, "text", _COLOR_FAINT)
     _safe_set_xy(pdf, x + 4, row_y)
     pdf.cell(inner_w, 3.5,
-             _cell_text(_t("dash.summary_footer", pos=pos, neg=neg, neu=neu)))
+             _cell_text(_t("dash.summary_counts_line", pos=pos, neg=neg, neu=neu)))
     row_y += 4
 
     return max(row_y + 2, y + card_h + 3.0)

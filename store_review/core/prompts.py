@@ -4,13 +4,31 @@ import json
 import re
 from typing import Any, Optional
 
+# Uygulama dil kodu → LLM talimatında kullanılan dil adı (İngilizce isim, tüm sağlayıcılar için tutarlı).
+_LANG_FOR_PROMPT: dict[str, str] = {
+    "tr": "Turkish",
+    "en": "English",
+    "es": "Spanish",
+    "de": "German",
+    "fr": "French",
+    "ar": "Arabic",
+    "zh": "Simplified Chinese",
+    "ru": "Russian",
+    "pt": "Portuguese",
+}
+
 
 def build_prompt(
     text: str,
     analysis_mode: int = 0,
     rating: Optional[str | int] = None,
+    *,
+    output_lang: str = "tr",
 ) -> str:
-    """analysis_mode: 0=standard JSON scores, 1=deep JSON with subcategories."""
+    """analysis_mode: 0=standard JSON scores, 1=deep JSON with subcategories.
+
+    output_lang: UI dil kodu; derin moddaki ``ozet`` alanı bu dilde yazdırılır.
+    """
     rating_line = ""
     if rating is not None and str(rating).strip():
         rating_line = f"Mağaza puanı (yıldız): {rating}\n"
@@ -32,16 +50,24 @@ def build_prompt(
         '   Örn: "1 yıldız ama harika uygulama" → OLUMLU (içerik baskın).\n'
     )
 
+    lang_name = _LANG_FOR_PROMPT.get(output_lang, _LANG_FOR_PROMPT["tr"])
+    lang_tail = (
+        f"\n\nUI language: the user interface is set to {lang_name} (code: {output_lang}).\n"
+        f'- In deep analysis (mode 1), the JSON string field "ozet" MUST be written entirely in {lang_name} '
+        "(about 5–10 words summarising the review sentiment).\n"
+        "- JSON keys must remain exactly as specified; only the human-readable string value of \"ozet\" follows this rule.\n"
+    )
+
     snippet = text[:500].replace('"', "'")
 
     if analysis_mode == 0:
-        return base + (
+        return base + lang_tail + (
             "ÇIKTI KURALI: SADECE JSON döndür, başka hiçbir şey yazma.\n"
             '{"olumlu": X, "olumsuz": Y, "istek_gorus": Z}\n'
             f'Yorum: "{snippet}"'
         )
 
-    return base + (
+    return base + lang_tail + (
         "ALT-KATEGORİLER:\n"
         "OLUMLU: Yazılım Kalitesi | Tasarım/UX | Müşteri Hizmetleri | İnovasyon\n"
         "OLUMSUZ: Bug/Çökme | Performans | Fiyatlandırma | Kullanıcı Hatası | İsistemsizlik\n"
@@ -59,7 +85,7 @@ def build_prompt(
         '  "istek_gorus": X,\n'
         '  "guven_skoru": 0.0-1.0,\n'
         '  "sarkasm_mi": true/false,\n'
-        '  "ozet": "5-10 kelimelik özet"\n'
+        f'  "ozet": "5-10 words, in {lang_name} only"\n'
         "}"
     )
 

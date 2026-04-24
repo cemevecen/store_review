@@ -378,6 +378,24 @@ div[data-testid="stDataFrame"] {
   margin-right: auto !important;
 }
 
+/* Masthead — dil seçici (yalnızca bayrak); geniş etiket yok */
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-_masthead_lang label,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-_masthead_lang label {
+  display: none !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-_masthead_lang [data-baseweb="select"] > div,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-_masthead_lang [data-baseweb="select"] > div {
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: none !important;
+  min-height: 42px !important;
+  min-width: 52px !important;
+  font-size: 1.35rem !important;
+  line-height: 1 !important;
+  justify-content: center !important;
+}
+
 /* Masthead: başlık dışındaki markdown kutularında üst margin sıfır (başlık kutusu yukarıda 14px alır) */
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stMarkdownContainer"]:not(:has(.hero-masthead-brand)),
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stMarkdownContainer"]:not(:has(.hero-masthead-brand)) {
@@ -806,7 +824,7 @@ div[data-testid="stDataFrame"] {
     flex-wrap: wrap !important;
     justify-content: center !important;
   }
-  .sr-summary-footer {
+  .sr-summary-counts-line {
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 8px !important;

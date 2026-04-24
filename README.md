@@ -15,15 +15,15 @@ A Streamlit application for ingesting mobile store reviews, classifying sentimen
 
 ### Internationalisation
 
-The UI is driven by a single string catalogue (`store_review/config/i18n.py`) covering nine locales — Turkish (default), English, Spanish, German, French, Arabic, Simplified Chinese, Russian, Portuguese. All user-facing copy, including the analysis dashboard, comparison screen, rating-distribution chart labels, the `/about` page body, footer controls, and PDF export, resolves through a single `t()` helper.
+The UI is driven by a single string catalogue (`store_review/config/i18n.py`) covering nine locales — Turkish (default), English, Spanish, German, French, Arabic, Simplified Chinese, Russian, Portuguese. All user-facing copy, including the analysis dashboard, comparison screen, rating-distribution chart labels, the `/about` page body, and PDF export, resolves through a single `t()` helper.
 
-Language selection lives in the footer (country-flag dropdown, non-editable) and persists via session state and a `?lang=<code>` query parameter so that reloads, direct `/about` links, and navigation between pages retain the active locale. Legacy session values (e.g. Turkish date-range labels from earlier releases) are migrated to language-neutral codes on load.
+Language selection lives in the masthead (flag-only dropdown) and persists via session state and a `?lang=<code>` query parameter so that reloads, direct `/about` links, and navigation between pages retain the active locale. Legacy session values (e.g. Turkish date-range labels from earlier releases) are migrated to language-neutral codes on load.
 
 ### Progress and responsiveness
 
 Store scans and review-pool fetches emit incremental progress with monotonic guarantees — the bar cannot move backwards. Both Google Play and App Store fetchers emit early-phase progress during the initial, non-fanned-out request so the UI does not stall at 0%. The comparison panel applies the same floor-capped synthetic ramp while concurrent, per-app channels fill in actual counts.
 
-Layouts are mobile-first; dashboards, the split comparison view, the footer, and the about page all adapt down to narrow viewports and up to wide desktops without fixed breakpoints leaking into the analysis surface.
+Layouts are mobile-first; dashboards, the split comparison view, and the about page all adapt down to narrow viewports and up to wide desktops without fixed breakpoints leaking into the analysis surface.
 
 ### URL surface
 
@@ -75,8 +75,7 @@ Repository configuration uses a local environment file that is not versioned. Us
     ├── ui/
     │   ├── analysis_results_dashboard.py  # Reusable dashboard (compact/split)
     │   ├── compare_panel.py      # Parallel fetch + side-by-side rendering
-    │   ├── footer.py             # Language dropdown + About chip, bottom-of-page
-    │   ├── masthead.py           # Header / brand surface
+    │   ├── masthead.py           # Header / brand, data-source pills, flag language + About
     │   ├── review_cards.py       # 5 + expand pagination, LLM/heuristic aware
     │   └── store_link_panel.py   # Single-app search and fetch panel
     └── utils/
@@ -107,15 +106,15 @@ Mağaza yorumlarını toplayan, duygu sınıflandırmasını üç kategoride (ol
 
 ### Çok dillilik
 
-Arayüz tek bir metin kataloğundan (`store_review/config/i18n.py`) beslenir; dokuz dil kapsanır — Türkçe (varsayılan), İngilizce, İspanyolca, Almanca, Fransızca, Arapça, Basitleştirilmiş Çince, Rusça, Portekizce. Analiz dashboard'u, karşılaştırma ekranı, puan dağılımı grafiği etiketleri, `/about` sayfası, footer kontrolleri ve PDF dışa aktarımı dahil tüm metinler tek bir `t()` yardımcısı üzerinden çözülür.
+Arayüz tek bir metin kataloğundan (`store_review/config/i18n.py`) beslenir; dokuz dil kapsanır — Türkçe (varsayılan), İngilizce, İspanyolca, Almanca, Fransızca, Arapça, Basitleştirilmiş Çince, Rusça, Portekizce. Analiz dashboard'u, karşılaştırma ekranı, puan dağılımı grafiği etiketleri, `/about` sayfası ve PDF dışa aktarımı dahil tüm metinler tek bir `t()` yardımcısı üzerinden çözülür.
 
-Dil seçimi footer'daki (ülke bayraklı, yazılamaz) dropdown'da yaşar; hem oturum state'i hem de `?lang=<code>` URL parametresi ile kalıcı hale getirilir. Bu sayede yenileme, `/about` bağlantısı veya sayfalar arası gezinti aktif dili korur. Eski oturumlarda kalan değerler (ör. önceki sürümlerden gelen Türkçe tarih etiketleri) yüklemede dil-nötr kodlara migrate edilir.
+Dil seçimi masthead'deki (yalnızca bayrak) dropdown'da yaşar; hem oturum state'i hem de `?lang=<code>` URL parametresi ile kalıcı hale getirilir. Bu sayede yenileme, `/about` bağlantısı veya sayfalar arası gezinti aktif dili korur. Eski oturumlarda kalan değerler (ör. önceki sürümlerden gelen Türkçe tarih etiketleri) yüklemede dil-nötr kodlara migrate edilir.
 
 ### İlerleme ve akıcılık
 
 Mağaza taraması ve yorum havuzu çekimi, geri gitmesi engellenmiş (monotonik) bir ilerleme barı ile canlı sinyal gönderir. Google Play ve App Store fetcher'ları, fan-out'tan önceki ilk istek sırasında erken faz ilerlemesi yayar; bar %0'da asılı kalmaz. Karşılaştırma paneli aynı zemin-kaplamalı sentetik rampayı uygular, eş zamanlı uygulama kanalları gerçek sayılarla üzerini yazar.
 
-Yerleşim mobile-first'tür; dashboard'lar, bölünmüş karşılaştırma görünümü, footer ve about sayfası dar ekranlardan geniş masaüstü genişliklerine kadar analiz yüzeyine sızmayan breakpoint'lerle uyum sağlar.
+Yerleşim mobile-first'tür; dashboard'lar, bölünmüş karşılaştırma görünümü ve about sayfası dar ekranlardan geniş masaüstü genişliklerine kadar analiz yüzeyine sızmayan breakpoint'lerle uyum sağlar.
 
 ### URL yüzeyi
 
@@ -167,8 +166,7 @@ Ortam dosyası sürüm kontrolüne alınmaz; şablona kopyalayarak gizli değerl
     ├── ui/
     │   ├── analysis_results_dashboard.py  # Tek/split modda yeniden kullanılabilir dashboard
     │   ├── compare_panel.py      # Paralel çekim + yan yana sunum
-    │   ├── footer.py             # Dil dropdown'ı + About çipi, sayfa altı
-    │   ├── masthead.py           # Header / marka yüzeyi
+    │   ├── masthead.py           # Header / marka, kaynak pill'leri, bayrak dil + Hakkında
     │   ├── review_cards.py       # 5 + genişlet sayfalama, LLM/heuristik uyumlu
     │   └── store_link_panel.py   # Tek uygulama arama ve çekim paneli
     └── utils/

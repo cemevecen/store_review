@@ -12,7 +12,7 @@ from typing import Any, Optional
 import pandas as pd
 import streamlit as st
 
-from store_review.config.i18n import t
+from store_review.config.i18n import get_lang, t
 from store_review.core.ai_providers import RichAnalyzer
 from store_review.core.analyzer import analyze_batch, dedupe_reviews
 from store_review.fetchers.app_discovery import (
@@ -881,6 +881,7 @@ def execute_compare_analysis(
                 max_workers=28 if use_heuristic_only else 12,
                 progress=None,
                 max_rich_items=500,
+                ui_lang=get_lang(),
             )
             agg = _aggregate_rows(rows)
             detail_rows[slug] = list(rows)
@@ -1082,7 +1083,7 @@ def render_compare_tab(
                 st.rerun()
 
         if res:
-            st.markdown("#### Özet")
+            st.markdown(f"#### {t('compare.results_summary_heading')}")
             days_u = st.session_state.get("cmp_days_used")
             rng_lbl = st.session_state.get("cmp_range_label") or time_label
             if days_u is not None:

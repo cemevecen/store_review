@@ -39,8 +39,7 @@ from store_review.ui.compare_panel import (
     merge_compare_details_for_dashboard,
     render_compare_tab,
 )
-from store_review.config.i18n import t
-from store_review.ui.footer import render_footer
+from store_review.config.i18n import get_lang, t
 from store_review.ui.masthead import (
     SOURCE_OPTIONS,
     SOURCE_POOL_KEY,
@@ -148,6 +147,7 @@ def _run_analysis_segment(
             progress=prog,
             # Segment zaten kesildiği için `analyze_batch` içinde tekrar kesilmesin.
             max_rich_items=max(seg_n, 1),
+            ui_lang=get_lang(),
         )
 
         # `analyze_batch` "No"'yu 1..N olarak verir; birikmiş dashboard'da
@@ -635,8 +635,6 @@ def main():
                 st.caption(str(e))
             except Exception as e:
                 st.caption(f"PDF: {e}")
-
-    render_footer(on_about=False)
 
 
 if __name__ == "__main__":

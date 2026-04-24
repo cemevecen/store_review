@@ -1,9 +1,8 @@
 """/about — Hakkında sayfası (Streamlit multi-page).
 
 URL: /about
-Ana sayfadaki header / pill / chip yapısı burada da korunur. Footer'daki dil
-seçimi bu sayfanın içeriğini de sürer — pilller/chipler/gövde hepsi aynı dile
-senkron olur.
+Üst bant (masthead) dil ve navigasyonu ana sayfa ile paylaşır; gövde metni
+seçilen dile göre değişir.
 """
 
 from __future__ import annotations
@@ -20,7 +19,6 @@ if str(ROOT) not in sys.path:
 from store_review.branding import ensure_branding_assets, favicon_abs_path
 from store_review.config.i18n import get_lang, t
 from store_review.config.theme import APP_CSS
-from store_review.ui.footer import render_footer
 from store_review.ui.masthead import render_masthead
 
 
@@ -388,7 +386,6 @@ def main() -> None:
     _inject_css()
     render_masthead(on_about=True)
     _render_about_body()
-    render_footer(on_about=True)
 
 
 main()
