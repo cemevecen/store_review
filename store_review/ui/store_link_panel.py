@@ -8,6 +8,7 @@ from __future__ import annotations
 import concurrent.futures
 import html
 import time
+from typing import Any
 
 import streamlit as st
 
@@ -88,10 +89,35 @@ def _init_store_state() -> None:
         "sl_display_n": 12,
         "sl_search_performed": False,
         "_sl_prev_filter": "",
+        "_sl_pool_owner": None,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
             st.session_state[k] = v
+
+
+def _sl_expected_pool_owner(resolved: Any) -> str | None:
+    """Mevcut seçim/çözümlemeden havuzun beklenen sahibini (platform:app_id) üret."""
+    sid = st.session_state.get("sl_selected_id")
+    if sid:
+        plat = "ios" if st.session_state.get("sl_selected_platform") == "iOS" else "android"
+        return f"{plat}:{sid}"
+    if resolved is not None:
+        return f"{resolved.platform}:{resolved.app_id}"
+    return None
+
+
+def _sl_invalidate_pool_if_owner_mismatch(resolved: Any) -> None:
+    """Havuz önceki uygulamadan kalmışsa (sahibi farklıysa) temizle."""
+    owner = st.session_state.get("_sl_pool_owner")
+    expected = _sl_expected_pool_owner(resolved)
+    pool = st.session_state.get("review_pool_store") or []
+    if not pool:
+        return
+    if expected is None or owner != expected:
+        st.session_state["review_pool_store"] = []
+        st.session_state["analysis_rows"] = []
+        st.session_state["_sl_pool_owner"] = None
 
 
 def _apply_pending_sl_store_input() -> None:
@@ -427,6 +453,8 @@ def render_store_link_tab() -> None:
     if resolve_msg:
         st.info(resolve_msg)
 
+    _sl_invalidate_pool_if_owner_mismatch(resolved)
+
     is_selected = st.session_state.sl_selected_id is not None
     looks_pkg = text.startswith(("com.", "org.", "net.", "io.")) and "." in text
 
@@ -488,7 +516,7 @@ def render_store_link_tab() -> None:
                             f'<div class="sl-row-title">{t_esc}</div><div class="sl-row-id">{id_esc}</div>',
                             unsafe_allow_html=True,
                         )
-                    with bt:
+                    with                     bt:
                         aid = app.get("appId", "")
                         plat = app.get("platform", "Android")
                         if st.button("Seç", key=f"sl_sel_{idx}_{aid}", use_container_width=True):
@@ -498,6 +526,10 @@ def render_store_link_tab() -> None:
                             st.session_state.sl_search_results = []
                             st.session_state.sl_last_query = ""
                             st.session_state["_pending_sl_store_input"] = aid
+                            # Yeni uygulama seçimi: önceki havuz/analiz sıfırlanır
+                            st.session_state.review_pool_store = []
+                            st.session_state.analysis_rows = []
+                            st.session_state._sl_pool_owner = None
                             st.rerun()
                 if len(results) > n_show:
                     if st.button("Daha fazla göster", key="sl_more"):
@@ -515,6 +547,10 @@ def render_store_link_tab() -> None:
             st.session_state.sl_last_query = ""
             st.session_state.sl_search_performed = False
             st.session_state["_pending_sl_store_input"] = ""
+            # Tüm store havuzu ve analiz çıktıları temizlenir
+            st.session_state.review_pool_store = []
+            st.session_state.analysis_rows = []
+            st.session_state._sl_pool_owner = None
             st.rerun()
 
     sid = st.session_state.sl_selected_id
@@ -550,6 +586,11 @@ def render_store_link_tab() -> None:
             st.error("Önce listeden bir uygulama **Seç** deyin veya geçerli paket / ID / ürün linki girin.")
             return
 
+        # Yeni çekimden önce önceki havuzu/analizi sıfırla
+        st.session_state.review_pool_store = []
+        st.session_state.analysis_rows = []
+        st.session_state._sl_pool_owner = None
+
         prog = st.progress(0.0)
         prog_txt = st.empty()
         t0 = time.perf_counter()
@@ -579,6 +620,7 @@ def render_store_link_tab() -> None:
                 )
             st.session_state.review_pool_store = pool
             st.session_state.analysis_rows = []
+            st.session_state._sl_pool_owner = f"{platform}:{app_id}"
             prog.empty()
             prog_txt.empty()
             st.caption(f"{len(pool)} benzersiz yorum yüklendi ({time_label}).")
