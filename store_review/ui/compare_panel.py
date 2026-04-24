@@ -158,6 +158,92 @@ _CMP_COMPACT_CSS = """
   justify-content: flex-end !important;
   align-items: center !important;
 }
+.cmp-prepare-title {
+  margin: 8px 0 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+  letter-spacing: 0.02em;
+}
+.cmp-prepare-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+.cmp-prepare-status {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.cmp-prepare-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #334155;
+  line-height: 1.2;
+}
+.cmp-prepare-chip--pct { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+.cmp-prepare-chip--cnt { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+.cmp-prepare-chip--elapsed { background: #f1f5f9; border-color: #e2e8f0; color: #475569; }
+.cmp-pool-summary {
+  margin: 8px 0 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  padding: 10px 12px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+}
+.cmp-pool-summary-head {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+.cmp-pool-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cmp-pool-summary-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.92rem;
+}
+.cmp-pool-summary-row .cmp-pool-name {
+  color: #0f172a;
+  font-weight: 600;
+  word-break: break-word;
+}
+.cmp-pool-summary-row .cmp-pool-count {
+  color: #0f172a;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.cmp-pool-summary-row .cmp-pool-meta {
+  color: #64748b;
+  font-size: 0.75rem;
+  margin-left: 6px;
+  font-weight: 500;
+}
+@media (max-width: 768px) {
+  .cmp-pool-summary-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .cmp-pool-summary-row .cmp-pool-meta { margin-left: 0; }
+}
 </style>
 """
 
@@ -174,6 +260,145 @@ def _prepare_pool(rows: list[dict]) -> list[dict]:
         rr["is_valid"] = is_valid_comment(t)
         out.append(rr)
     return out
+
+
+def _cmp_prepared_key() -> str:
+    return f"{_cmp_slot_effective_raw(0)}|{_cmp_slot_effective_raw(1)}|{st.session_state.get('cmp_time_range', '')}"
+
+
+def _reset_prepared_pools() -> None:
+    st.session_state["cmp_prepared_pools"] = {}
+    st.session_state.pop("_cmp_prepared_key", None)
+
+
+def _fmt_cmp_duration(total_seconds: float) -> str:
+    secs = max(0, int(total_seconds))
+    mins, sec = divmod(secs, 60)
+    return f"{mins:02d}:{sec:02d}"
+
+
+def _fetch_compare_pools(days: int) -> tuple[dict[str, dict[str, Any]], list[str]]:
+    """İki slot için yorum havuzunu paralel çeker; progress bar + canlı sayım gösterir."""
+    inputs = [(0, _cmp_slot_effective_raw(0)), (1, _cmp_slot_effective_raw(1))]
+    resolved_pairs: list[tuple[int, Optional[ResolvedApp], str]] = []
+    errors: list[str] = []
+
+    for slot, raw in inputs:
+        res, _msg = resolve_direct_input(raw) if raw else (None, None)
+        if res is None:
+            errors.append(
+                f"Uygulama {slot + 1}: giriş çözülemedi (`{raw[:48]}…`)"
+                if raw and len(raw) > 48
+                else f"Uygulama {slot + 1}: giriş çözülemedi."
+            )
+        resolved_pairs.append((slot, res, raw))
+
+    if errors:
+        return {}, errors
+
+    with st.container(key="cmp_prepare_box"):
+        st.markdown(
+            '<p class="cmp-prepare-title">yorum havuzu hazırlanıyor</p>',
+            unsafe_allow_html=True,
+        )
+        col1, col2 = st.columns(2, gap="small")
+        slots_ui = {}
+        for slot, res, raw in resolved_pairs:
+            meta_preview = _metadata(res) if res else {"title": raw}
+            title = str(meta_preview.get("title") or (res.app_id if res else raw))
+            target_col = col1 if slot == 0 else col2
+            with target_col:
+                st.markdown(
+                    f'<div class="cmp-prepare-label">{html.escape(title)}</div>',
+                    unsafe_allow_html=True,
+                )
+                bar = st.progress(0.0)
+                status = st.empty()
+                slots_ui[slot] = (title, bar, status, meta_preview, res)
+
+    progress_state: dict[int, dict[str, float]] = {
+        0: {"pct": 0.0, "cnt": 0.0, "done": 0.0},
+        1: {"pct": 0.0, "cnt": 0.0, "done": 0.0},
+    }
+    start_ts = time.perf_counter()
+
+    def _worker(slot: int, res: ResolvedApp) -> list[dict]:
+        def _cb(x: float | int) -> None:
+            try:
+                val = float(x)
+            except Exception:
+                val = 0.0
+            if val > 1.5:
+                progress_state[slot]["cnt"] = val
+            else:
+                progress_state[slot]["pct"] = max(0.0, min(1.0, val))
+
+        if res.platform == "android":
+            pool = fetch_google_play_reviews(res.app_id, days, _progress_callback=_cb)
+        else:
+            pool = get_app_store_reviews(res.app_id, _progress_callback=_cb, _days_limit=days)
+        progress_state[slot]["done"] = 1.0
+        return pool
+
+    futures: dict[int, concurrent.futures.Future] = {}
+    pools_out: dict[int, list[dict]] = {}
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as ex:
+        for slot, res, _raw in resolved_pairs:
+            if res is not None:
+                futures[slot] = ex.submit(_worker, slot, res)
+
+        while any(not f.done() for f in futures.values()):
+            for slot, f in futures.items():
+                title, bar, status, _meta, _res = slots_ui[slot]
+                pct_now = float(progress_state[slot]["pct"])
+                cnt_now = int(progress_state[slot]["cnt"])
+                elapsed = time.perf_counter() - start_ts
+                bar.progress(min(0.99, pct_now) if pct_now > 0 else min(0.99, 1.0 - (2.71828 ** (-elapsed / 6.0))))
+                status.markdown(
+                    (
+                        '<div class="cmp-prepare-status">'
+                        f'<span class="cmp-prepare-chip cmp-prepare-chip--pct">%{int(pct_now * 100)}</span>'
+                        f'<span class="cmp-prepare-chip cmp-prepare-chip--cnt">{cnt_now}</span>'
+                        f'<span class="cmp-prepare-chip cmp-prepare-chip--elapsed">geçen {_fmt_cmp_duration(elapsed)}</span>'
+                        "</div>"
+                    ),
+                    unsafe_allow_html=True,
+                )
+            time.sleep(0.18)
+
+        for slot, f in futures.items():
+            try:
+                pools_out[slot] = f.result()
+            except Exception as e:
+                title, _bar, _status, _meta, _res = slots_ui[slot]
+                errors.append(f"{title}: {e}")
+                pools_out[slot] = []
+
+    # UI alanını temizle — son durumu göstermeyeceğiz, özet ayrı blokta verilecek.
+    for slot, (_title, bar, status, _meta, _res) in slots_ui.items():
+        bar.empty()
+        status.empty()
+
+    prepared: dict[str, dict[str, Any]] = {}
+    for slot, res, _raw in resolved_pairs:
+        if res is None:
+            continue
+        pool = pools_out.get(slot, []) or []
+        prepared_rows = _prepare_pool(pool)
+        meta = _metadata(res)
+        slug = f"{res.platform}:{res.app_id}"
+        prepared[slug] = {
+            "slot": slot,
+            "title": meta.get("title") or res.app_id,
+            "platform": res.platform,
+            "app_id": res.app_id,
+            "meta": meta,
+            "fetched_n": len(pool),
+            "prepared": prepared_rows,
+        }
+
+    return prepared, errors
 
 
 def _run_compare_search_with_progress(query: str, platform_filter: str, slot: int) -> list:
@@ -367,6 +592,12 @@ def _reset_cmp_slot(slot: int) -> None:
     st.session_state[f"{p}display_n"] = 12
     st.session_state[f"{p}search_performed"] = False
     st.session_state[f"{p}prev_filter"] = ""
+    # Slot değişince mevcut karşılaştırma havuzu/analizi eskimiş olur.
+    st.session_state["cmp_prepared_pools"] = {}
+    st.session_state.pop("_cmp_prepared_key", None)
+    st.session_state.cmp_results = {}
+    st.session_state.cmp_detail_rows = {}
+    st.session_state.analysis_rows = []
 
 
 def _cmp_slot_effective_raw(slot: int) -> str:
@@ -559,7 +790,8 @@ def execute_compare_analysis(
     analysis_mode: int,
 ) -> tuple[int, list[str]]:
     """
-    İki slot için mağazadan yorum çekip analiz eder; cmp_results / cmp_detail_rows güncellenir.
+    Önceden hazırlanmış yorum havuzunu (cmp_prepared_pools) analiz eder;
+    cmp_results / cmp_detail_rows güncellenir.
     Dönüş: (tamamlanan uygulama sayısı 0–2, hata metinleri).
     """
     provider = "Google Gemini"
@@ -570,51 +802,27 @@ def execute_compare_analysis(
         time_label = RANGE_OPTIONS[1]
     days = RANGE_DAYS[time_label]
 
-    inputs = [_cmp_slot_effective_raw(0), _cmp_slot_effective_raw(1)]
-    if sum(1 for x in inputs if x) < 2:
-        return 0, ["İki uygulama için de paket, App Store ID veya mağaza linki / seçim gerekir."]
+    prepared_pools: dict[str, dict[str, Any]] = st.session_state.get("cmp_prepared_pools") or {}
+    errors: list[str] = []
+
+    if len(prepared_pools) < 2:
+        return 0, ["Önce iki uygulama için de yorum havuzu hazırlanmalı."]
     if not use_heuristic_only and not has_llm_keys:
         return 0, ["Zengin analiz için en az bir API anahtarı gerekir."]
 
-    def _resolve_one(raw: str) -> tuple[Optional[ResolvedApp], Optional[str]]:
-        s = (raw or "").strip()
-        if not s:
-            return None, None
-        return resolve_direct_input(s)
-
     results: dict[str, dict[str, Any]] = {}
     detail_rows: dict[str, list[dict]] = {}
-    errors: list[str] = []
 
-    for raw in inputs:
-        resolved, msg = _resolve_one(raw)
-        if msg:
-            st.info(str(msg))
-        if resolved is None:
-            errors.append(f"Çözülemedi: `{raw[:48]}…`" if len(raw) > 48 else f"Çözülemedi: `{raw}`")
-            continue
-
-        meta = _metadata(resolved)
+    for slug, entry in prepared_pools.items():
+        meta = entry.get("meta") or {}
+        title = meta.get("title") or slug
         try:
-            if resolved.platform == "android":
-                pool = fetch_google_play_reviews(
-                    resolved.app_id,
-                    days,
-                    _progress_callback=lambda x: None,
-                )
-            else:
-                pool = get_app_store_reviews(
-                    resolved.app_id,
-                    _progress_callback=lambda x: None,
-                    _days_limit=days,
-                )
-            prepared = _prepare_pool(pool)
-            if not prepared:
-                errors.append(f"{meta['title']}: analiz edilecek yorum yok.")
-                continue
-
+            prepared = entry.get("prepared") or []
+            pool_n = int(entry.get("fetched_n") or 0)
             prep_n = len(prepared)
-            pool_n = len(pool)
+            if not prepared:
+                errors.append(f"{title}: analiz edilecek yorum yok.")
+                continue
             rows = analyze_batch(
                 prepared,
                 use_heuristic_only=use_heuristic_only,
@@ -627,22 +835,23 @@ def execute_compare_analysis(
                 max_rich_items=500,
             )
             agg = _aggregate_rows(rows)
-            slug = f"{resolved.platform}:{resolved.app_id}"
             detail_rows[slug] = list(rows)
             rich_cap = (not use_heuristic_only) and (prep_n > 500)
+            platform = entry.get("platform") or "android"
+            app_id = entry.get("app_id") or slug
             results[slug] = {
                 **meta,
                 **agg,
-                "app_id": resolved.app_id,
-                "platform": resolved.platform,
-                "chart_label": f"{meta['title'][:36]}{'…' if len(meta['title']) > 36 else ''} ({'Play' if resolved.platform == 'android' else 'App Store'})",
+                "app_id": app_id,
+                "platform": platform,
+                "chart_label": f"{title[:36]}{'…' if len(title) > 36 else ''} ({'Play' if platform == 'android' else 'App Store'})",
                 "cmp_pool_fetched": pool_n,
                 "cmp_pool_prepared": prep_n,
                 "cmp_rich_capped": rich_cap,
                 "cmp_rich_cap_limit": 500 if rich_cap else None,
             }
         except Exception as e:
-            errors.append(f"{meta.get('title', raw)}: {e}")
+            errors.append(f"{title}: {e}")
 
     st.session_state.cmp_results = results
     st.session_state.cmp_detail_rows = detail_rows
@@ -687,8 +896,54 @@ def render_compare_tab(
 
         res = st.session_state.get("cmp_results") or {}
 
-        # Analiz yöntemi ve derinlik seçimi doğrudan "Karşılaştırmayı başlat"
-        # butonunun üstünde; böylece hangi modda çalışacağı görsel olarak net.
+        # 1) Her iki slotta da seçim/giriş varsa + tarih seçiliyse
+        #    havuzu otomatik hazırla (progress bar ile). State'e önbelleklenir.
+        both_selected = bool(_cmp_slot_effective_raw(0)) and bool(_cmp_slot_effective_raw(1))
+        current_key = _cmp_prepared_key()
+        prepared_pools = st.session_state.get("cmp_prepared_pools") or {}
+        if (
+            both_selected
+            and st.session_state.get("_cmp_prepared_key") != current_key
+        ):
+            prepared_pools, prep_errors = _fetch_compare_pools(days)
+            st.session_state["cmp_prepared_pools"] = prepared_pools
+            st.session_state["_cmp_prepared_key"] = current_key
+            # Yeni havuz geldi; mevcut karşılaştırma sonuçları eskidi
+            st.session_state.cmp_results = {}
+            st.session_state.cmp_detail_rows = {}
+            st.session_state.analysis_rows = []
+            res = {}
+            for er in prep_errors:
+                st.warning(er)
+
+        # 2) Havuz özeti — her uygulama için benzersiz yorum sayısı
+        if prepared_pools:
+            rows_html_parts: list[str] = []
+            for _slug, entry in prepared_pools.items():
+                name = html.escape(str(entry.get("title") or _slug))
+                plat_lbl = "Play" if entry.get("platform") == "android" else "App Store"
+                prep_n = int(len(entry.get("prepared") or []))
+                fetched_n = int(entry.get("fetched_n") or 0)
+                meta_bits = [plat_lbl]
+                if fetched_n and fetched_n != prep_n:
+                    meta_bits.append(f"ham {fetched_n}")
+                meta_line = " · ".join(meta_bits)
+                rows_html_parts.append(
+                    '<div class="cmp-pool-summary-row">'
+                    f'<span class="cmp-pool-name">{name}<span class="cmp-pool-meta">{meta_line}</span></span>'
+                    f'<span class="cmp-pool-count">{prep_n}</span>'
+                    "</div>"
+                )
+            st.markdown(
+                '<div class="cmp-pool-summary">'
+                '<p class="cmp-pool-summary-head">havuzdaki yorum</p>'
+                '<div class="cmp-pool-summary-list">'
+                + "".join(rows_html_parts)
+                + "</div></div>",
+                unsafe_allow_html=True,
+            )
+
+        # 3) Analiz yöntemi seçimi — "Karşılaştırmayı başlat" butonunun hemen üstünde.
         st.markdown(
             '<p class="section-title section-title--tight">Analiz ayarları</p>',
             unsafe_allow_html=True,
@@ -705,8 +960,7 @@ def render_compare_tab(
         _method_cmp = _method_pick_cmp if _method_pick_cmp is not None else st.session_state.get(
             "main_analysis_method", "Hızlı (heuristic)"
         )
-        use_fast_cmp = _method_cmp == "Hızlı (heuristic)"
-        if not use_fast_cmp:
+        if _method_cmp != "Hızlı (heuristic)":
             st.radio(
                 "Derinlik (yalnız zengin)",
                 ["Standart", "Gelişmiş"],
@@ -714,14 +968,22 @@ def render_compare_tab(
                 key="main_depth",
             )
 
+        # 4) Tek buton: "Karşılaştırmayı başlat". Basıldığında analiz + merge.
+        _ready_to_start = bool(prepared_pools) and len(prepared_pools) >= 2
         with st.container(key="cmp_start_method_row"):
-            if st.button("Karşılaştırmayı başlat", type="primary", use_container_width=True, key="cmp_start"):
+            if st.button(
+                "Karşılaştırmayı başlat",
+                type="primary",
+                use_container_width=True,
+                key="cmp_start",
+                disabled=not _ready_to_start,
+            ):
                 main_pick = st.session_state.get("main_analysis_method", "Hızlı (heuristic)")
                 use_fast = main_pick == "Hızlı (heuristic)"
                 main_depth = st.session_state.get("main_depth", "Standart")
                 mode_idx = 0 if str(main_depth) == "Standart" else 1
-                if sum(1 for x in (_cmp_slot_effective_raw(0), _cmp_slot_effective_raw(1)) if x) < 2:
-                    st.warning("İki uygulama için de ID veya link girin.")
+                if not _ready_to_start:
+                    st.warning("Önce iki uygulama için de yorum havuzu hazırlanmalı.")
                 elif not use_fast and not has_llm_keys:
                     st.error("Zengin analiz için en az bir API anahtarı gerekir (.env veya Streamlit secrets).")
                 else:
@@ -735,6 +997,13 @@ def render_compare_tab(
                         )
                     for er in errs:
                         st.error(er)
+                    # Ana dashboard için satırları birleştir ve analysis_rows'a yaz.
+                    merged_cmp = merge_compare_details_for_dashboard()
+                    if merged_cmp:
+                        st.session_state.analysis_rows = merged_cmp
+                        st.session_state._last_analysis_use_fast = use_fast
+                    res = st.session_state.get("cmp_results") or {}
+
         _, c_clear = st.columns([3, 1], gap="small")
         with c_clear:
             if res and st.button("Sonuçları temizle", key="cmp_clear", use_container_width=True):
@@ -742,6 +1011,7 @@ def render_compare_tab(
                 st.session_state.cmp_detail_rows = {}
                 st.session_state.pop("cmp_range_label", None)
                 st.session_state.pop("cmp_days_used", None)
+                st.session_state.analysis_rows = []
                 st.rerun()
 
         if res:

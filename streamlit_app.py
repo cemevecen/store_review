@@ -516,18 +516,19 @@ def main():
 
     pool = _active_review_pool()
     src_cur = _session_main_data_source()
-    if src_cur == "Uygulama karşılaştır":
-        detail_cmp = st.session_state.get("cmp_detail_rows") or {}
-        pool_display_count = sum(len(v) for v in detail_cmp.values())
+    _is_compare_src_early = src_cur == "Uygulama karşılaştır"
+    if _is_compare_src_early:
+        # Compare panel kendi "havuzdaki yorum" özetini (uygulama başına ayrı) gösteriyor.
+        pool_display_count = 0
     else:
         pool_display_count = len(pool)
-    if _havuz_metric_visible(src_cur, pool_display_count):
+    if (not _is_compare_src_early) and _havuz_metric_visible(src_cur, pool_display_count):
         st.markdown(
             f'<div class="metric-strip"><div class="metric-strip-label">Havuzdaki yorum</div>'
             f'<div class="metric-strip-value">{pool_display_count}</div></div>',
             unsafe_allow_html=True,
         )
-    if pool:
+    if (not _is_compare_src_early) and pool:
         raw_df = pd.DataFrame(pool)
         with st.expander("Ham veriyi indir (analiz öncesi)", expanded=False):
             c1, c2, c3 = st.columns(3)
@@ -566,10 +567,9 @@ def main():
                     st.caption(f"PDF: {e}")
 
     _is_compare_src = src_cur == "Uygulama karşılaştır"
-    _cmp_has_results = bool(st.session_state.get("cmp_results"))
 
-    # Compare kaynağında "Analiz ayarları" compare panel içinde render edilir.
-    # Buradaki ana blok yalnız diğer kaynaklarda ve compare sonuçları hazır olduğunda görünür.
+    # Compare kaynağında "Analiz ayarları" ve "Duygu analizini başlat" butonu
+    # compare panel içinde kendi akışı olarak render edilir — burada gösterilmez.
     if not _is_compare_src:
         st.markdown('<p class="section-title">Analiz ayarları</p>', unsafe_allow_html=True)
 
@@ -595,7 +595,6 @@ def main():
                 key="main_depth",
             )
     else:
-        # Compare panel içinde seçilen ayarları okuyoruz
         method = st.session_state.get("main_analysis_method", "Hızlı (heuristic)") or "Hızlı (heuristic)"
         use_fast = method == "Hızlı (heuristic)"
         depth = st.session_state.get("main_depth", "Standart") or "Standart"
@@ -606,64 +605,38 @@ def main():
 
     mode_idx = 0 if depth == "Standart" else 1
 
-    # Compare kaynağında "Duygu analizini başlat" yalnızca karşılaştırma
-    # tamamlandığında (cmp_results dolduğunda) görünür.
-    _show_start_analysis_btn = (not _is_compare_src) or _cmp_has_results
-
-    if _show_start_analysis_btn and st.button(
+    if (not _is_compare_src) and st.button(
         "Duygu analizini başlat", type="primary", use_container_width=True
     ):
-        src_now = _session_main_data_source()
-        if src_now == "Uygulama karşılaştır":
-            if not use_fast and not (gk or gqk or ok):
-                st.error("Zengin analiz için en az bir API anahtarı gerekir.")
-            else:
-                with st.spinner("İki uygulama analiz ediliyor…"):
-                    n_ok, cmp_errs = execute_compare_analysis(
-                        rich=rich,
-                        has_llm_keys=has_llm_keys,
-                        default_models=DEFAULT_MODELS,
-                        use_heuristic_only=use_fast,
-                        analysis_mode=mode_idx,
-                    )
-                for er in cmp_errs:
-                    st.error(er)
-                merged_cmp = merge_compare_details_for_dashboard()
-                if merged_cmp:
-                    st.session_state.analysis_rows = merged_cmp
-                    st.session_state._last_analysis_use_fast = use_fast
-                elif n_ok == 0:
-                    st.warning("İki uygulama için seçim veya paket / App Store ID girin.")
+        prepared = _prepare_pool(pool)
+        if not prepared:
+            st.warning("Önce yorum yükleyin.")
+        elif not use_fast and not (gk or gqk or ok):
+            st.error("Zengin analiz için en az bir API anahtarı gerekir.")
         else:
-            prepared = _prepare_pool(pool)
-            if not prepared:
-                st.warning("Önce yorum yükleyin.")
-            elif not use_fast and not (gk or gqk or ok):
-                st.error("Zengin analiz için en az bir API anahtarı gerekir.")
-            else:
-                with st.spinner("Yorumlar analiz ediliyor…"):
-                    bar = st.progress(0.0)
-                    status = st.empty()
+            with st.spinner("Yorumlar analiz ediliyor…"):
+                bar = st.progress(0.0)
+                status = st.empty()
 
-                    def prog(done: int, total: int):
-                        bar.progress(done / max(total, 1))
-                        status.text(f"{done} / {total}")
+                def prog(done: int, total: int):
+                    bar.progress(done / max(total, 1))
+                    status.text(f"{done} / {total}")
 
-                    rows = analyze_batch(
-                        prepared,
-                        use_heuristic_only=use_fast,
-                        analysis_mode=mode_idx,
-                        rich=None if use_fast else rich,
-                        provider=provider,
-                        model=model.strip() or DEFAULT_MODELS[provider],
-                        max_workers=28 if use_fast else 12,
-                        progress=prog,
-                        max_rich_items=500,
-                    )
-                    st.session_state.analysis_rows = rows
-                    st.session_state._last_analysis_use_fast = use_fast
-                    bar.empty()
-                    status.empty()
+                rows = analyze_batch(
+                    prepared,
+                    use_heuristic_only=use_fast,
+                    analysis_mode=mode_idx,
+                    rich=None if use_fast else rich,
+                    provider=provider,
+                    model=model.strip() or DEFAULT_MODELS[provider],
+                    max_workers=28 if use_fast else 12,
+                    progress=prog,
+                    max_rich_items=500,
+                )
+                st.session_state.analysis_rows = rows
+                st.session_state._last_analysis_use_fast = use_fast
+                bar.empty()
+                status.empty()
 
     rows = st.session_state.analysis_rows
     if rows:
