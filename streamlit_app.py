@@ -254,9 +254,9 @@ def _render_about_page() -> None:
     <div class="about-kpi"><span>outputs</span><strong>dashboard · review cards · csv/excel/pdf</strong></div>
   </div>
   <p>
-    This platform converts large-scale app review streams into a decision-ready sentiment intelligence layer.
-    Fast mode provides deterministic baseline scoring for speed and consistency; Rich mode adds deeper semantic interpretation for context-aware insight.
-    The system is designed to keep operational clarity while preserving review-level traceability.
+    This platform reads thousands of app reviews in one place and turns them into a clear picture of what users actually feel.
+    Fast mode gives a quick and consistent sentiment read using simple rules; Rich mode uses an AI model to better understand tone, context and nuance.
+    You can follow the overall trend and still open each individual review to see the exact words behind every number.
   </p>
   <div class="about-table-wrap">
     <table class="about-table">
@@ -299,9 +299,10 @@ def _render_about_page() -> None:
     <div class="about-kpi"><span>çıktılar</span><strong>dashboard · yorum kartları · csv/excel/pdf</strong></div>
   </div>
   <p>
-    Bu platform, yoğun uygulama yorumu akışını karar süreçlerinde kullanılabilir bir duygu zekası katmanına dönüştürür.
-    Hızlı mod deterministik kurallarla hızlı ve tutarlı temel skor üretir; Zengin mod bağlamı daha güçlü okuyarak anlam derinliğini artırır.
-    Yapı hem operasyonel hız hem de yorum satırı seviyesinde izlenebilirlik hedefiyle tasarlanmıştır.
+    Bu platform, binlerce uygulama yorumunu tek ekranda toplar ve kullanıcıların aslında ne hissettiğini anlaşılır bir özete çevirir.
+    Hızlı mod basit kurallarla çalışır; yorumları saniyeler içinde olumlu, olumsuz ve nötr olarak ayırıp genel tabloyu gösterir.
+    Zengin mod bir yapay zekâ modeli kullanır; cümlenin tonunu, bağlamını ve ince ayrıntılarını daha iyi yorumlar.
+    Genel eğilimi tek bakışta görebilir, istediğin yorumu tek tek açıp hangi cümlenin hangi sonucu ürettiğini kontrol edebilirsin.
   </p>
   <div class="about-table-wrap">
     <table class="about-table">
