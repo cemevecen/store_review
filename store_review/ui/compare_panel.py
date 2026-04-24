@@ -174,6 +174,27 @@ def _prepare_pool(rows: list[dict]) -> list[dict]:
     return out
 
 
+def _run_compare_search_with_progress(query: str, platform_filter: str, slot: int) -> list:
+    """Karşılaştırma slot araması sırasında aşamalı ilerleme göster."""
+    bar = st.progress(0.0)
+    status = st.empty()
+    try:
+        status.caption(f"uygulama {slot + 1} araması hazırlanıyor…")
+        bar.progress(0.16)
+        status.caption("mağaza sonuçları taranıyor…")
+        bar.progress(0.48)
+        if platform_filter == "iOS":
+            results = list(search_app_store_itunes(query))
+        else:
+            results = list(search_play_store(query))
+        status.caption(f"{len(results)} sonuç işlendi…")
+        bar.progress(1.0)
+        return results
+    finally:
+        bar.empty()
+        status.empty()
+
+
 def _metadata_android(app_id: str) -> dict[str, Any]:
     try:
         from google_play_scraper import app as play_app
@@ -416,11 +437,7 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
         filt = st.session_state.get(f"{p}last_filter", "Android")
         if looks_like_search_keyword(text) and len(text) >= 2:
             if text != st.session_state.get(f"{p}last_query") or filt != st.session_state.get(f"{p}prev_filter"):
-                combined: list = []
-                if filt == "iOS":
-                    combined.extend(search_app_store_itunes(text))
-                else:
-                    combined.extend(search_play_store(text))
+                combined = _run_compare_search_with_progress(text, filt, slot)
                 st.session_state[f"{p}search_results"] = combined
                 st.session_state[f"{p}last_query"] = text
                 st.session_state[f"{p}display_n"] = 12

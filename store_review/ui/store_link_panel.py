@@ -19,6 +19,28 @@ from store_review.fetchers.app_store import get_app_store_reviews
 from store_review.fetchers.google_play import fetch_google_play_reviews
 
 
+def _run_store_search_with_progress(query: str, platform_filter: str) -> list:
+    """Arama sırasında spinner yerine aşamalı ilerleme göster."""
+    bar = st.progress(0.0)
+    status = st.empty()
+    try:
+        status.caption("arama hazırlanıyor…")
+        bar.progress(0.14)
+        status.caption("mağaza sonuçları taranıyor…")
+        bar.progress(0.44)
+        if platform_filter == "iOS":
+            results = list(search_app_store_itunes(query))
+        else:
+            results = list(search_play_store(query))
+        bar.progress(0.82)
+        status.caption(f"{len(results)} sonuç işlendi…")
+        bar.progress(1.0)
+        return results
+    finally:
+        bar.empty()
+        status.empty()
+
+
 def _init_store_state() -> None:
     defaults = {
         "sl_selected_id": None,
@@ -363,11 +385,7 @@ def render_store_link_tab() -> None:
         filt = st.session_state.sl_last_filter
         if looks_like_search_keyword(text) and len(text) >= 2:
             if text != st.session_state.sl_last_query or filt != st.session_state.get("_sl_prev_filter"):
-                combined: list = []
-                if filt == "iOS":
-                    combined.extend(search_app_store_itunes(text))
-                else:
-                    combined.extend(search_play_store(text))
+                combined = _run_store_search_with_progress(text, filt)
                 st.session_state.sl_search_results = combined
                 st.session_state.sl_last_query = text
                 st.session_state.sl_display_n = 12
