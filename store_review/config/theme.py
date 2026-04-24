@@ -413,20 +413,28 @@ div[data-testid="stDataFrame"] {
   margin-bottom: 2px !important;
 }
 
+/* Chip'i barındıran row'un dikey hizası: pill satırıyla aynı baseline. */
+[data-testid="stHorizontalBlock"]:has(.hero-about-chip-wrap) {
+  align-items: center !important;
+}
+[data-testid="stHorizontalBlock"]:has(.hero-about-chip-wrap) > [data-testid="stColumn"] {
+  align-self: center !important;
+  display: flex;
+  align-items: center;
+}
 .hero-about-chip-wrap {
   width: 100%;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  min-height: 38px;
 }
 .hero-about-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 34px;
-  padding: 0 14px;
+  height: 40px;
+  padding: 0 16px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.38);
   color: #ffffff !important;
@@ -436,6 +444,7 @@ div[data-testid="stDataFrame"] {
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
+  box-sizing: border-box;
   transition: transform 0.12s ease, background 0.16s ease, border-color 0.16s ease;
 }
 .hero-about-chip:hover {
@@ -447,11 +456,11 @@ div[data-testid="stDataFrame"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.55);
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 700;
   line-height: 1;
 }
@@ -732,11 +741,10 @@ div[data-testid="stDataFrame"] {
   }
   .hero-about-chip-wrap {
     justify-content: center !important;
-    min-height: 34px !important;
     margin-top: 6px !important;
   }
   .hero-about-chip {
-    height: 32px !important;
+    height: 34px !important;
     padding: 0 12px !important;
     font-size: 0.78rem !important;
   }
