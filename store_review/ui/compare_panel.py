@@ -58,8 +58,8 @@ _CMP_COMPACT_CSS = """
 [data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell .cmp-selected-summary {
   margin-top: -4px !important;
 }
-[data-testid="stVerticalBlock"].st-key-cmp_shell .sl-plat-radio-wrap,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell .sl-plat-radio-wrap {
+[data-testid="stVerticalBlock"].st-key-cmp_shell [class*="plat_radio_wrap"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [class*="plat_radio_wrap"] {
   margin: 4px 0 6px !important;
 }
 [data-testid="stVerticalBlock"].st-key-cmp_shell hr,
@@ -107,10 +107,10 @@ _CMP_COMPACT_CSS = """
   flex: 1 1 0 !important;
   min-width: 0 !important;
 }
-[data-testid="stVerticalBlock"].st-key-cmp_plat_row_0 .sl-plat-radio-wrap,
-[data-testid="stVerticalBlock"].st-key-cmp_plat_row_1 .sl-plat-radio-wrap,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_plat_row_0 .sl-plat-radio-wrap,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_plat_row_1 .sl-plat-radio-wrap {
+[data-testid="stVerticalBlock"].st-key-cmp_plat_row_0 [class*="plat_radio_wrap"],
+[data-testid="stVerticalBlock"].st-key-cmp_plat_row_1 [class*="plat_radio_wrap"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_plat_row_0 [class*="plat_radio_wrap"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_plat_row_1 [class*="plat_radio_wrap"] {
   margin-top: 2px !important;
   margin-bottom: 2px !important;
 }
@@ -691,16 +691,17 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
         with st.container(key=f"cmp_plat_row_{slot}"):
             plat_c, reset_c = st.columns([4, 1], gap="small", vertical_alignment="center")
             with plat_c:
-                st.markdown('<div class="sl-plat-radio-wrap">', unsafe_allow_html=True)
-                st.radio(
-                    t("platform.label"),
-                    ["Android", "iOS"],
-                    horizontal=True,
-                    key=f"{p}last_filter",
-                    label_visibility="collapsed",
-                    on_change=_cmp_plat_changed,
-                )
-                st.markdown("</div>", unsafe_allow_html=True)
+                # Gerçek wrapper: `st-key-cmp_plat_radio_wrap_{slot}` sınıfı,
+                # ortak `[class*="plat_radio_wrap"]` CSS'iyle logo görünümünü alır.
+                with st.container(key=f"cmp_plat_radio_wrap_{slot}"):
+                    st.radio(
+                        t("platform.label"),
+                        ["Android", "iOS"],
+                        horizontal=True,
+                        key=f"{p}last_filter",
+                        label_visibility="collapsed",
+                        on_change=_cmp_plat_changed,
+                    )
             with reset_c:
                 if sid and st.button(t("common.reset"), key=f"cmp_slot_reset_{slot}", use_container_width=False):
                     _reset_cmp_slot(slot)
