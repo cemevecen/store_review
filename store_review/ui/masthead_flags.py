@@ -28,10 +28,11 @@ def flag_png_url(lang_code: str, *, width: int = 160) -> str:
 
 def masthead_flag_css_block(current_lang: str) -> str:
     """Popover tetikleyici + dil düğmeleri: daire içi tam bayrak, metin/emoji görünmez."""
+    # Biraz taşır: PNG iç boşluğu / yuvarlak kırpma sonrası üst-alt beyaz çizgi kalmasın
     shared = (
-        "background-size:cover!important;background-position:center!important;"
-        "background-repeat:no-repeat!important;color:transparent!important;"
-        "-webkit-text-fill-color:transparent!important;"
+        "background-size:120% 120%!important;background-position:center!important;"
+        "background-repeat:no-repeat!important;background-color:transparent!important;"
+        "color:transparent!important;-webkit-text-fill-color:transparent!important;"
     )
     cur_u = html.escape(flag_png_url(current_lang), quote=True)
     trig = ",".join(

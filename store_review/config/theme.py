@@ -411,7 +411,7 @@ div[data-testid="stDataFrame"] {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background-color: rgba(241, 245, 249, 0.98) !important;
+  background-color: transparent !important;
   border: 1px solid rgba(15, 23, 42, 0.1) !important;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1) !important;
 }
@@ -471,7 +471,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background-color: rgba(241, 245, 249, 0.98) !important;
+  background-color: transparent !important;
   border: 1px solid rgba(15, 23, 42, 0.1) !important;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
 }
