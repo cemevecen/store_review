@@ -501,7 +501,7 @@ def main():
                         source_label=src_cur,
                     )
                     st.download_button(
-                        "PDF indir (UTF-8)",
+                        "PDF indir",
                         data=_raw_pdf,
                         file_name=safe_pdf_filename(f"yorum_havuzu_{src_cur}"),
                         mime="application/pdf",
@@ -617,7 +617,7 @@ def main():
             try:
                 _analiz_pdf = build_analysis_pdf_bytes(rows, source_label=src_cur)
                 st.download_button(
-                    "Sonuçları PDF indir (UTF-8)",
+                    "Sonuçları PDF indir",
                     data=_analiz_pdf,
                     file_name=safe_pdf_filename(f"analiz_{src_cur}"),
                     mime="application/pdf",
