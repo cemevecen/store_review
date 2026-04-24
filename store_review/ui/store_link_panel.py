@@ -6,6 +6,7 @@ Eski monolitik streamlit_app "Mağaza Linki" akışının sadeleştirilmiş hali
 from __future__ import annotations
 
 import html
+import time
 
 import streamlit as st
 
@@ -39,6 +40,15 @@ def _run_store_search_with_progress(query: str, platform_filter: str) -> list:
     finally:
         bar.empty()
         status.empty()
+
+
+def _fmt_duration(total_seconds: float) -> str:
+    secs = max(0, int(total_seconds))
+    mins, sec = divmod(secs, 60)
+    hrs, mins = divmod(mins, 60)
+    if hrs > 0:
+        return f"{hrs:02d}:{mins:02d}:{sec:02d}"
+    return f"{mins:02d}:{sec:02d}"
 
 
 def _init_store_state() -> None:
@@ -479,23 +489,40 @@ def render_store_link_tab() -> None:
             return
 
         prog = st.progress(0.0)
+        prog_txt = st.empty()
+        t0 = time.perf_counter()
+
+        def _on_progress(x: float) -> None:
+            pct = min(max(float(x), 0.0), 1.0)
+            prog.progress(pct)
+            elapsed = time.perf_counter() - t0
+            if pct > 0.001:
+                eta = max(0.0, (elapsed / pct) - elapsed)
+                prog_txt.caption(
+                    f"yorum havuzu çekiliyor · %{int(pct * 100)} · geçen {_fmt_duration(elapsed)} · kalan ~{_fmt_duration(eta)}"
+                )
+            else:
+                prog_txt.caption("yorum havuzu çekiliyor · %0 · geçen 00:00 · kalan hesaplanıyor…")
+
         try:
             if platform == "android":
                 pool = fetch_google_play_reviews(
                     app_id,
                     days,
-                    _progress_callback=lambda x: prog.progress(min(float(x), 1.0)),
+                    _progress_callback=_on_progress,
                 )
             else:
                 pool = get_app_store_reviews(
                     app_id,
-                    _progress_callback=lambda x: prog.progress(min(float(x), 1.0)),
+                    _progress_callback=_on_progress,
                     _days_limit=days,
                 )
             st.session_state.review_pool_store = pool
             st.session_state.analysis_rows = []
             prog.empty()
+            prog_txt.empty()
             st.caption(f"{len(pool)} benzersiz yorum yüklendi ({time_label}).")
         except Exception as e:
             prog.empty()
+            prog_txt.empty()
             st.error(f"Çekim hatası: {e}")
