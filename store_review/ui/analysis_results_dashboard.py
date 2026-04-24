@@ -13,6 +13,8 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from store_review.config.i18n import t as _t
+
 
 def _counts(df: pd.DataFrame) -> tuple[int, int, int, int]:
     analysis_df = df[df["Baskın Duygu"] != "—"].copy()
@@ -81,21 +83,21 @@ def _render_concentric_legend(m_olumlu: int, m_olumsuz: int, m_istek: int) -> No
                     <div style="width:28px;height:4px;border-radius:2px;background:#10b981;"></div>
                     <div>
                         <div style="font-size:0.9rem;font-weight:700;color:#10b981;line-height:1.2;">{pos_pct}%</div>
-                        <div style="font-size:0.7rem;color:#94A3B8;font-weight:600;">Olumlu</div>
+                        <div style="font-size:0.7rem;color:#94A3B8;font-weight:600;">{html.escape(_t("dash.sent_pos"))}</div>
                     </div>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
                     <div style="width:28px;height:4px;border-radius:2px;background:#f43f5e;"></div>
                     <div>
                         <div style="font-size:0.9rem;font-weight:700;color:#f43f5e;line-height:1.2;">{neg_pct}%</div>
-                        <div style="font-size:0.7rem;color:#94A3B8;font-weight:600;">Olumsuz</div>
+                        <div style="font-size:0.7rem;color:#94A3B8;font-weight:600;">{html.escape(_t("dash.sent_neg"))}</div>
                     </div>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
                     <div style="width:28px;height:4px;border-radius:2px;background:#818cf8;"></div>
                     <div>
                         <div style="font-size:0.9rem;font-weight:700;color:#818cf8;line-height:1.2;">{neu_pct}%</div>
-                        <div style="font-size:0.7rem;color:#94A3B8;font-weight:600;">İstek/Görüş</div>
+                        <div style="font-size:0.7rem;color:#94A3B8;font-weight:600;">{html.escape(_t("dash.sent_req"))}</div>
                     </div>
                 </div>
             </div>
@@ -115,7 +117,7 @@ def _render_experience_score(m_olumlu: int, m_olumsuz: int, m_istek: int) -> Non
         f"""
         <div style="background-color:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:15px;
                     margin-top:4px;margin-bottom:12px;text-align:center;box-shadow:0 4px 6px rgba(0,0,0,0.02);">
-            <div style="font-size:0.85rem;color:#64748B;font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px;">Genel Deneyim Skoru</div>
+            <div style="font-size:0.85rem;color:#64748B;font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px;">{html.escape(_t("dash.exp_score"))}</div>
             <div style="font-size:2.5rem;font-weight:800;color:{score_color};line-height:1;">{score}<span style="font-size:1.2rem;color:#94A3B8;">/100</span></div>
         </div>
         """,
@@ -152,7 +154,7 @@ def _render_trend(rows: list[dict]) -> None:
             <div class="sr-responsive-row" style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:12px 15px;margin-top:8px;display:flex;align-items:center;gap:10px;">
                 <span style="font-size:1.6rem;color:{trend_color};font-weight:800;line-height:1;">{trend_icon}</span>
                 <div>
-                    <div style="font-size:0.7rem;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Trend</div>
+                    <div style="font-size:0.7rem;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:1px;">{html.escape(_t("dash.trend"))}</div>
                     <div style="font-size:0.85rem;font-weight:600;color:{trend_color};">{html.escape(trend_text)}</div>
                 </div>
             </div>
@@ -197,7 +199,7 @@ def _render_daily_negative(rows: list[dict]) -> None:
             st.markdown(
                 f"""
                 <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:12px 15px;margin-top:8px;">
-                    <div style="font-size:0.7rem;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Günlük Olumsuz Oran</div>
+                    <div style="font-size:0.7rem;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">{html.escape(_t("dash.daily_neg"))}</div>
                     <div class="sr-week-dow-strip" style="display:flex;gap:4px;">{cells}</div>
                 </div>
                 """,
@@ -215,13 +217,13 @@ def _render_sentiment_summary(
     total_all: int,
     use_fast: bool,
 ) -> None:
-    st.markdown("### Duygu Dağılımı")
+    st.markdown(f"### {_t('dash.sent_dist')}")
 
     if total_all == 0:
         st.markdown(
-            """
+            f"""
 <div style="background:#F8FAFC;border-radius:12px;padding:20px 24px;border:1px solid #E2E8F0;">
-    <div style="font-size:0.9rem;color:#64748b;">Henüz yeterli veri yok.</div>
+    <div style="font-size:0.9rem;color:#64748b;">{html.escape(_t("dash.no_data_yet"))}</div>
 </div>
 """,
             unsafe_allow_html=True,
@@ -267,7 +269,7 @@ def _render_sentiment_summary(
 
     persona_html = f"""
 <div style="margin-top:16px;padding:12px;background:#eff6ff;border-radius:10px;border:1px solid #dbeafe;">
-    <div style="font-size:0.75rem;font-weight:700;color:#3b82f6;text-transform:uppercase;margin-bottom:4px;">Kullanıcı Profili (Persona)</div>
+    <div style="font-size:0.75rem;font-weight:700;color:#3b82f6;text-transform:uppercase;margin-bottom:4px;">{html.escape(_t("dash.persona"))}</div>
     <div style="font-size:0.85rem;color:#1e40af;line-height:1.5;">
         • <b>En yoğun sürüm / kanal:</b> {best_v}<br>
         • <b>Hakim dil etiketi:</b> {best_l}<br>
@@ -301,7 +303,7 @@ def _render_puan_distribution(df: pd.DataFrame) -> None:
     if "Puan" not in df.columns or not df["Puan"].notna().any():
         return
     st.markdown("---")
-    st.markdown("### Puan Dağılımı")
+    st.markdown(f"### {_t('dash.score_dist')}")
     freq = st.radio(
         "Zaman ölçeği",
         ["Günlük", "Haftalık", "Aylık"],
@@ -404,13 +406,16 @@ def render_analysis_results_dashboard(rows: list[dict], *, use_fast: bool = True
         return
     df = pd.DataFrame(rows)
     if df.empty or "Baskın Duygu" not in df.columns:
-        st.info("Analiz sonucu sütunları eksik.")
+        st.info(_t("dash.missing_cols"))
         return
 
     m_olumlu, m_olumsuz, m_istek, n_total = _counts(df)
     total_all = m_olumlu + m_olumsuz + m_istek
 
-    st.markdown('<h2 class="sr-analysis-page-title">Analiz Sonuçları ve İstatistikler</h2>', unsafe_allow_html=True)
+    st.markdown(
+        f'<h2 class="sr-analysis-page-title">{html.escape(_t("dash.page_title"))}</h2>',
+        unsafe_allow_html=True,
+    )
 
     st.markdown(
         f"""

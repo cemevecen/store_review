@@ -461,9 +461,9 @@ def render_store_link_tab() -> None:
     _inject_store_search_css()
 
     q = st.text_input(
-        "Uygulama ara veya mağaza linki / ID",
+        t("store.input_label"),
         key="sl_store_input",
-        placeholder="Örn. döviz, com.whatsapp mağaza linki",
+        placeholder=t("store.input_placeholder"),
         label_visibility="visible",
     )
     text = (q or "").strip()
@@ -496,7 +496,7 @@ def render_store_link_tab() -> None:
 
         st.markdown('<div class="sl-plat-radio-wrap">', unsafe_allow_html=True)
         st.radio(
-            "Platform",
+            t("platform.label"),
             ["Android", "iOS"],
             horizontal=True,
             key="sl_last_filter",
@@ -517,7 +517,7 @@ def render_store_link_tab() -> None:
             results = st.session_state.sl_search_results or []
             if results:
                 st.markdown(
-                    f'<p class="sl-results-head">Bulunan uygulamalar ({len(results)})</p>',
+                    f'<p class="sl-results-head">{html.escape(t("store.found_apps", n=len(results)))}</p>',
                     unsafe_allow_html=True,
                 )
                 n_show = min(st.session_state.sl_display_n, len(results))
@@ -559,7 +559,7 @@ def render_store_link_tab() -> None:
                         st.session_state.sl_display_n = min(st.session_state.sl_display_n + 12, len(results))
                         st.rerun()
             elif len(text) >= 2:
-                st.warning("Sonuç bulunamadı. Farklı anahtar kelime veya platform deneyin.")
+                st.warning(t("store.no_results"))
 
     if text or st.session_state.sl_selected_id:
         if st.button(t("common.reset_selection"), key="sl_reset"):
@@ -629,7 +629,7 @@ def render_store_link_tab() -> None:
             app_id = resolved.app_id
             platform = resolved.platform
         else:
-            st.error("Önce listeden bir uygulama **Seç** deyin veya geçerli paket / ID / ürün linki girin.")
+            st.error(t("store.need_selection"))
             return
 
         # Yeni çekimden önce önceki havuzu/analizi sıfırla
@@ -671,8 +671,17 @@ def render_store_link_tab() -> None:
             st.session_state._sl_pool_owner = f"{platform}:{app_id}"
             prog.empty()
             prog_txt.empty()
-            st.caption(f"{len(pool)} benzersiz yorum yüklendi ({time_label} · {scope_lbl.lower()}).")
+            _range_display = _fmt_date_range(time_label)
+            _scope_display = t("scope.local") if scope_val == "local" else t("scope.global")
+            st.caption(
+                t(
+                    "store.loaded_summary",
+                    n=len(pool),
+                    range=_range_display,
+                    scope=_scope_display.lower(),
+                )
+            )
         except Exception as e:
             prog.empty()
             prog_txt.empty()
-            st.error(f"Çekim hatası: {e}")
+            st.error(t("store.fetch_error", err=e))

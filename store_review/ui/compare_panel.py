@@ -297,11 +297,12 @@ def _fetch_compare_pools(days: int) -> tuple[dict[str, dict[str, Any]], list[str
     for slot, raw in inputs:
         res, _msg = resolve_direct_input(raw) if raw else (None, None)
         if res is None:
-            errors.append(
-                f"Uygulama {slot + 1}: giriş çözülemedi (`{raw[:48]}…`)"
-                if raw and len(raw) > 48
-                else f"Uygulama {slot + 1}: giriş çözülemedi."
-            )
+            if raw and len(raw) > 48:
+                errors.append(
+                    t("compare.err_unresolvable_long", i=slot + 1, raw=raw[:48])
+                )
+            else:
+                errors.append(t("compare.err_unresolvable", i=slot + 1))
         resolved_pairs.append((slot, res, raw))
 
     if errors:
@@ -634,7 +635,7 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
     st.text_input(
         t("store.slot_input_label", heading=heading),
         key=in_key,
-        placeholder="Örn. trendyol, com.example, App Store ID veya mağaza linki",
+        placeholder=t("compare.input_placeholder"),
         label_visibility="visible",
     )
     text = (st.session_state.get(in_key) or "").strip()
@@ -718,7 +719,7 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
             results = st.session_state.get(f"{p}search_results") or []
             if results:
                 st.markdown(
-                    f'<p class="sl-results-head">Bulunan uygulamalar ({len(results)})</p>',
+                    f'<p class="sl-results-head">{html.escape(t("store.found_apps", n=len(results)))}</p>',
                     unsafe_allow_html=True,
                 )
                 n_show = min(int(st.session_state.get(f"{p}display_n") or 12), len(results))
@@ -759,7 +760,7 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
                         )
                         st.rerun()
             elif len(text) >= 2 and looks_like_search_keyword(text):
-                st.warning("Sonuç bulunamadı. Farklı anahtar kelime veya platform deneyin.")
+                st.warning(t("store.no_results"))
     elif sid:
         with st.container(key=f"cmp_reset_row_{slot}"):
             _, reset_c = st.columns([4, 1], gap="small", vertical_alignment="center")
@@ -835,9 +836,9 @@ def execute_compare_analysis(
     errors: list[str] = []
 
     if len(prepared_pools) < 2:
-        return 0, ["Önce iki uygulama için de yorum havuzu hazırlanmalı."]
+        return 0, [t("compare.warn_need_pools")]
     if not use_heuristic_only and not has_llm_keys:
-        return 0, ["Zengin analiz için en az bir API anahtarı gerekir."]
+        return 0, [t("analysis.err_need_api")]
 
     results: dict[str, dict[str, Any]] = {}
     detail_rows: dict[str, list[dict]] = {}
@@ -1030,11 +1031,11 @@ def render_compare_tab(
                 main_depth = st.session_state.get("main_depth", "Standart")
                 mode_idx = 0 if str(main_depth) == "Standart" else 1
                 if not _ready_to_start:
-                    st.warning("Önce iki uygulama için de yorum havuzu hazırlanmalı.")
+                    st.warning(t("compare.warn_need_pools"))
                 elif not use_fast and not has_llm_keys:
-                    st.error("Zengin analiz için en az bir API anahtarı gerekir (.env veya Streamlit secrets).")
+                    st.error(t("compare.err_rich_api"))
                 else:
-                    with st.spinner("Uygulamalar analiz ediliyor…"):
+                    with st.spinner(t("compare.spinner")):
                         n_ok, errs = execute_compare_analysis(
                             rich=rich,
                             has_llm_keys=has_llm_keys,

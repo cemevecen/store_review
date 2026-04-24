@@ -38,6 +38,7 @@ from store_review.ui.compare_panel import (
     merge_compare_details_for_dashboard,
     render_compare_tab,
 )
+from store_review.config.i18n import t
 from store_review.ui.footer import render_footer
 from store_review.ui.masthead import (
     SOURCE_OPTIONS,
@@ -224,7 +225,7 @@ def main():
         render_store_link_tab()
     elif src == "Dosya":
         fu_key = f"main_file_uploader_{st.session_state._file_uploader_gen}"
-        up = st.file_uploader("Dosya seç", type=["csv", "xlsx"], key=fu_key)
+        up = st.file_uploader(t("file.upload_label"), type=["csv", "xlsx"], key=fu_key)
         if up is not None:
             try:
                 raw = up.getvalue()
@@ -251,8 +252,7 @@ def main():
                 shown = ", ".join(srcs[-5:])
                 more = "…" if len(srcs) > 5 else ""
                 st.caption(
-                    f"**{len(srcs)} dosya** birleşik havuz ({shown}{more}) — **{n}** benzersiz yorum. "
-                    "Yeni dosya ekleyebilirsiniz."
+                    t("file.loaded_merged", count=len(srcs), files=shown, more=more, n=n)
                 )
             else:
                 fn = srcs[0] if srcs else (
@@ -260,11 +260,9 @@ def main():
                     if isinstance(st.session_state.get("_file_pool_sig"), tuple)
                     else "—"
                 )
-                st.caption(
-                    f"Yüklenen dosya: **{fn}** — **{n}** yorum. Başka dosya ekleyerek havuzu büyütebilirsiniz."
-                )
+                st.caption(t("file.loaded_single", file=fn, n=n))
         if st.session_state.review_pool_file and st.button(
-            "Dosya havuzunu temizle", use_container_width=True, key="btn_clear_file_pool"
+            t("file.clear_pool"), use_container_width=True, key="btn_clear_file_pool"
         ):
             st.session_state.review_pool_file = []
             st.session_state.pop("_file_pool_sig", None)
@@ -274,13 +272,13 @@ def main():
             st.rerun()
     elif src == "Metin":
         ta = st.text_area(
-            "Yorumlar",
+            t("paste.label"),
             height=200,
             key="paste_reviews",
             label_visibility="visible",
-            placeholder="Örn: Uygulama çok iyi ama bildirimler bazen geç geliyor.\nHer satıra bir yorum…",
+            placeholder=t("paste.placeholder"),
         )
-        if st.button("Metni havuza yükle", use_container_width=True, key="btn_paste"):
+        if st.button(t("paste.upload_btn"), use_container_width=True, key="btn_paste"):
             lines = [ln.strip() for ln in ta.splitlines() if ln.strip()]
             pool = []
             j = 0
@@ -317,17 +315,17 @@ def main():
         pool_display_count = len(pool)
     if (not _is_compare_src_early) and _havuz_metric_visible(src_cur, pool_display_count):
         st.markdown(
-            f'<div class="metric-strip"><div class="metric-strip-label">Havuzdaki yorum</div>'
+            f'<div class="metric-strip"><div class="metric-strip-label">{t("metric.pool_count")}</div>'
             f'<div class="metric-strip-value">{pool_display_count}</div></div>',
             unsafe_allow_html=True,
         )
     if (not _is_compare_src_early) and pool:
         raw_df = pd.DataFrame(pool)
-        with st.expander("Ham veriyi indir (analiz öncesi)", expanded=False):
+        with st.expander(t("download.raw_section"), expanded=False):
             c1, c2, c3 = st.columns(3)
             with c1:
                 st.download_button(
-                    "CSV indir",
+                    t("download.csv"),
                     data=df_to_csv_bytes(raw_df),
                     file_name=f"reviews_raw_{datetime.now():%Y%m%d_%H%M}.csv",
                     mime="text/csv",
@@ -335,7 +333,7 @@ def main():
                 )
             with c2:
                 st.download_button(
-                    "Excel indir",
+                    t("download.excel"),
                     data=df_to_excel_bytes(raw_df),
                     file_name=f"reviews_raw_{datetime.now():%Y%m%d_%H%M}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -348,7 +346,7 @@ def main():
                         source_label=src_cur,
                     )
                     st.download_button(
-                        "PDF indir",
+                        t("download.pdf"),
                         data=_raw_pdf,
                         file_name=safe_pdf_filename(f"yorum_havuzu_{src_cur}"),
                         mime="application/pdf",
@@ -364,11 +362,19 @@ def main():
     # Compare kaynağında "Analiz ayarları" ve "Duygu analizini başlat" butonu
     # compare panel içinde kendi akışı olarak render edilir — burada gösterilmez.
     if not _is_compare_src:
-        st.markdown('<p class="section-title">Analiz ayarları</p>', unsafe_allow_html=True)
+        st.markdown(
+            f'<p class="section-title">{t("section.analysis_settings")}</p>',
+            unsafe_allow_html=True,
+        )
 
+        _method_labels_main = {
+            "Hızlı (heuristic)": t("compare.method_fast"),
+            "Zengin (LLM)": t("compare.method_rich"),
+        }
         method_pick = st.segmented_control(
-            "Analiz yöntemi",
+            t("section.analysis_settings"),
             options=["Hızlı (heuristic)", "Zengin (LLM)"],
+            format_func=lambda v: _method_labels_main.get(v, v),
             selection_mode="single",
             default="Hızlı (heuristic)",
             key="main_analysis_method",
@@ -381,11 +387,16 @@ def main():
         use_fast = method == "Hızlı (heuristic)"
         depth = "Standart"
         if not use_fast:
+            _depth_labels_main = {
+                "Standart": t("compare.depth_std"),
+                "Gelişmiş": t("compare.depth_adv"),
+            }
             depth = st.radio(
-                "Derinlik (yalnız zengin)",
+                t("compare.depth_label"),
                 ["Standart", "Gelişmiş"],
                 horizontal=True,
                 key="main_depth",
+                format_func=lambda v: _depth_labels_main.get(v, v),
             )
     else:
         method = st.session_state.get("main_analysis_method", "Hızlı (heuristic)") or "Hızlı (heuristic)"
@@ -399,15 +410,15 @@ def main():
     mode_idx = 0 if depth == "Standart" else 1
 
     if (not _is_compare_src) and st.button(
-        "Duygu analizini başlat", type="primary", use_container_width=True
+        t("analysis.start"), type="primary", use_container_width=True
     ):
         prepared = _prepare_pool(pool)
         if not prepared:
-            st.warning("Önce yorum yükleyin.")
+            st.warning(t("analysis.warn_load_first"))
         elif not use_fast and not (gk or gqk or ok):
-            st.error("Zengin analiz için en az bir API anahtarı gerekir.")
+            st.error(t("analysis.err_need_api"))
         else:
-            with st.spinner("Yorumlar analiz ediliyor…"):
+            with st.spinner(t("analysis.spinner")):
                 bar = st.progress(0.0)
                 status = st.empty()
 
@@ -437,14 +448,17 @@ def main():
         render_analysis_results_dashboard(rows, use_fast=use_fast_last)
         df = pd.DataFrame(rows)
 
-        st.markdown('<p class="section-title section-title--tight">Yorumlar</p>', unsafe_allow_html=True)
+        st.markdown(
+            f'<p class="section-title section-title--tight">{t("section.reviews")}</p>',
+            unsafe_allow_html=True,
+        )
         render_analyzed_review_cards(rows, key_prefix="main_analiz")
 
         out_df = df.drop(columns=["Tarih"], errors="ignore") if "Tarih" in df.columns else df
         d_csv, d_pdf = st.columns(2)
         with d_csv:
             st.download_button(
-                "Sonuçları CSV indir",
+                t("download.analysis_csv"),
                 data=df_to_csv_bytes(out_df),
                 file_name=f"analiz_{datetime.now():%Y%m%d_%H%M}.csv",
                 mime="text/csv",
@@ -454,7 +468,7 @@ def main():
             try:
                 _analiz_pdf = build_analysis_pdf_bytes(rows, source_label=src_cur)
                 st.download_button(
-                    "Sonuçları PDF indir",
+                    t("download.analysis_pdf"),
                     data=_analiz_pdf,
                     file_name=safe_pdf_filename(f"analiz_{src_cur}"),
                     mime="application/pdf",
