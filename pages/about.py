@@ -386,9 +386,8 @@ def main() -> None:
         page_icon=_fav if _fav else None,
     )
     _inject_css()
-    with st.container(key="app_main"):
-        render_masthead(on_about=True)
-        _render_about_body()
+    render_masthead(on_about=True)
+    _render_about_body()
     render_footer(on_about=True)
 
 

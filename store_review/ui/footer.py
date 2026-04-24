@@ -17,78 +17,56 @@ from store_review.config.i18n import LANGUAGES, get_lang, lang_query_suffix, set
 _FOOTER_CSS = """
 <style>
 /*
- * Document flow footer — viewport’a pin yok. Kısa sayfada st-key-app_main büyür
- * (flex:1), footer sonda kalır. Streamlit: app_main container + sonra pg_footer.
+ * Custom footer — viewport altında sabit; içerik stMainBlockContainer’da
+ * --custom-footer-height kadar padding-bottom ile footer altında kalmaz.
+ * Sınıf .custom-footer JS ile pg_footer sarmalayıcısına eklenir (Streamlit API).
  */
+:root {
+  --custom-footer-height: 128px;
+}
+@media (max-width: 768px) {
+  :root {
+    --custom-footer-height: 150px;
+  }
+}
 html, body {
   margin: 0 !important;
   padding: 0 !important;
-  min-height: 100% !important;
 }
 .stApp {
   min-height: 100vh !important;
   min-height: 100dvh !important;
-  display: flex !important;
-  flex-direction: column !important;
+  padding-bottom: var(--custom-footer-height) !important;
   box-sizing: border-box !important;
 }
-[data-testid="stAppViewContainer"] {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-}
-[data-testid="stAppScrollToBottomContainer"],
-[data-testid="stAppViewContainer"] section.stMain,
-[data-testid="stAppViewContainer"] section.main {
-  flex: 1 1 auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: 0 !important;
-  align-items: stretch !important;
-}
+/* Ana içerik — kaydırınca son öğeler sabit footer altında kalmaz */
 [data-testid="stMainBlockContainer"] {
-  flex: 1 1 auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: 0 !important;
-  width: 100% !important;
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
+  padding-bottom: var(--custom-footer-height) !important;
   box-sizing: border-box !important;
-}
-/* Kök sütun: min viewport; çocuklar app_main (büyür) + footer (sabit yükseklik) */
-[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"],
-[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlockBorderWrapper"],
-[data-testid="stMainBlockContainer"] > *:first-child {
-  flex: 1 1 auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  min-height: 100dvh !important;
-  min-width: 0 !important;
-}
-[data-testid="stMainBlockContainer"] [data-testid="element-container"]:has(.st-key-app_main) {
-  flex: 1 0 auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: 0 !important;
-}
-[data-testid="stMainBlockContainer"] [data-testid="element-container"]:has(.st-key-pg_footer) {
-  flex-shrink: 0 !important;
 }
 
-/* Footer kartı — akış içi (fixed/sticky yok); ::after için relative */
+/* Sabit yerleşim — pg_footer + (isteğe bağlı) footer.custom-footer / data-testid */
+footer.custom-footer,
+div[data-testid="custom-footer"],
 [data-testid="stVerticalBlock"].st-key-pg_footer,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer,
-footer.custom-footer,
-.custom-footer.st-key-pg_footer {
-  position: relative !important;
+.st-key-pg_footer.custom-footer {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
   width: 100% !important;
   max-width: 100% !important;
-  flex-shrink: 0 !important;
+  z-index: 9999 !important;
   margin: 0 !important;
-  margin-top: 0 !important;
-  padding: 26px clamp(18px, 4vw, 44px) 22px !important;
+  transform: none !important;
   box-sizing: border-box !important;
+}
+
+/* Footer — masthead ile aynı bordo gradient, aynı pattern overlay. */
+[data-testid="stVerticalBlock"].st-key-pg_footer,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer {
+  padding: 26px clamp(18px, 4vw, 44px) 22px !important;
   border: none !important;
   border-radius: 22px 22px 0 0 !important;
   border-top: 1px solid rgba(0, 0, 0, 0.14) !important;
@@ -109,10 +87,7 @@ footer.custom-footer,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer::after {
   content: "" !important;
   position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
+  inset: 0 !important;
   pointer-events: none !important;
   border-radius: inherit !important;
   opacity: 0.05 !important;
@@ -288,6 +263,28 @@ footer.custom-footer,
 </style>
 """
 
+# Streamlit container özel class vermediği için .custom-footer sınıfı DOM'da script ile eklenir.
+_FOOTER_CLASS_SCRIPT = """
+<script>
+(function () {
+  const root = window.parent && window.parent.document ? window.parent.document : document;
+  if (!root || !root.body) return;
+  function mark() {
+    root.querySelectorAll(
+      '[data-testid="stVerticalBlock"].st-key-pg_footer, [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer'
+    ).forEach(function (el) {
+      el.classList.add("custom-footer");
+    });
+  }
+  mark();
+  [0, 120, 400].forEach(function (ms) { setTimeout(mark, ms); });
+  if (root.__srFooterClassObserver) return;
+  root.__srFooterClassObserver = new MutationObserver(mark);
+  root.__srFooterClassObserver.observe(root.body, { childList: true, subtree: true });
+})();
+</script>
+"""
+
 
 def _on_lang_change() -> None:
     label = st.session_state.get("_lang_picker_label")
@@ -317,6 +314,7 @@ def _on_about_page() -> bool:
 def render_footer(*, on_about: bool | None = None) -> None:
     """Footer — header'la aynı kart dili; dil seçenekleri + hakkında chip'i içerir."""
     st.markdown(_FOOTER_CSS, unsafe_allow_html=True)
+    st.markdown(_FOOTER_CLASS_SCRIPT, unsafe_allow_html=True)
 
     # Explicit override yoksa session state / URL üzerinden tahmin et.
     if on_about is None:
