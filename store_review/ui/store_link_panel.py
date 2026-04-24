@@ -183,7 +183,7 @@ def _inject_store_search_css() -> None:
   background: #fff !important;
   color: #0f172a !important;
 }
-/* Android / iOS — radyo ile seçili durum net */
+/* Android / iOS — dairesel radyo işareti yerine marka logoları. */
 .sl-plat-radio-wrap { margin: 10px 0 14px; }
 .sl-plat-radio-wrap [data-testid="stRadio"] > div { width: 100% !important; }
 .sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] {
@@ -203,7 +203,33 @@ def _inject_store_search_css() -> None:
   font-weight: 600 !important;
   align-items: center !important;
   justify-content: center !important;
+  gap: 10px !important;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+/* Streamlit'in yerleşik radyo dairesini gizle — logoyu biz basıyoruz. */
+.sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label > div:first-child,
+.sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label > span:first-child,
+.sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label [data-baseweb="radio"] {
+  display: none !important;
+}
+/* Logo yuvası — ilk etiket Android, ikinci etiket iOS. */
+.sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label::before {
+  content: "";
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.08));
+  transition: filter 0.15s ease;
+}
+.sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label:nth-of-type(1)::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%233DDC84' d='M17.523 15.341a1.149 1.149 0 1 1 1.148-1.149 1.149 1.149 0 0 1-1.148 1.149m-11.046 0a1.149 1.149 0 1 1 1.148-1.149 1.149 1.149 0 0 1-1.148 1.149m11.46-6.02 2.295-3.973a.478.478 0 0 0-.827-.478l-2.322 4.023a14.4 14.4 0 0 0-11.166 0L3.595 4.87a.478.478 0 1 0-.827.478L5.063 9.32A13.54 13.54 0 0 0 .25 20.016h23.5a13.54 13.54 0 0 0-4.813-10.695'/></svg>");
+}
+.sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label:nth-of-type(2)::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%230f172a' d='M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z'/></svg>");
 }
 .sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) {
   background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
@@ -214,6 +240,14 @@ def _inject_store_search_css() -> None:
 .sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) p,
 .sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) span {
   color: #ffffff !important;
+}
+/* Seçili durumda koyu zemin üzerinde iOS logosu okunur kalsın → beyaz Apple. */
+.sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label:nth-of-type(2):has(input:checked)::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23ffffff' d='M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z'/></svg>");
+  filter: none;
+}
+.sl-plat-radio-wrap [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked)::before {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
 }
 .sl-results-head {
   font-size:0.82rem; color:#64748b; font-weight:700; text-transform:uppercase;
