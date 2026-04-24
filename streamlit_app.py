@@ -465,7 +465,7 @@ def main():
             except Exception as e:
                 st.caption(f"PDF: {e}")
 
-    render_footer()
+    render_footer(on_about=False)
 
 
 if __name__ == "__main__":

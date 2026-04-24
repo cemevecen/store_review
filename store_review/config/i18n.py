@@ -317,6 +317,11 @@ STRINGS: dict[str, dict[str, str]] = {
         "de": "Spracheinstellungen", "fr": "Options de langue", "ar": "خيارات اللغة",
         "zh": "语言选项", "ru": "Выбор языка", "pt": "Opções de idioma",
     },
+    "footer.quick_access": {
+        "tr": "Hızlı erişim", "en": "Quick access", "es": "Acceso rápido",
+        "de": "Schnellzugriff", "fr": "Accès rapide", "ar": "وصول سريع",
+        "zh": "快速访问", "ru": "Быстрый доступ", "pt": "Acesso rápido",
+    },
     "footer.developed_by": {
         "tr": "geliştiren: cem evecen", "en": "developer: cem evecen",
         "es": "desarrollador: cem evecen", "de": "Entwickler: cem evecen",

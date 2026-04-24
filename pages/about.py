@@ -143,7 +143,7 @@ def main() -> None:
     _inject_css()
     render_masthead(on_about=True)
     _render_about_body()
-    render_footer()
+    render_footer(on_about=True)
 
 
 main()

@@ -93,40 +93,20 @@ def render_masthead(*, on_about: bool) -> None:
                 if _pill_fix in SOURCE_OPTIONS and _pill_fix != _pill_raw:
                     st.session_state.main_data_source_tab = _pill_fix
 
-            col_pills, col_about = st.columns([10, 2], vertical_alignment="center")
-            with col_pills:
-                _source_labels = {
-                    "Mağaza": t("source.store"),
-                    "Dosya": t("source.file"),
-                    "Metin": t("source.text"),
-                    "Uygulama karşılaştır": t("source.compare"),
-                }
-                st.pills(
-                    t("nav.data_source"),
-                    SOURCE_OPTIONS,
-                    selection_mode="single",
-                    default=SOURCE_OPTIONS[0],
-                    format_func=lambda v: _source_labels.get(v, v),
-                    key="main_data_source_tab",
-                    label_visibility="collapsed",
-                    width="stretch",
-                    on_change=_on_about_source_change if on_about else _on_data_source_change,
-                )
-            with col_about:
-                if on_about:
-                    chip_html = (
-                        '<div class="hero-about-chip-wrap">'
-                        f'<a class="hero-about-chip" href="./" '
-                        f'aria-label="{t("nav.home")}" title="{t("nav.home")}">'
-                        f'<span class="hero-about-chip-dot">x</span>{t("nav.home")}'
-                        "</a></div>"
-                    )
-                else:
-                    chip_html = (
-                        '<div class="hero-about-chip-wrap">'
-                        f'<a class="hero-about-chip" href="about" '
-                        f'aria-label="{t("nav.about")}" title="{t("nav.about")}">'
-                        f'<span class="hero-about-chip-dot">i</span>{t("nav.about")}'
-                        "</a></div>"
-                    )
-                st.markdown(chip_html, unsafe_allow_html=True)
+            _source_labels = {
+                "Mağaza": t("source.store"),
+                "Dosya": t("source.file"),
+                "Metin": t("source.text"),
+                "Uygulama karşılaştır": t("source.compare"),
+            }
+            st.pills(
+                t("nav.data_source"),
+                SOURCE_OPTIONS,
+                selection_mode="single",
+                default=SOURCE_OPTIONS[0],
+                format_func=lambda v: _source_labels.get(v, v),
+                key="main_data_source_tab",
+                label_visibility="collapsed",
+                width="stretch",
+                on_change=_on_about_source_change if on_about else _on_data_source_change,
+            )
