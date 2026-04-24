@@ -549,6 +549,41 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about {
   width: 100% !important;
+  --masthead-chip-w: 14rem;
+}
+/* Tüm kaynak pill + hakkında: aynı yatay genişlik (en uzun çeviriye göre) */
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  justify-content: flex-start !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"] {
+  box-sizing: border-box !important;
+  width: var(--masthead-chip-w) !important;
+  min-width: var(--masthead-chip-w) !important;
+  max-width: var(--masthead-chip-w) !important;
+  flex: 0 0 var(--masthead-chip-w) !important;
+  justify-content: center !important;
+  text-align: center !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button p,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button p,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"] p,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"] p {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: 100% !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"],
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] {
@@ -600,16 +635,26 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  width: var(--masthead-chip-w) !important;
+  min-width: 0 !important;
+  max-width: var(--masthead-chip-w) !important;
   min-height: 44px !important;
   max-height: none !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill {
+  box-sizing: border-box !important;
+  width: var(--masthead-chip-w) !important;
+  min-width: var(--masthead-chip-w) !important;
+  max-width: var(--masthead-chip-w) !important;
   min-height: 42px !important;
   height: auto !important;
   max-height: none !important;
   padding: 8px 14px !important;
-  box-sizing: border-box !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 
 /* Kaynak pill'lerinin yanında — Streamlit pill ile uyumlu beyaz chip */
@@ -980,6 +1025,10 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     justify-content: center !important;
     max-width: 100% !important;
     margin-left: 0 !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about {
+    --masthead-chip-w: min(14rem, 88vw) !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead {
