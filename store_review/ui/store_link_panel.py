@@ -184,81 +184,68 @@ def _inject_store_search_css() -> None:
   color: #0f172a !important;
 }
 /*
- * Android / iOS platform seçimi — yuvarlak radyo yerine marka logoları.
- * Wrapper, `st.container(key="...plat_radio_wrap...")` ile gerçek bir DOM
- * wrapper'ıdır; Streamlit ona `st-key-...` sınıfı ekler. Seçici, hem tek
- * mağaza (`sl_plat_radio_wrap`) hem karşılaştırma (`cmp_plat_radio_wrap_0/1`)
- * kutularına uygulanır.
+ * Android / iOS — logo + metin. Kök: `st-key-*plat_radio_wrap` (substring eşleşmesi).
+ * Yalnızca [data-testid=stVerticalBlock] ile sınırlamak iç içe DOM'da stRadio'yu
+ * kaçırabiliyordu; bu yüzden herhangi bir ata `class*="plat_radio_wrap"` kullanılır.
  */
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"],
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] {
+[class*="plat_radio_wrap"] {
   margin: 10px 0 14px !important;
 }
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] > div,
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] > div {
+[class*="plat_radio_wrap"] [data-testid="stRadio"] > div {
   width: 100% !important;
 }
-/* 2 eşit sütunlu grid: min-content farkları (android vs ios) eşitliği bozmasın.
- * flex yerine grid kullanılıyor çünkü flex-basis:0 + flex-grow:1 dar alanlarda
- * min-content sızıntısı yüzünden asimetrik kutular üretiyordu. */
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"],
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] {
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] {
   display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  align-items: stretch !important;
   gap: 12px !important;
   width: 100% !important;
 }
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label,
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label {
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label {
   min-width: 0 !important;
   width: 100% !important;
-  min-height: 48px !important;
+  min-height: 52px !important;
+  height: 52px !important;
   box-sizing: border-box !important;
   margin: 0 !important;
-  padding: 12px 14px !important;
+  padding: 0 12px !important;
   border-radius: 14px !important;
   border: 2px solid #cbd5e1 !important;
   background: #ffffff !important;
   color: #334155 !important;
   font-weight: 600 !important;
+  font-size: 0.82rem !important;
   display: flex !important;
+  flex-direction: row !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 10px !important;
+  gap: 8px !important;
   white-space: nowrap !important;
   overflow: hidden !important;
-  text-overflow: ellipsis !important;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
 }
-/* İç metin (android / ios) — kendi de taşmasın ve satıra sığsın. */
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label p,
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label span,
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label p,
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label span {
+/* BaseWeb metin gövdesi (p / span / div) — tek satır, sarılma yok */
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label p,
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label span,
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label > div:last-child {
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   min-width: 0 !important;
   margin: 0 !important;
+  line-height: 1.2 !important;
 }
-/* Streamlit'in yerleşik radyo dairesini gizle — logoyu biz basıyoruz.
- * Streamlit 1.40+ yapısı: <label data-baseweb="radio"> > <input> + <div> (daire)
- * + <div> (metin). İlk div (daire) gizlenir; ayrıca eski yapılar için
- * span/div varyantları da kapsanır. */
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label > div:first-child,
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label > span:first-child,
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label [role="presentation"],
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label > div:first-child,
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label > span:first-child,
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label [role="presentation"] {
+/* Yerleşik radyo dairesi — gizle */
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label > div:first-child,
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label > span:first-child,
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label [role="presentation"] {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
   overflow: hidden !important;
 }
-/* Logo yuvası — ilk etiket Android, ikinci etiket iOS. */
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label::before,
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label::before {
+/* Logo yuvası */
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label::before {
   content: "";
   display: inline-block;
   width: 22px;
@@ -270,36 +257,42 @@ def _inject_store_search_css() -> None:
   filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.08));
   transition: filter 0.15s ease;
 }
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:nth-of-type(1)::before,
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:nth-of-type(1)::before {
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:nth-of-type(1)::before {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%233DDC84' d='M17.523 15.341a1.149 1.149 0 1 1 1.148-1.149 1.149 1.149 0 0 1-1.148 1.149m-11.046 0a1.149 1.149 0 1 1 1.148-1.149 1.149 1.149 0 0 1-1.148 1.149m11.46-6.02 2.295-3.973a.478.478 0 0 0-.827-.478l-2.322 4.023a14.4 14.4 0 0 0-11.166 0L3.595 4.87a.478.478 0 1 0-.827.478L5.063 9.32A13.54 13.54 0 0 0 .25 20.016h23.5a13.54 13.54 0 0 0-4.813-10.695'/></svg>");
 }
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:nth-of-type(2)::before,
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:nth-of-type(2)::before {
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:nth-of-type(2)::before {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%230f172a' d='M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z'/></svg>");
 }
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked),
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) {
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) {
   background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
   color: #ffffff !important;
   border-color: #0f172a !important;
   box-shadow: 0 4px 18px rgba(15, 23, 42, 0.28) !important;
 }
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) p,
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) span,
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) p,
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) span {
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) p,
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) span,
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) > div:last-child {
   color: #ffffff !important;
 }
-/* Seçili durumda koyu zemin üzerinde iOS logosu okunur kalsın → beyaz Apple. */
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:nth-of-type(2):has(input:checked)::before,
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:nth-of-type(2):has(input:checked)::before {
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:nth-of-type(2):has(input:checked)::before {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23ffffff' d='M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z'/></svg>");
   filter: none;
 }
-[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked)::before,
-[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked)::before {
+[class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked)::before {
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+/* theme.py mobilde .stRadio flex-wrap — platform satırını yine grid tut */
+@media (max-width: 768px) {
+  [class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    flex-wrap: nowrap !important;
+  }
+  [class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label {
+    flex: none !important;
+    min-height: 50px !important;
+    height: 50px !important;
+  }
 }
 .sl-results-head {
   font-size:0.82rem; color:#64748b; font-weight:700; text-transform:uppercase;
@@ -647,7 +640,7 @@ def render_store_link_tab() -> None:
                             f'<div class="sl-row-title">{t_esc}</div><div class="sl-row-id">{id_esc}</div>',
                             unsafe_allow_html=True,
                         )
-                    with                     bt:
+                    with bt:
                         aid = app.get("appId", "")
                         plat = app.get("platform", "Android")
                         if st.button(t("common.select"), key=f"sl_sel_{idx}_{aid}", use_container_width=True):
