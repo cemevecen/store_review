@@ -21,7 +21,7 @@ _FLAG_CC: dict[str, str] = {
 }
 
 
-def flag_png_url(lang_code: str, *, width: int = 160) -> str:
+def flag_png_url(lang_code: str, *, width: int = 107) -> str:
     cc = _FLAG_CC.get(lang_code, lang_code)
     return f"https://flagcdn.com/w{width}/{cc}.png"
 

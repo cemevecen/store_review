@@ -69,7 +69,7 @@ def render_masthead(*, on_about: bool) -> None:
         )
 
     with st.container(border=True, key="pg_masthead", width="stretch"):
-        row_brand, row_lang = st.columns([1, 0.22], vertical_alignment="top")
+        row_brand, row_lang = st.columns([1, 0.15], vertical_alignment="top")
         with row_brand:
             st.markdown(
                 '<span class="hero-band-target" aria-hidden="true"></span>'
@@ -87,7 +87,7 @@ def render_masthead(*, on_about: bool) -> None:
                 with st.popover(
                     "\u00a0",
                     key="masthead_lang_pop",
-                    width=52,
+                    width=35,
                     help=cur_name,
                     type="secondary",
                 ):

@@ -361,10 +361,10 @@ div[data-testid="stDataFrame"] {
   align-items: stretch !important;
   min-height: 78px !important;
 }
-/* Dil 52px + margin-top 34px — ilk satır (marka + dil) */
+/* Dil ~35px + margin-top ~23px — ilk satır (marka + dil), önceki boyutun 2/3'ü */
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type {
-  min-height: 94px !important;
+  min-height: 63px !important;
 }
 
 /* Dil sütunu yalnız ilk satır (Hakkında sütununa uygulanmasın) */
@@ -378,7 +378,7 @@ div[data-testid="stDataFrame"] {
   justify-content: flex-start !important;
   gap: 12px !important;
   text-align: center !important;
-  min-height: 88px !important;
+  min-height: 59px !important;
 }
 
 /* Masthead — st.pills satırı ortada */
@@ -399,12 +399,12 @@ div[data-testid="stDataFrame"] {
   aspect-ratio: 1 / 1 !important;
   border-radius: 50% !important;
   overflow: hidden !important;
-  width: 52px !important;
-  height: 52px !important;
-  min-width: 52px !important;
-  max-width: 52px !important;
-  min-height: 52px !important;
-  max-height: 52px !important;
+  width: 35px !important;
+  height: 35px !important;
+  min-width: 35px !important;
+  max-width: 35px !important;
+  min-height: 35px !important;
+  max-height: 35px !important;
   flex: 0 0 auto !important;
   align-self: center !important;
   padding: 0 !important;
@@ -479,16 +479,16 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
   aspect-ratio: 1 / 1 !important;
   border-radius: 50% !important;
   overflow: hidden !important;
-  width: 44px !important;
-  height: 44px !important;
-  min-width: 44px !important;
-  max-width: 44px !important;
-  min-height: 44px !important;
-  max-height: 44px !important;
+  width: 29px !important;
+  height: 29px !important;
+  min-width: 29px !important;
+  max-width: 29px !important;
+  min-height: 29px !important;
+  max-height: 29px !important;
   flex: 0 0 auto !important;
   align-self: center !important;
   padding: 0 !important;
-  margin: 4px auto !important;
+  margin: 3px auto !important;
   font-size: 0 !important;
   line-height: 0 !important;
   display: flex !important;
@@ -527,21 +527,21 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   letter-spacing: 0 !important;
 }
 
-/* Sağ üst dil: 24px + 10px = 34px aşağı */
+/* Sağ üst dil: margin-top önceki 34px'in 2/3'ü (~23px) */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot {
   display: flex !important;
   justify-content: flex-end !important;
   align-items: flex-start !important;
   width: 100% !important;
-  max-width: 68px !important;
+  max-width: 45px !important;
   margin-left: auto !important;
-  margin-top: 34px !important;
+  margin-top: 23px !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop {
   width: auto !important;
-  max-width: 68px !important;
+  max-width: 45px !important;
   min-width: 0 !important;
 }
 
