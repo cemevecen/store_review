@@ -661,16 +661,50 @@ STRINGS: dict[str, dict[str, str]] = {
 }
 
 
+def _sync_query_param(code: str) -> None:
+    """Query param yaz — hem `<a href>` navigasyonunda hem sayfa yenilenmesinde
+    seçilen dil korunur. `tr` default olduğundan URL'yi temiz tutmak için
+    bu durumda param silinir."""
+    try:
+        if code == DEFAULT_LANG:
+            if "lang" in st.query_params:
+                del st.query_params["lang"]
+        else:
+            if st.query_params.get("lang") != code:
+                st.query_params["lang"] = code
+    except Exception:
+        pass
+
+
 def get_lang() -> str:
     v = st.session_state.get("app_lang")
     if isinstance(v, str) and v in _LANG_CODES:
         return v
+    # Session state boşsa query param ile senkronla (ör. başka sayfadan link ile
+    # gelinmişse).
+    try:
+        q = st.query_params.get("lang")
+        if isinstance(q, str) and q in _LANG_CODES:
+            st.session_state["app_lang"] = q
+            return q
+    except Exception:
+        pass
     return DEFAULT_LANG
 
 
 def set_lang(code: str) -> None:
     if code in _LANG_CODES:
         st.session_state["app_lang"] = code
+        _sync_query_param(code)
+
+
+def lang_query_suffix(leading: str = "?") -> str:
+    """Navigasyon linkleri için `?lang=fr` tarzı ek. TR default olduğunda boş
+    string döner — URL temiz kalır."""
+    code = get_lang()
+    if code == DEFAULT_LANG:
+        return ""
+    return f"{leading}lang={code}"
 
 
 def lang_meta(code: str) -> tuple[str, str]:

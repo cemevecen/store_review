@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 import streamlit as st
 
 from store_review.branding import header_logo_data_uri
-from store_review.config.i18n import LANGUAGES, get_lang, set_lang, t
+from store_review.config.i18n import LANGUAGES, get_lang, lang_query_suffix, set_lang, t
 
 _FOOTER_CSS = """
 <style>
@@ -217,10 +217,11 @@ def render_footer(*, on_about: bool | None = None) -> None:
                 f'<p class="foot-section-label">{t("footer.quick_access")}</p>',
                 unsafe_allow_html=True,
             )
+            _q = lang_query_suffix()
             if on_about:
                 chip_html = (
                     '<div class="foot-col-right"><div class="foot-about-chip-wrap">'
-                    f'<a class="foot-about-chip" href="./" '
+                    f'<a class="foot-about-chip" href="./{_q}" '
                     f'aria-label="{t("nav.home")}" title="{t("nav.home")}">'
                     f'<span class="foot-about-chip-dot">x</span>{t("nav.home")}'
                     "</a></div></div>"
@@ -228,7 +229,7 @@ def render_footer(*, on_about: bool | None = None) -> None:
             else:
                 chip_html = (
                     '<div class="foot-col-right"><div class="foot-about-chip-wrap">'
-                    f'<a class="foot-about-chip" href="about" '
+                    f'<a class="foot-about-chip" href="about{_q}" '
                     f'aria-label="{t("nav.about")}" title="{t("nav.about")}">'
                     f'<span class="foot-about-chip-dot">i</span>{t("nav.about")}'
                     "</a></div></div>"
