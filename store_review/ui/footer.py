@@ -147,6 +147,9 @@ _FOOTER_CSS = """
   justify-content: flex-end;
   align-items: center;
   min-height: 48px;
+  /* Streamlit Cloud "Manage app" dock'u sağ alanda oturuyor.
+     Chip'in bununla kesişmemesi için sağdan güvenli boşluk bırak. */
+  padding-right: clamp(92px, 9vw, 148px);
   position: relative;
   z-index: 1;
 }
@@ -211,7 +214,11 @@ _FOOTER_CSS = """
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer .st-key-_lang_picker_label {
     max-width: 100% !important;
   }
-  .foot-col-right { justify-content: flex-start; margin-top: 0; }
+  .foot-col-right {
+    justify-content: flex-start;
+    margin-top: 0;
+    padding-right: 0;
+  }
   .foot-about-chip-wrap { justify-content: flex-start; width: 100%; }
   .foot-brand { min-height: 0; }
   [data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"] {
