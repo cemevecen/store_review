@@ -25,7 +25,7 @@ from dotenv import load_dotenv
 
 load_dotenv(ROOT / ".env", override=True)
 
-from store_review.branding import ensure_branding_assets, favicon_abs_path, header_logo_data_uri
+from store_review.branding import ensure_branding_assets, favicon_abs_path
 from store_review.config.settings import Settings
 from store_review.config.theme import APP_CSS
 from store_review.core.ai_providers import DEFAULT_MODELS, RichAnalyzer, resolve_api_keys
@@ -37,6 +37,12 @@ from store_review.ui.compare_panel import (
     execute_compare_analysis,
     merge_compare_details_for_dashboard,
     render_compare_tab,
+)
+from store_review.ui.masthead import (
+    SOURCE_OPTIONS,
+    SOURCE_POOL_KEY,
+    render_masthead,
+    session_main_data_source as _session_main_data_source,
 )
 from store_review.ui.review_cards import render_analyzed_review_cards
 from store_review.ui.store_link_panel import render_store_link_tab
@@ -145,39 +151,6 @@ def _inject_file_uploader_labels_once() -> None:
     components.html(html, height=0, width=0)
 
 
-SOURCE_OPTIONS = [
-    "Mağaza",
-    "Dosya",
-    "Metin",
-    "Uygulama karşılaştır",
-]
-SOURCE_POOL_KEY = {
-    "Mağaza": "store",
-    "Dosya": "file",
-    "Metin": "paste",
-    "Uygulama karşılaştır": "compare",
-}
-# Eski sekme etiketleri (oturum uyumu)
-_LEGACY_SOURCE_TAB = {
-    "Mağaza (ara / link)": "Mağaza",
-    "Dosya yükle": "Dosya",
-    "Metin yapıştır": "Metin",
-    "Karşılaştır": "Uygulama karşılaştır",
-}
-
-
-def _session_main_data_source() -> str:
-    """Masthead seçimi: eski st.radio (str) veya st.pills tek seçim ile uyumlu."""
-    v = st.session_state.get("main_data_source_tab")
-    if isinstance(v, (list, tuple)):
-        v = v[0] if v else None
-    if isinstance(v, str):
-        v = _LEGACY_SOURCE_TAB.get(v, v)
-    if isinstance(v, str) and v in SOURCE_OPTIONS:
-        return v
-    return SOURCE_OPTIONS[0]
-
-
 def _init_split_pools() -> None:
     for k in ("store", "file", "paste"):
         if f"review_pool_{k}" not in st.session_state:
@@ -200,10 +173,6 @@ def _active_review_pool() -> list:
     return list(st.session_state.get(f"review_pool_{pk}") or [])
 
 
-def _on_data_source_change() -> None:
-    st.session_state.analysis_rows = []
-
-
 def _havuz_metric_visible(src: str, pool_display_count: int) -> bool:
     """Havuzdaki yorum kutusu: yalnız ilgili sekmede veri / taslak / uygulama girişi varken."""
     if src == "Mağaza":
@@ -221,121 +190,6 @@ def _havuz_metric_visible(src: str, pool_display_count: int) -> bool:
     return False
 
 
-def _current_view() -> str:
-    try:
-        raw = st.query_params.get("view", "main")
-    except Exception:
-        raw = "main"
-    if isinstance(raw, list):
-        raw = raw[0] if raw else "main"
-    return "about" if str(raw).strip().lower() == "about" else "main"
-
-
-def _render_about_page() -> None:
-    st.markdown('<p class="section-title">hakkında</p>', unsafe_allow_html=True)
-    lang_pick = st.segmented_control(
-        "Dil",
-        options=["TR", "ENG"],
-        selection_mode="single",
-        default="TR",
-        key="about_lang",
-        label_visibility="collapsed",
-        width="content",
-    )
-    lang = lang_pick if lang_pick is not None else st.session_state.get("about_lang", "TR")
-    if lang == "ENG":
-        st.markdown(
-            """
-<div class="about-card">
-  <p><strong>developer: cem evecen</strong></p>
-  <div class="about-grid">
-    <div class="about-kpi"><span>input channels</span><strong>store link · file · text · compare</strong></div>
-    <div class="about-kpi"><span>analysis modes</span><strong>fast (heuristic) · rich (llm)</strong></div>
-    <div class="about-kpi"><span>outputs</span><strong>dashboard · review cards · csv/excel/pdf</strong></div>
-  </div>
-  <p>
-    This platform reads thousands of app reviews in one place and turns them into a clear picture of what users actually feel.
-    Fast mode gives a quick and consistent sentiment read using simple rules; Rich mode uses an AI model to better understand tone, context and nuance.
-    You can follow the overall trend and still open each individual review to see the exact words behind every number.
-  </p>
-  <div class="about-table-wrap">
-    <table class="about-table">
-      <thead>
-        <tr><th>stage</th><th>what happens</th><th>result</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>1. collect</td><td>reviews are fetched from selected source and normalized</td><td>clean input pool</td></tr>
-        <tr><td>2. filter</td><td>duplicates and low-signal entries are removed</td><td>analysis-ready dataset</td></tr>
-        <tr><td>3. score</td><td>heuristic or llm pipeline runs sentiment and context extraction</td><td>structured sentiment rows</td></tr>
-        <tr><td>4. summarize</td><td>metrics, distributions, and app-level comparisons are aggregated</td><td>actionable product view</td></tr>
-        <tr><td>5. export</td><td>raw and analyzed outputs are generated for reporting</td><td>csv, excel, pdf files</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="about-table-wrap">
-    <table class="about-table">
-      <thead>
-        <tr><th>capability</th><th>scope</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>single-app analysis</td><td>sentiment quality view for one product timeline</td></tr>
-        <tr><td>compare mode</td><td>same-window benchmark for two apps with aligned settings</td></tr>
-        <tr><td>operational exports</td><td>supports sharing with product, support, and ops teams</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-""",
-            unsafe_allow_html=True,
-        )
-    else:
-        st.markdown(
-            """
-<div class="about-card">
-  <p><strong>geliştiren: cem evecen</strong></p>
-  <div class="about-grid">
-    <div class="about-kpi"><span>girdi kanalları</span><strong>mağaza linki · dosya · metin · karşılaştırma</strong></div>
-    <div class="about-kpi"><span>analiz modları</span><strong>hızlı (heuristic) · zengin (llm)</strong></div>
-    <div class="about-kpi"><span>çıktılar</span><strong>dashboard · yorum kartları · csv/excel/pdf</strong></div>
-  </div>
-  <p>
-    Bu platform, binlerce uygulama yorumunu tek ekranda toplar ve kullanıcıların aslında ne hissettiğini anlaşılır bir özete çevirir.
-    Hızlı mod basit kurallarla çalışır; yorumları saniyeler içinde olumlu, olumsuz ve nötr olarak ayırıp genel tabloyu gösterir.
-    Zengin mod bir yapay zekâ modeli kullanır; cümlenin tonunu, bağlamını ve ince ayrıntılarını daha iyi yorumlar.
-    Genel eğilimi tek bakışta görebilir, istediğin yorumu tek tek açıp hangi cümlenin hangi sonucu ürettiğini kontrol edebilirsin.
-  </p>
-  <div class="about-table-wrap">
-    <table class="about-table">
-      <thead>
-        <tr><th>aşama</th><th>ne olur</th><th>çıktı</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>1. toplama</td><td>yorumlar seçilen kaynaktan alınır ve normalize edilir</td><td>temiz giriş havuzu</td></tr>
-        <tr><td>2. filtreleme</td><td>tekrarlı ve düşük sinyalli kayıtlar ayıklanır</td><td>analize hazır veri seti</td></tr>
-        <tr><td>3. skorlama</td><td>heuristic veya llm hattı duygu ve bağlam analizi yapar</td><td>yapısal duygu satırları</td></tr>
-        <tr><td>4. özetleme</td><td>metrikler, dağılımlar ve uygulama bazlı kıyaslar üretilir</td><td>aksiyon alınabilir ürün görünümü</td></tr>
-        <tr><td>5. dışa aktarma</td><td>ham ve analizlenmiş çıktılar raporlama için hazırlanır</td><td>csv, excel, pdf dosyaları</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="about-table-wrap">
-    <table class="about-table">
-      <thead>
-        <tr><th>özellik</th><th>kapsam</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>tek uygulama analizi</td><td>tek ürün için duygu kalitesi ve trend görünümü</td></tr>
-        <tr><td>karşılaştırma modu</td><td>iki uygulamayı aynı zaman penceresinde hizalı kıyaslama</td></tr>
-        <tr><td>operasyonel raporlama</td><td>ürün, destek ve operasyon ekipleriyle paylaşılabilir çıktı</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-""",
-            unsafe_allow_html=True,
-        )
-
-
 def main():
     ensure_branding_assets()
     _fav = favicon_abs_path()
@@ -347,69 +201,7 @@ def main():
     )
     _inject_css()
     _inject_file_uploader_labels_once()
-    view = _current_view()
-
-    _hdr_uri = header_logo_data_uri()
-    _logo_html = ""
-    if _hdr_uri:
-        _logo_html = (
-            f'<img class="hero-brand-logo" src="{_hdr_uri}" width="48" height="48" alt="" '
-            'loading="lazy" decoding="async" />'
-        )
-
-    with st.container(border=True, key="pg_masthead", width="stretch"):
-        _spacer_l, col_center, _spacer_r = st.columns([1, 10, 1], vertical_alignment="center")
-        with col_center:
-            st.markdown(
-                '<span class="hero-band-target" aria-hidden="true"></span>'
-                '<div class="hero-masthead-brand">'
-                f"{_logo_html}"
-                '<h1 class="hero-title">ai store review analysis</h1>'
-                "</div>",
-                unsafe_allow_html=True,
-            )
-            if view != "about":
-                _pill_raw = st.session_state.get("main_data_source_tab")
-                if isinstance(_pill_raw, (list, tuple)):
-                    _pill_raw = _pill_raw[0] if _pill_raw else None
-                if isinstance(_pill_raw, str):
-                    _pill_fix = _LEGACY_SOURCE_TAB.get(_pill_raw, _pill_raw)
-                    if _pill_fix in SOURCE_OPTIONS and _pill_fix != _pill_raw:
-                        st.session_state.main_data_source_tab = _pill_fix
-                col_pills, col_about = st.columns([10, 2], vertical_alignment="center")
-                with col_pills:
-                    st.pills(
-                        "Veri kaynağı",
-                        SOURCE_OPTIONS,
-                        selection_mode="single",
-                        default=SOURCE_OPTIONS[0],
-                        key="main_data_source_tab",
-                        label_visibility="collapsed",
-                        width="stretch",
-                        on_change=_on_data_source_change,
-                    )
-                with col_about:
-                    st.markdown(
-                        '<div class="hero-about-chip-wrap">'
-                        '<a class="hero-about-chip" href="?view=about" '
-                        'aria-label="Hakkında sayfasına git" title="Hakkında">'
-                        '<span class="hero-about-chip-dot">i</span>hakkında'
-                        "</a></div>",
-                        unsafe_allow_html=True,
-                    )
-            else:
-                st.markdown(
-                    '<div class="hero-about-chip-wrap">'
-                    '<a class="hero-about-chip" href="?" '
-                    'aria-label="Ana sayfaya dön" title="Ana sayfa">'
-                    '<span class="hero-about-chip-dot">x</span>ana sayfa'
-                    "</a></div>",
-                    unsafe_allow_html=True,
-                )
-
-    if view == "about":
-        _render_about_page()
-        return
+    render_masthead(on_about=False)
 
     env_settings = Settings.from_env()
     gk, gqk, ok = resolve_api_keys(
