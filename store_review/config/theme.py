@@ -1254,6 +1254,35 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     min-width: 0 !important;
     flex: 1 1 auto !important;
   }
+  /*
+   * st.pills iç yapısı: her seçenek ayrı stHorizontalBlock > stColumn içinde.
+   * Genel mobil kural yukarıda tüm HB'leri column yaptığı için dört pill dikey diziliyordu.
+   * main_data_source_tab altındaki HB'leri tekrar tek satırda tut.
+   */
+  [data-testid="stAppViewContainer"] .main .st-key-main_data_source_tab [data-testid="stHorizontalBlock"],
+  [data-testid="stAppScrollToBottomContainer"] .main .st-key-main_data_source_tab [data-testid="stHorizontalBlock"],
+  [data-testid="stAppViewContainer"] .main [class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"],
+  [data-testid="stAppScrollToBottomContainer"] .main [class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"] {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    width: max-content !important;
+    max-width: none !important;
+    min-width: 0 !important;
+  }
+  [data-testid="stAppViewContainer"] .main .st-key-main_data_source_tab [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+  [data-testid="stAppViewContainer"] .main .st-key-main_data_source_tab [data-testid="stHorizontalBlock"] > [data-testid="column"],
+  [data-testid="stAppScrollToBottomContainer"] .main .st-key-main_data_source_tab [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+  [data-testid="stAppScrollToBottomContainer"] .main .st-key-main_data_source_tab [data-testid="stHorizontalBlock"] > [data-testid="column"],
+  [data-testid="stAppViewContainer"] .main [class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+  [data-testid="stAppViewContainer"] .main [class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"] > [data-testid="column"],
+  [data-testid="stAppScrollToBottomContainer"] .main [class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+  [data-testid="stAppScrollToBottomContainer"] .main [class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"] > [data-testid="column"] {
+    width: auto !important;
+    max-width: none !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+  }
   /* Masthead: çok sütunlu satırlar dikey yığılsın (marka+dil, pill+chip) */
   [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"],
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] {

@@ -127,7 +127,7 @@ def render_masthead(*, on_about: bool) -> None:
                     format_func=lambda v: _source_labels.get(v, v),
                     key="main_data_source_tab",
                     label_visibility="collapsed",
-                    width="stretch",
+                    width="content",
                     on_change=_on_about_source_change if on_about else _on_data_source_change,
                 )
             with row_about:
