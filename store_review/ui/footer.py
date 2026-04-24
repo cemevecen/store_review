@@ -144,19 +144,17 @@ _FOOTER_CSS = """
 
 .foot-col-right {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
   min-height: 48px;
-  /* Streamlit Cloud "Manage app" dock'u sağ alanda oturuyor.
-     Chip'in bununla kesişmemesi için sağdan güvenli boşluk bırak. */
-  padding-right: clamp(92px, 9vw, 148px);
+  padding-right: 0;
   position: relative;
   z-index: 1;
 }
 .foot-about-chip-wrap {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
 }
 .foot-about-chip {
   display: inline-flex;
@@ -272,7 +270,7 @@ def render_footer(*, on_about: bool | None = None) -> None:
 
     with st.container(border=True, key="pg_footer", width="stretch"):
         col_brand, col_lang, col_about = st.columns(
-            [3, 2, 2], vertical_alignment="center", gap="medium"
+            [1, 1, 1], vertical_alignment="center", gap="medium"
         )
 
         with col_brand:
