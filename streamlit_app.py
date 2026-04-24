@@ -221,6 +221,71 @@ def _havuz_metric_visible(src: str, pool_display_count: int) -> bool:
     return False
 
 
+def _render_about_section() -> None:
+    st.markdown(
+        '<div id="hakkinda" class="about-anchor"></div><p class="section-title">hakkında</p>',
+        unsafe_allow_html=True,
+    )
+    lang_pick = st.segmented_control(
+        "Dil",
+        options=["TR", "ENG"],
+        selection_mode="single",
+        default="TR",
+        key="about_lang",
+        label_visibility="collapsed",
+        width="content",
+    )
+    lang = lang_pick if lang_pick is not None else st.session_state.get("about_lang", "TR")
+    if lang == "ENG":
+        st.markdown(
+            """
+<div class="about-card">
+  <p><strong>developer: cem evecen</strong></p>
+  <p>
+    This platform analyzes app reviews from store links, uploaded files, or direct text input and converts them into a decision-ready sentiment summary.
+    In <strong>Fast (heuristic)</strong> mode, the pipeline applies rule-based scoring for quick and stable baseline output.
+    In <strong>Rich (LLM)</strong> mode, the system uses model-based interpretation for higher semantic depth and context sensitivity.
+  </p>
+  <p>
+    The workflow is designed as four stages: collect and clean comments, run sentiment analysis, aggregate dominant themes, and present downloadable outputs.
+    During processing, duplicate entries and low-quality text are filtered before scoring.
+    Results are rendered as metrics, distribution views, and review cards so teams can inspect both macro trends and individual feedback.
+  </p>
+  <p>
+    For compare scenarios, two apps are processed with the same time window and analysis settings.
+    This keeps benchmark outputs aligned and makes score differences interpretable in product context.
+    CSV, Excel, and PDF exports are available for reporting and operational follow-up.
+  </p>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            """
+<div class="about-card">
+  <p><strong>geliştiren: cem evecen</strong></p>
+  <p>
+    Bu platform, mağaza bağlantısı, dosya yükleme veya serbest metin ile alınan uygulama yorumlarını analiz ederek karar süreçlerinde kullanılabilir bir duygu özetine dönüştürür.
+    <strong>Hızlı (heuristic)</strong> modunda kural tabanlı puanlama ile hızlı ve tutarlı bir temel çıktı üretilir.
+    <strong>Zengin (LLM)</strong> modunda ise model tabanlı yorumlama ile bağlam ve anlam derinliği artırılır.
+  </p>
+  <p>
+    İş akışı dört adımda kurgulanır: yorumların toplanması ve temizlenmesi, duygu analizinin çalıştırılması, baskın temaların konsolidasyonu ve indirilebilir çıktıların üretilmesi.
+    Analiz öncesinde tekrar eden kayıtlar ve düşük kaliteli metinler filtrelenir.
+    Sonuçlar metrikler, dağılım görünümleri ve yorum kartlarıyla sunularak hem genel eğilim hem de tekil geri bildirim seviyesinde inceleme yapılmasını sağlar.
+  </p>
+  <p>
+    Karşılaştırma senaryosunda iki uygulama aynı tarih aralığı ve aynı analiz ayarlarıyla işlenir.
+    Bu yaklaşım kıyaslama sonuçlarını daha tutarlı hale getirir ve skor farklarının ürün bağlamında yorumlanmasını kolaylaştırır.
+    CSV, Excel ve PDF çıktıları raporlama ile operasyonel takip süreçlerini destekler.
+  </p>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+
 def main():
     ensure_branding_assets()
     _fav = favicon_abs_path()
@@ -250,6 +315,11 @@ def main():
                 f"{_logo_html}"
                 '<h1 class="hero-title">ai store review analysis</h1>'
                 "</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                '<div class="hero-about-link-wrap"><a class="hero-about-link" href="#hakkinda" '
+                'aria-label="Hakkında bölümüne git" title="Hakkında">i</a></div>',
                 unsafe_allow_html=True,
             )
             _pill_raw = st.session_state.get("main_data_source_tab")
@@ -386,6 +456,7 @@ def main():
             f'<div class="metric-strip-value">{pool_display_count}</div></div>',
             unsafe_allow_html=True,
         )
+    _render_about_section()
 
     if pool:
         raw_df = pd.DataFrame(pool)

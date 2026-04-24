@@ -413,6 +413,55 @@ div[data-testid="stDataFrame"] {
   margin-bottom: 2px !important;
 }
 
+.about-anchor {
+  position: relative;
+  top: -12px;
+}
+.hero-about-link-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin: -2px 0 6px;
+}
+.hero-about-link {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.12);
+  text-decoration: none !important;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: transform 0.12s ease, background 0.16s ease, border-color 0.16s ease;
+}
+.hero-about-link:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.65);
+  transform: translateY(-1px);
+}
+.about-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 4px 0 8px;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+}
+.about-card p {
+  margin: 0 0 10px;
+  font-size: 0.92rem;
+  color: #1e293b;
+  line-height: 1.6;
+}
+.about-card p:last-child {
+  margin-bottom: 0;
+}
+
 /* Yorum kartları — tek sütun, tablo yerine */
 .review-card-list {
   display: flex;
@@ -613,6 +662,18 @@ div[data-testid="stDataFrame"] {
   }
   .metric-strip {
     padding: 12px 14px !important;
+  }
+  .hero-about-link-wrap {
+    justify-content: center !important;
+    margin: 2px 0 8px !important;
+  }
+  .about-card {
+    padding: 12px 13px !important;
+    border-radius: 12px !important;
+  }
+  .about-card p {
+    font-size: 0.89rem !important;
+    line-height: 1.55 !important;
   }
   .sr-analysis-page-title {
     font-size: 1.15rem !important;
