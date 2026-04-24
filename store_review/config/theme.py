@@ -394,10 +394,12 @@ div[data-testid="stDataFrame"] {
   margin-right: auto !important;
 }
 
-/* Masthead — dil: popover tetikleyici = yuvarlak bayrak (2×), ok gizli */
+/* Masthead — dil: yuvarlak stroke + bayrak daire içinde taşarak çerçeveyi doldurur */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button {
+  box-sizing: border-box !important;
   border-radius: 50% !important;
+  overflow: hidden !important;
   width: 104px !important;
   height: 104px !important;
   min-width: 104px !important;
@@ -406,23 +408,58 @@ div[data-testid="stDataFrame"] {
   max-height: 104px !important;
   padding: 0 !important;
   margin: 0 !important;
-  font-size: 2.9rem !important;
-  line-height: 1 !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  border: 2px solid rgba(15, 23, 42, 0.1) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 3px solid rgba(15, 23, 42, 0.14) !important;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12) !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button svg,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button svg {
   display: none !important;
 }
-
-/* Dil popover içi (portal): yuvarlak bayrak butonları 2× — yalnız masthead_pick_* */
-div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
+/* Bayrak emojisi: büyük punto + dairesel kırpma (iç sarmalayıcılar) */
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button > div,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button > div {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
   border-radius: 50% !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button p,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button p,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button span,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button span,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button [data-testid="stMarkdownContainer"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button [data-testid="stMarkdownContainer"] {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  font-size: 5.75rem !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+}
+
+/* Dil popover içi (portal): aynı daire + dolu bayrak — yalnız masthead_pick_* */
+div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
+  box-sizing: border-box !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
   width: 88px !important;
   height: 88px !important;
   min-width: 88px !important;
@@ -431,13 +468,41 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
   max-height: 88px !important;
   padding: 0 !important;
   margin: 8px auto !important;
-  font-size: 2.6rem !important;
-  line-height: 1 !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  border: 2px solid rgba(15, 23, 42, 0.1) !important;
+  border: 3px solid rgba(15, 23, 42, 0.14) !important;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1) !important;
+}
+div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button > div {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button p,
+div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button span,
+div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid="stMarkdownContainer"] {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  font-size: 4.85rem !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
 }
 
 /* Sağ üst dil: önceki 14px + 10px = 24px aşağı */
