@@ -248,21 +248,42 @@ def _render_about_page() -> None:
             """
 <div class="about-card">
   <p><strong>developer: cem evecen</strong></p>
+  <div class="about-grid">
+    <div class="about-kpi"><span>input channels</span><strong>store link · file · text · compare</strong></div>
+    <div class="about-kpi"><span>analysis modes</span><strong>fast (heuristic) · rich (llm)</strong></div>
+    <div class="about-kpi"><span>outputs</span><strong>dashboard · review cards · csv/excel/pdf</strong></div>
+  </div>
   <p>
-    This platform analyzes app reviews from store links, uploaded files, or direct text input and converts them into a decision-ready sentiment summary.
-    In <strong>Fast (heuristic)</strong> mode, the pipeline applies rule-based scoring for quick and stable baseline output.
-    In <strong>Rich (LLM)</strong> mode, the system uses model-based interpretation for higher semantic depth and context sensitivity.
+    This platform converts large-scale app review streams into a decision-ready sentiment intelligence layer.
+    Fast mode provides deterministic baseline scoring for speed and consistency; Rich mode adds deeper semantic interpretation for context-aware insight.
+    The system is designed to keep operational clarity while preserving review-level traceability.
   </p>
-  <p>
-    The workflow is designed as four stages: collect and clean comments, run sentiment analysis, aggregate dominant themes, and present downloadable outputs.
-    During processing, duplicate entries and low-quality text are filtered before scoring.
-    Results are rendered as metrics, distribution views, and review cards so teams can inspect both macro trends and individual feedback.
-  </p>
-  <p>
-    For compare scenarios, two apps are processed with the same time window and analysis settings.
-    This keeps benchmark outputs aligned and makes score differences interpretable in product context.
-    CSV, Excel, and PDF exports are available for reporting and operational follow-up.
-  </p>
+  <div class="about-table-wrap">
+    <table class="about-table">
+      <thead>
+        <tr><th>stage</th><th>what happens</th><th>result</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1. collect</td><td>reviews are fetched from selected source and normalized</td><td>clean input pool</td></tr>
+        <tr><td>2. filter</td><td>duplicates and low-signal entries are removed</td><td>analysis-ready dataset</td></tr>
+        <tr><td>3. score</td><td>heuristic or llm pipeline runs sentiment and context extraction</td><td>structured sentiment rows</td></tr>
+        <tr><td>4. summarize</td><td>metrics, distributions, and app-level comparisons are aggregated</td><td>actionable product view</td></tr>
+        <tr><td>5. export</td><td>raw and analyzed outputs are generated for reporting</td><td>csv, excel, pdf files</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="about-table-wrap">
+    <table class="about-table">
+      <thead>
+        <tr><th>capability</th><th>scope</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>single-app analysis</td><td>sentiment quality view for one product timeline</td></tr>
+        <tr><td>compare mode</td><td>same-window benchmark for two apps with aligned settings</td></tr>
+        <tr><td>operational exports</td><td>supports sharing with product, support, and ops teams</td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 """,
             unsafe_allow_html=True,
@@ -272,21 +293,42 @@ def _render_about_page() -> None:
             """
 <div class="about-card">
   <p><strong>geliştiren: cem evecen</strong></p>
+  <div class="about-grid">
+    <div class="about-kpi"><span>girdi kanalları</span><strong>mağaza linki · dosya · metin · karşılaştırma</strong></div>
+    <div class="about-kpi"><span>analiz modları</span><strong>hızlı (heuristic) · zengin (llm)</strong></div>
+    <div class="about-kpi"><span>çıktılar</span><strong>dashboard · yorum kartları · csv/excel/pdf</strong></div>
+  </div>
   <p>
-    Bu platform, mağaza bağlantısı, dosya yükleme veya serbest metin ile alınan uygulama yorumlarını analiz ederek karar süreçlerinde kullanılabilir bir duygu özetine dönüştürür.
-    <strong>Hızlı (heuristic)</strong> modunda kural tabanlı puanlama ile hızlı ve tutarlı bir temel çıktı üretilir.
-    <strong>Zengin (LLM)</strong> modunda ise model tabanlı yorumlama ile bağlam ve anlam derinliği artırılır.
+    Bu platform, yoğun uygulama yorumu akışını karar süreçlerinde kullanılabilir bir duygu zekası katmanına dönüştürür.
+    Hızlı mod deterministik kurallarla hızlı ve tutarlı temel skor üretir; Zengin mod bağlamı daha güçlü okuyarak anlam derinliğini artırır.
+    Yapı hem operasyonel hız hem de yorum satırı seviyesinde izlenebilirlik hedefiyle tasarlanmıştır.
   </p>
-  <p>
-    İş akışı dört adımda kurgulanır: yorumların toplanması ve temizlenmesi, duygu analizinin çalıştırılması, baskın temaların konsolidasyonu ve indirilebilir çıktıların üretilmesi.
-    Analiz öncesinde tekrar eden kayıtlar ve düşük kaliteli metinler filtrelenir.
-    Sonuçlar metrikler, dağılım görünümleri ve yorum kartlarıyla sunularak hem genel eğilim hem de tekil geri bildirim seviyesinde inceleme yapılmasını sağlar.
-  </p>
-  <p>
-    Karşılaştırma senaryosunda iki uygulama aynı tarih aralığı ve aynı analiz ayarlarıyla işlenir.
-    Bu yaklaşım kıyaslama sonuçlarını daha tutarlı hale getirir ve skor farklarının ürün bağlamında yorumlanmasını kolaylaştırır.
-    CSV, Excel ve PDF çıktıları raporlama ile operasyonel takip süreçlerini destekler.
-  </p>
+  <div class="about-table-wrap">
+    <table class="about-table">
+      <thead>
+        <tr><th>aşama</th><th>ne olur</th><th>çıktı</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1. toplama</td><td>yorumlar seçilen kaynaktan alınır ve normalize edilir</td><td>temiz giriş havuzu</td></tr>
+        <tr><td>2. filtreleme</td><td>tekrarlı ve düşük sinyalli kayıtlar ayıklanır</td><td>analize hazır veri seti</td></tr>
+        <tr><td>3. skorlama</td><td>heuristic veya llm hattı duygu ve bağlam analizi yapar</td><td>yapısal duygu satırları</td></tr>
+        <tr><td>4. özetleme</td><td>metrikler, dağılımlar ve uygulama bazlı kıyaslar üretilir</td><td>aksiyon alınabilir ürün görünümü</td></tr>
+        <tr><td>5. dışa aktarma</td><td>ham ve analizlenmiş çıktılar raporlama için hazırlanır</td><td>csv, excel, pdf dosyaları</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="about-table-wrap">
+    <table class="about-table">
+      <thead>
+        <tr><th>özellik</th><th>kapsam</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>tek uygulama analizi</td><td>tek ürün için duygu kalitesi ve trend görünümü</td></tr>
+        <tr><td>karşılaştırma modu</td><td>iki uygulamayı aynı zaman penceresinde hizalı kıyaslama</td></tr>
+        <tr><td>operasyonel raporlama</td><td>ürün, destek ve operasyon ekipleriyle paylaşılabilir çıktı</td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 """,
             unsafe_allow_html=True,

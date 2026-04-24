@@ -457,6 +457,62 @@ div[data-testid="stDataFrame"] {
 .about-card p:last-child {
   margin-bottom: 0;
 }
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 6px 0 12px;
+}
+.about-kpi {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 10px 11px;
+}
+.about-kpi span {
+  display: block;
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.about-kpi strong {
+  display: block;
+  font-size: 0.82rem;
+  color: #0f172a;
+  line-height: 1.45;
+}
+.about-table-wrap {
+  margin: 10px 0 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: auto;
+  background: #ffffff;
+}
+.about-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+}
+.about-table thead th {
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.about-table tbody td {
+  font-size: 0.84rem;
+  color: #1e293b;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
+}
+.about-table tbody tr:last-child td {
+  border-bottom: none;
+}
 
 /* Yorum kartları — tek sütun, tablo yerine */
 .review-card-list {
@@ -670,6 +726,17 @@ div[data-testid="stDataFrame"] {
   .about-card p {
     font-size: 0.89rem !important;
     line-height: 1.55 !important;
+  }
+  .about-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  .about-table {
+    min-width: 560px !important;
+  }
+  .about-table thead th,
+  .about-table tbody td {
+    padding: 9px 10px !important;
   }
   .sr-analysis-page-title {
     font-size: 1.15rem !important;
