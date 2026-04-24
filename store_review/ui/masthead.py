@@ -116,7 +116,8 @@ def render_masthead(*, on_about: bool) -> None:
             "Uygulama karşılaştır": t("source.compare"),
         }
         with st.container(key="masthead_pills_about"):
-            row_pills, row_about = st.columns([1, 0.26], vertical_alignment="center", gap="small")
+            # Oranlar CSS ile sütun genişliği eziliyor; gap pill satırıyla aynı (8px) theme'de
+            row_pills, row_about = st.columns([1, 1], vertical_alignment="center", gap="small")
             with row_pills:
                 st.pills(
                     t("nav.data_source"),

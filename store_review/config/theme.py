@@ -588,6 +588,10 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"],
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] {
   align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  column-gap: 8px !important;
+  row-gap: 8px !important;
   min-height: 48px !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
@@ -601,8 +605,27 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   align-self: stretch !important;
   min-height: 0 !important;
 }
+/* Pill sütunu içeriğe göre daralsın — Hakkında chip pill’lerle aynı 8px aralıkta */
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:first-child,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:first-child,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child {
+  flex: 0 0 auto !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:last-child,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:last-child,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  margin-left: 0 !important;
+}
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab {
+  width: fit-content !important;
+  max-width: 100% !important;
   min-height: 44px !important;
   align-self: center !important;
 }
