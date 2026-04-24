@@ -427,20 +427,25 @@ def main():
 
     st.markdown('<p class="section-title">Analiz ayarları</p>', unsafe_allow_html=True)
 
-    method = st.radio(
+    method_pick = st.segmented_control(
         "Analiz yöntemi",
-        ["Hızlı (heuristic)", "Zengin (LLM)"],
-        horizontal=True,
-        label_visibility="collapsed",
+        options=["Hızlı (heuristic)", "Zengin (LLM)"],
+        selection_mode="single",
+        default="Hızlı (heuristic)",
         key="main_analysis_method",
+        label_visibility="collapsed",
+        width="stretch",
     )
-
+    method = method_pick if method_pick is not None else st.session_state.get(
+        "main_analysis_method", "Hızlı (heuristic)"
+    )
     use_fast = method == "Hızlı (heuristic)"
     depth = st.radio(
         "Derinlik (yalnız zengin)",
         ["Standart", "Gelişmiş"],
         horizontal=True,
         disabled=use_fast,
+        key="main_depth",
     )
     # Zengin analiz: önce Gemini, kota / hata olursa RichAnalyzer zincirinde Groq → OpenAI.
     provider = "Google Gemini"
