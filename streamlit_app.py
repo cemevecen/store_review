@@ -368,16 +368,6 @@ def main():
                 "</div>",
                 unsafe_allow_html=True,
             )
-            st.markdown(
-                (
-                    '<div class="hero-about-link-wrap"><a class="hero-about-link" href="?view=about" '
-                    'aria-label="Hakkında sayfasına git" title="Hakkında">i</a></div>'
-                    if view != "about"
-                    else '<div class="hero-about-link-wrap"><a class="hero-about-link" href="?" '
-                    'aria-label="Ana sayfaya dön" title="Ana sayfa">x</a></div>'
-                ),
-                unsafe_allow_html=True,
-            )
             if view != "about":
                 _pill_raw = st.session_state.get("main_data_source_tab")
                 if isinstance(_pill_raw, (list, tuple)):
@@ -386,15 +376,35 @@ def main():
                     _pill_fix = _LEGACY_SOURCE_TAB.get(_pill_raw, _pill_raw)
                     if _pill_fix in SOURCE_OPTIONS and _pill_fix != _pill_raw:
                         st.session_state.main_data_source_tab = _pill_fix
-                st.pills(
-                    "Veri kaynağı",
-                    SOURCE_OPTIONS,
-                    selection_mode="single",
-                    default=SOURCE_OPTIONS[0],
-                    key="main_data_source_tab",
-                    label_visibility="collapsed",
-                    width="stretch",
-                    on_change=_on_data_source_change,
+                col_pills, col_about = st.columns([10, 2], vertical_alignment="center")
+                with col_pills:
+                    st.pills(
+                        "Veri kaynağı",
+                        SOURCE_OPTIONS,
+                        selection_mode="single",
+                        default=SOURCE_OPTIONS[0],
+                        key="main_data_source_tab",
+                        label_visibility="collapsed",
+                        width="stretch",
+                        on_change=_on_data_source_change,
+                    )
+                with col_about:
+                    st.markdown(
+                        '<div class="hero-about-chip-wrap">'
+                        '<a class="hero-about-chip" href="?view=about" '
+                        'aria-label="Hakkında sayfasına git" title="Hakkında">'
+                        '<span class="hero-about-chip-dot">i</span>hakkında'
+                        "</a></div>",
+                        unsafe_allow_html=True,
+                    )
+            else:
+                st.markdown(
+                    '<div class="hero-about-chip-wrap">'
+                    '<a class="hero-about-chip" href="?" '
+                    'aria-label="Ana sayfaya dön" title="Ana sayfa">'
+                    '<span class="hero-about-chip-dot">x</span>ana sayfa'
+                    "</a></div>",
+                    unsafe_allow_html=True,
                 )
 
     if view == "about":

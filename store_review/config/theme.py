@@ -413,32 +413,47 @@ div[data-testid="stDataFrame"] {
   margin-bottom: 2px !important;
 }
 
-.hero-about-link-wrap {
+.hero-about-chip-wrap {
   width: 100%;
   display: flex;
   justify-content: flex-end;
-  margin: -2px 0 6px;
+  align-items: center;
+  min-height: 38px;
 }
-.hero-about-link {
-  width: 28px;
-  height: 28px;
+.hero-about-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.38);
   color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.10);
   text-decoration: none !important;
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 0.82rem;
+  font-weight: 600;
   line-height: 1;
+  white-space: nowrap;
   transition: transform 0.12s ease, background 0.16s ease, border-color 0.16s ease;
 }
-.hero-about-link:hover {
+.hero-about-chip:hover {
   background: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.65);
   transform: translateY(-1px);
+}
+.hero-about-chip-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
 }
 .about-card {
   background: #ffffff;
@@ -715,9 +730,15 @@ div[data-testid="stDataFrame"] {
   .metric-strip {
     padding: 12px 14px !important;
   }
-  .hero-about-link-wrap {
+  .hero-about-chip-wrap {
     justify-content: center !important;
-    margin: 2px 0 8px !important;
+    min-height: 34px !important;
+    margin-top: 6px !important;
+  }
+  .hero-about-chip {
+    height: 32px !important;
+    padding: 0 12px !important;
+    font-size: 0.78rem !important;
   }
   .about-card {
     padding: 12px 13px !important;
