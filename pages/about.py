@@ -357,6 +357,43 @@ ABOUT_BODY: dict[str, str] = {
   </div>
 </div>
 """,
+    "ja": """
+<div class="about-card">
+  <p><strong>開発者: cem evecen</strong></p>
+  <div class="about-grid">
+    <div class="about-kpi"><span>入力チャネル</span><strong>ストアリンク · ファイル · テキスト · 比較</strong></div>
+    <div class="about-kpi"><span>分析モード</span><strong>高速（ヒューリスティック）· 詳細（LLM）</strong></div>
+    <div class="about-kpi"><span>出力</span><strong>ダッシュボード · レビューカード · csv/excel/pdf</strong></div>
+  </div>
+  <p>
+    このプラットフォームは数千件のアプリレビューを一つの画面に集め、ユーザーが実際に何を感じているかを分かりやすくまとめます。
+    高速モードはシンプルなルールで素早く一貫した感情の読み取りを行い、詳細モードは AI モデルでニュアンスや文脈をより深く捉えます。
+    全体の傾向を一望できるほか、各レビューを開いて数値の背後にある文言も確認できます。
+  </p>
+  <div class="about-table-wrap">
+    <table class="about-table">
+      <thead><tr><th>段階</th><th>内容</th><th>結果</th></tr></thead>
+      <tbody>
+        <tr><td>1. 収集</td><td>選択したソースからレビューを取得し正規化</td><td>クリーンな入力プール</td></tr>
+        <tr><td>2. フィルタ</td><td>重複や低シグナルの行を除去</td><td>分析可能なデータセット</td></tr>
+        <tr><td>3. スコア</td><td>ヒューリスティックまたは LLM で感情・文脈を抽出</td><td>構造化された感情行</td></tr>
+        <tr><td>4. 要約</td><td>指標・分布・アプリ間比較を集約</td><td>アクション可能なプロダクトビュー</td></tr>
+        <tr><td>5. エクスポート</td><td>レポート用に生データと分析結果を整形</td><td>csv / excel / pdf</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="about-table-wrap">
+    <table class="about-table">
+      <thead><tr><th>機能</th><th>範囲</th></tr></thead>
+      <tbody>
+        <tr><td>単一アプリ分析</td><td>1製品の感情の質とトレンド</td></tr>
+        <tr><td>比較モード</td><td>同一期間で2アプリを並べたベンチマーク</td></tr>
+        <tr><td>運用向けエクスポート</td><td>プロダクト・サポート・オペレーションと共有できる出力</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+""",
 }
 
 

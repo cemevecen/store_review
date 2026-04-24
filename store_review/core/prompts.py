@@ -15,6 +15,7 @@ _LANG_FOR_PROMPT: dict[str, str] = {
     "zh": "Simplified Chinese",
     "ru": "Russian",
     "pt": "Portuguese",
+    "ja": "Japanese",
 }
 
 

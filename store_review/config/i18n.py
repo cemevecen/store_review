@@ -21,7 +21,8 @@ LANGUAGES: list[tuple[str, str, str]] = [
     ("ar", "العربية", "🇸🇦"),
     ("zh", "简体中文", "🇨🇳"),
     ("ru", "Русский", "🇷🇺"),
-    ("pt", "Português", "🇵🇹"),
+    ("pt", "Português", "🇧🇷"),
+    ("ja", "日本語", "🇯🇵"),
 ]
 
 DEFAULT_LANG = "tr"
@@ -1083,6 +1084,13 @@ STRINGS: dict[str, dict[str, str]] = {
         "pt": "{heading} — busque um app ou cole link / ID",
     },
 }
+
+# Japonca çeviriler (dosya boyutu için ayrı modülde tutulur; STRINGS ile aynı anahtarlar)
+from store_review.config.i18n_ja_overlay import JA as _JA_OVERLAY
+
+for _k, _ja in _JA_OVERLAY.items():
+    if _k in STRINGS:
+        STRINGS[_k]["ja"] = _ja
 
 
 def _sync_query_param(code: str) -> None:

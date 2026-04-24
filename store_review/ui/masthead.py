@@ -1,4 +1,4 @@
-"""Ortak üst bant (masthead): hero başlığı, veri kaynağı pill'leri, dil (bayrak) ve hakkında."""
+"""Ortak üst bant (masthead): hero başlığı, veri kaynağı pill'leri + hakkında chip'i, sağ üst bayrak dili."""
 
 from __future__ import annotations
 
@@ -67,8 +67,8 @@ def _on_masthead_lang_change() -> None:
 def render_masthead(*, on_about: bool) -> None:
     """Ana sayfa ve /about sayfasında paylaşılan üst bant.
 
-    Pill'ler her iki sayfada da görünür; about sayfasında seçim yapılırsa
-    ana sayfaya dönülür. Dil seçimi yalnızca bayrak gösterir.
+    Dil: sağ üstte yalnızca bayrak + ok genişliği. Kaynak pill'lerinin yanında
+    ayrı bir “chip” ile Hakkında / Ana sayfa.
     """
     _hdr_uri = header_logo_data_uri()
     logo_html = ""
@@ -79,31 +79,46 @@ def render_masthead(*, on_about: bool) -> None:
         )
 
     with st.container(border=True, key="pg_masthead", width="stretch"):
-        _spacer_l, col_center, _spacer_r = st.columns([1, 10, 1], vertical_alignment="center")
-        with col_center:
+        row_brand, row_lang = st.columns([1, 0.22], vertical_alignment="start")
+        with row_brand:
             st.markdown(
                 '<span class="hero-band-target" aria-hidden="true"></span>'
-                '<div class="hero-masthead-brand">'
+                '<div class="hero-masthead-brand hero-masthead-brand--row">'
                 f"{logo_html}"
                 '<h1 class="hero-title">ai store review analysis</h1>'
                 "</div>",
                 unsafe_allow_html=True,
             )
+        with row_lang:
+            with st.container(key="masthead_lang_slot"):
+                cur = get_lang()
+                flag_options = [flag for _c, _n, flag in LANGUAGES]
+                cur_idx = next((i for i, (c, _, _) in enumerate(LANGUAGES) if c == cur), 0)
+                st.selectbox(
+                    "lang",
+                    options=flag_options,
+                    index=cur_idx,
+                    key="_masthead_lang",
+                    label_visibility="collapsed",
+                    on_change=_on_masthead_lang_change,
+                )
 
-            _pill_raw = st.session_state.get("main_data_source_tab")
-            if isinstance(_pill_raw, (list, tuple)):
-                _pill_raw = _pill_raw[0] if _pill_raw else None
-            if isinstance(_pill_raw, str):
-                _pill_fix = _LEGACY_SOURCE_TAB.get(_pill_raw, _pill_raw)
-                if _pill_fix in SOURCE_OPTIONS and _pill_fix != _pill_raw:
-                    st.session_state.main_data_source_tab = _pill_fix
+        _pill_raw = st.session_state.get("main_data_source_tab")
+        if isinstance(_pill_raw, (list, tuple)):
+            _pill_raw = _pill_raw[0] if _pill_raw else None
+        if isinstance(_pill_raw, str):
+            _pill_fix = _LEGACY_SOURCE_TAB.get(_pill_raw, _pill_raw)
+            if _pill_fix in SOURCE_OPTIONS and _pill_fix != _pill_raw:
+                st.session_state.main_data_source_tab = _pill_fix
 
-            _source_labels = {
-                "Mağaza": t("source.store"),
-                "Dosya": t("source.file"),
-                "Metin": t("source.text"),
-                "Uygulama karşılaştır": t("source.compare"),
-            }
+        _source_labels = {
+            "Mağaza": t("source.store"),
+            "Dosya": t("source.file"),
+            "Metin": t("source.text"),
+            "Uygulama karşılaştır": t("source.compare"),
+        }
+        row_pills, row_about = st.columns([1, 0.26], vertical_alignment="center", gap="small")
+        with row_pills:
             st.pills(
                 t("nav.data_source"),
                 SOURCE_OPTIONS,
@@ -115,38 +130,22 @@ def render_masthead(*, on_about: bool) -> None:
                 width="stretch",
                 on_change=_on_about_source_change if on_about else _on_data_source_change,
             )
-
+        with row_about:
             _q = lang_query_suffix()
-            _, _ctrl, _ = st.columns([2, 3, 2], vertical_alignment="center")
-            with _ctrl:
-                c_lang, c_link = st.columns(2, vertical_alignment="center", gap="small")
-                with c_lang:
-                    cur = get_lang()
-                    flag_options = [flag for _c, _n, flag in LANGUAGES]
-                    cur_idx = next((i for i, (c, _, _) in enumerate(LANGUAGES) if c == cur), 0)
-                    st.selectbox(
-                        "lang",
-                        options=flag_options,
-                        index=cur_idx,
-                        key="_masthead_lang",
-                        label_visibility="collapsed",
-                        on_change=_on_masthead_lang_change,
-                    )
-                with c_link:
-                    if on_about:
-                        chip_html = (
-                            '<div class="hero-about-chip-wrap">'
-                            f'<a class="hero-about-chip" href="./{_q}" '
-                            f'aria-label="{t("nav.home")}" title="{t("nav.home")}">'
-                            f'<span class="hero-about-chip-dot">x</span>{t("nav.home")}'
-                            "</a></div>"
-                        )
-                    else:
-                        chip_html = (
-                            '<div class="hero-about-chip-wrap">'
-                            f'<a class="hero-about-chip" href="about{_q}" '
-                            f'aria-label="{t("nav.about")}" title="{t("nav.about")}">'
-                            f'<span class="hero-about-chip-dot">i</span>{t("nav.about")}'
-                            "</a></div>"
-                        )
-                    st.markdown(chip_html, unsafe_allow_html=True)
+            if on_about:
+                chip = (
+                    '<div class="masthead-source-pill-wrap">'
+                    f'<a class="masthead-source-pill" href="./{_q}" '
+                    f'aria-label="{t("nav.home")}" title="{t("nav.home")}">'
+                    f'<span class="masthead-source-pill-dot">x</span>{t("nav.home")}'
+                    "</a></div>"
+                )
+            else:
+                chip = (
+                    '<div class="masthead-source-pill-wrap">'
+                    f'<a class="masthead-source-pill" href="about{_q}" '
+                    f'aria-label="{t("nav.about")}" title="{t("nav.about")}">'
+                    f'<span class="masthead-source-pill-dot">i</span>{t("nav.about")}'
+                    "</a></div>"
+                )
+            st.markdown(chip, unsafe_allow_html=True)

@@ -523,6 +523,12 @@ def main():
                 )
                 st.rerun()
 
+        if not has_partial:
+            st.markdown(
+                '<div style="height:14px" aria-hidden="true"></div>',
+                unsafe_allow_html=True,
+            )
+
         # 2) Devam et butonu — kısmi analiz var ve havuzda daha yorum kaldıysa.
         if has_partial and remaining > 0 and not use_fast:
             if remaining > LLM_BATCH_SIZE:

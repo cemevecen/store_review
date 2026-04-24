@@ -348,6 +348,13 @@ div[data-testid="stDataFrame"] {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
+/* Marka satırı — sol sütunda ortalanmış (sağda dil kutusu ile aynı hizada) */
+.hero-masthead-brand--row {
+  max-width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"],
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] {
   width: 100% !important;
@@ -389,11 +396,86 @@ div[data-testid="stDataFrame"] {
   background: rgba(255, 255, 255, 0.95) !important;
   border: 1px solid rgba(255, 255, 255, 0.35) !important;
   box-shadow: none !important;
-  min-height: 42px !important;
+  min-height: 40px !important;
+  max-height: 44px !important;
   min-width: 52px !important;
-  font-size: 1.35rem !important;
+  max-width: 76px !important;
+  width: auto !important;
+  padding-left: 10px !important;
+  padding-right: 30px !important;
+  font-size: 1.25rem !important;
   line-height: 1 !important;
   justify-content: center !important;
+}
+
+/* Sağ üst dil: yalnızca bayrak + ok genişliği */
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+  max-width: 88px !important;
+  margin-left: auto !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-_masthead_lang,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-_masthead_lang {
+  width: auto !important;
+  max-width: 80px !important;
+  min-width: 0 !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot [data-baseweb="select"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot [data-baseweb="select"] {
+  width: auto !important;
+  max-width: 80px !important;
+  min-width: 56px !important;
+}
+
+/* Kaynak pill'lerinin yanında — Streamlit pill ile uyumlu beyaz chip */
+.masthead-source-pill-wrap {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 44px !important;
+}
+.masthead-source-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  min-height: 38px !important;
+  padding: 0 14px !important;
+  border-radius: 9999px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  line-height: 1.15 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease !important;
+}
+.masthead-source-pill:hover {
+  background: #f8fafc !important;
+  border-color: rgba(15, 23, 42, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+.masthead-source-pill-dot {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(15, 23, 42, 0.2) !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  flex-shrink: 0 !important;
 }
 
 /* Masthead: başlık dışındaki markdown kutularında üst margin sıfır (başlık kutusu yukarıda 14px alır) */
@@ -696,30 +778,27 @@ div[data-testid="stDataFrame"] {
     min-width: 0 !important;
     flex: 1 1 auto !important;
   }
-  /* Masthead: yan boşluk sütunlarını gizle, orta blok tam genişlik */
+  /* Masthead: çok sütunlu satırlar dikey yığılsın (marka+dil, pill+chip) */
   [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"],
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] {
-    flex-direction: row !important;
+    flex-direction: column !important;
     flex-wrap: nowrap !important;
-    align-items: stretch !important;
+    align-items: center !important;
+    gap: 10px !important;
   }
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:first-child,
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:last-child,
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:first-child,
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:last-child,
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child {
-    display: none !important;
-  }
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:nth-child(2),
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"]:nth-child(2),
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:nth-child(2),
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"]:nth-child(2) {
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"] {
     width: 100% !important;
-    flex: 1 1 100% !important;
     max-width: 100% !important;
+    flex: 1 1 auto !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot {
+    justify-content: center !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead {
