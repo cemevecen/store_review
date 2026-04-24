@@ -51,6 +51,21 @@ def _fmt_duration(total_seconds: float) -> str:
     return f"{mins:02d}:{sec:02d}"
 
 
+def _render_fetch_progress_text(slot: st.delta_generator.DeltaGenerator, pct: float, elapsed: float, eta: float) -> None:
+    pct_i = int(max(0.0, min(1.0, pct)) * 100)
+    slot.markdown(
+        (
+            '<div class="sl-fetch-progress">'
+            '<span class="sl-fetch-chip sl-fetch-chip--state">yorum havuzu çekiliyor</span>'
+            f'<span class="sl-fetch-chip sl-fetch-chip--pct">%{pct_i}</span>'
+            f'<span class="sl-fetch-chip sl-fetch-chip--elapsed">geçen {_fmt_duration(elapsed)}</span>'
+            f'<span class="sl-fetch-chip sl-fetch-chip--eta">kalan ~{_fmt_duration(eta)}</span>'
+            "</div>"
+        ),
+        unsafe_allow_html=True,
+    )
+
+
 def _init_store_state() -> None:
     defaults = {
         "sl_selected_id": None,
@@ -197,6 +212,42 @@ def _inject_store_search_css() -> None:
   color: #0f172a;
 }
 .sl-app-banner-score.muted { color: #94a3b8; font-weight: 600; }
+.sl-fetch-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 2px;
+}
+.sl-fetch-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+}
+.sl-fetch-chip--state {
+  background: #e0f2fe;
+  color: #075985;
+  border-color: #bae6fd;
+}
+.sl-fetch-chip--pct {
+  background: #ede9fe;
+  color: #5b21b6;
+  border-color: #ddd6fe;
+}
+.sl-fetch-chip--elapsed {
+  background: #ecfeff;
+  color: #0f766e;
+  border-color: #a5f3fc;
+}
+.sl-fetch-chip--eta {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: #fed7aa;
+}
 @media (max-width: 768px) {
   .sl-app-banner-grid {
     flex-direction: column !important;
@@ -498,11 +549,9 @@ def render_store_link_tab() -> None:
             elapsed = time.perf_counter() - t0
             if pct > 0.001:
                 eta = max(0.0, (elapsed / pct) - elapsed)
-                prog_txt.caption(
-                    f"yorum havuzu çekiliyor · %{int(pct * 100)} · geçen {_fmt_duration(elapsed)} · kalan ~{_fmt_duration(eta)}"
-                )
+                _render_fetch_progress_text(prog_txt, pct, elapsed, eta)
             else:
-                prog_txt.caption("yorum havuzu çekiliyor · %0 · geçen 00:00 · kalan hesaplanıyor…")
+                _render_fetch_progress_text(prog_txt, 0.0, elapsed, 0.0)
 
         try:
             if platform == "android":
