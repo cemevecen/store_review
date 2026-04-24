@@ -221,11 +221,18 @@ def _havuz_metric_visible(src: str, pool_display_count: int) -> bool:
     return False
 
 
-def _render_about_section() -> None:
-    st.markdown(
-        '<div id="hakkinda" class="about-anchor"></div><p class="section-title">hakkında</p>',
-        unsafe_allow_html=True,
-    )
+def _current_view() -> str:
+    try:
+        raw = st.query_params.get("view", "main")
+    except Exception:
+        raw = "main"
+    if isinstance(raw, list):
+        raw = raw[0] if raw else "main"
+    return "about" if str(raw).strip().lower() == "about" else "main"
+
+
+def _render_about_page() -> None:
+    st.markdown('<p class="section-title">hakkında</p>', unsafe_allow_html=True)
     lang_pick = st.segmented_control(
         "Dil",
         options=["TR", "ENG"],
@@ -297,6 +304,7 @@ def main():
     )
     _inject_css()
     _inject_file_uploader_labels_once()
+    view = _current_view()
 
     _hdr_uri = header_logo_data_uri()
     _logo_html = ""
@@ -318,27 +326,37 @@ def main():
                 unsafe_allow_html=True,
             )
             st.markdown(
-                '<div class="hero-about-link-wrap"><a class="hero-about-link" href="#hakkinda" '
-                'aria-label="Hakkında bölümüne git" title="Hakkında">i</a></div>',
+                (
+                    '<div class="hero-about-link-wrap"><a class="hero-about-link" href="?view=about" '
+                    'aria-label="Hakkında sayfasına git" title="Hakkında">i</a></div>'
+                    if view != "about"
+                    else '<div class="hero-about-link-wrap"><a class="hero-about-link" href="?" '
+                    'aria-label="Ana sayfaya dön" title="Ana sayfa">x</a></div>'
+                ),
                 unsafe_allow_html=True,
             )
-            _pill_raw = st.session_state.get("main_data_source_tab")
-            if isinstance(_pill_raw, (list, tuple)):
-                _pill_raw = _pill_raw[0] if _pill_raw else None
-            if isinstance(_pill_raw, str):
-                _pill_fix = _LEGACY_SOURCE_TAB.get(_pill_raw, _pill_raw)
-                if _pill_fix in SOURCE_OPTIONS and _pill_fix != _pill_raw:
-                    st.session_state.main_data_source_tab = _pill_fix
-            st.pills(
-                "Veri kaynağı",
-                SOURCE_OPTIONS,
-                selection_mode="single",
-                default=SOURCE_OPTIONS[0],
-                key="main_data_source_tab",
-                label_visibility="collapsed",
-                width="stretch",
-                on_change=_on_data_source_change,
-            )
+            if view != "about":
+                _pill_raw = st.session_state.get("main_data_source_tab")
+                if isinstance(_pill_raw, (list, tuple)):
+                    _pill_raw = _pill_raw[0] if _pill_raw else None
+                if isinstance(_pill_raw, str):
+                    _pill_fix = _LEGACY_SOURCE_TAB.get(_pill_raw, _pill_raw)
+                    if _pill_fix in SOURCE_OPTIONS and _pill_fix != _pill_raw:
+                        st.session_state.main_data_source_tab = _pill_fix
+                st.pills(
+                    "Veri kaynağı",
+                    SOURCE_OPTIONS,
+                    selection_mode="single",
+                    default=SOURCE_OPTIONS[0],
+                    key="main_data_source_tab",
+                    label_visibility="collapsed",
+                    width="stretch",
+                    on_change=_on_data_source_change,
+                )
+
+    if view == "about":
+        _render_about_page()
+        return
 
     env_settings = Settings.from_env()
     gk, gqk, ok = resolve_api_keys(
@@ -456,8 +474,6 @@ def main():
             f'<div class="metric-strip-value">{pool_display_count}</div></div>',
             unsafe_allow_html=True,
         )
-    _render_about_section()
-
     if pool:
         raw_df = pd.DataFrame(pool)
         with st.expander("Ham veriyi indir (analiz öncesi)", expanded=False):

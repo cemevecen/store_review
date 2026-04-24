@@ -413,10 +413,6 @@ div[data-testid="stDataFrame"] {
   margin-bottom: 2px !important;
 }
 
-.about-anchor {
-  position: relative;
-  top: -12px;
-}
 .hero-about-link-wrap {
   width: 100%;
   display: flex;
