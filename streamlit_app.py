@@ -31,6 +31,7 @@ from store_review.config.theme import APP_CSS
 from store_review.core.ai_providers import DEFAULT_MODELS, RichAnalyzer, resolve_api_keys
 from store_review.core.analyzer import analyze_batch, dedupe_reviews
 from store_review.fetchers.file_loader import load_reviews_from_dataframe
+from store_review.fetchers.paste_loader import parse_pasted_reviews
 from store_review.ui.analysis_results_dashboard import render_analysis_results_dashboard
 from store_review.ui.compare_panel import (
     compare_tab_has_user_input,
@@ -278,23 +279,7 @@ def main():
             placeholder=t("paste.placeholder"),
         )
         if st.button(t("paste.upload_btn"), use_container_width=True, key="btn_paste"):
-            lines = [ln.strip() for ln in ta.splitlines() if ln.strip()]
-            pool = []
-            j = 0
-            for ln in lines:
-                if not is_valid_comment(ln):
-                    continue
-                pool.append(
-                    {
-                        "id": f"paste-{j}",
-                        "text": ln,
-                        "date": None,
-                        "rating": "",
-                        "lang": "paste",
-                        "is_valid": True,
-                    }
-                )
-                j += 1
+            pool = parse_pasted_reviews(ta)
             st.session_state.review_pool_paste = pool
             st.session_state.analysis_rows = []
     else:
