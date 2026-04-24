@@ -144,11 +144,17 @@ def _render_trend(rows: list[dict]) -> None:
         r2 = neg_rate(second_half)
         diff_trend = r2 - r1
         if diff_trend > 0.05:
-            trend_icon, trend_color, trend_text = "↑", "#f43f5e", f"Olumsuz oran artıyor (+%{int(diff_trend * 100)})"
+            trend_icon = "↑"
+            trend_color = "#f43f5e"
+            trend_text = _t("dash.trend_neg_rising", pct=int(diff_trend * 100))
         elif diff_trend < -0.05:
-            trend_icon, trend_color, trend_text = "↓", "#10b981", f"Memnuniyet artıyor (+%{int(abs(diff_trend) * 100)})"
+            trend_icon = "↓"
+            trend_color = "#10b981"
+            trend_text = _t("dash.trend_sat_rising", pct=int(abs(diff_trend) * 100))
         else:
-            trend_icon, trend_color, trend_text = "→", "#f59e0b", "Oran stabil seyrediyor"
+            trend_icon = "→"
+            trend_color = "#f59e0b"
+            trend_text = _t("dash.trend_stable")
         st.markdown(
             f"""
             <div class="sr-responsive-row" style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:12px 15px;margin-top:8px;display:flex;align-items:center;gap:10px;">
@@ -181,7 +187,15 @@ def _render_daily_negative(rows: list[dict]) -> None:
             except Exception:
                 pass
         days_order = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-        days_tr = {"Mon": "Pzt", "Tue": "Sal", "Wed": "Çrş", "Thu": "Per", "Fri": "Cum", "Sat": "Cmt", "Sun": "Paz"}
+        days_i18n = {
+            "Mon": _t("dash.dow_mon"),
+            "Tue": _t("dash.dow_tue"),
+            "Wed": _t("dash.dow_wed"),
+            "Thu": _t("dash.dow_thu"),
+            "Fri": _t("dash.dow_fri"),
+            "Sat": _t("dash.dow_sat"),
+            "Sun": _t("dash.dow_sun"),
+        }
         cells = ""
         for d in days_order:
             if day_total[d] == 0:
@@ -191,7 +205,7 @@ def _render_daily_negative(rows: list[dict]) -> None:
             fc = "#DC2626" if rate >= 0.6 else ("#D97706" if rate >= 0.35 else "#16A34A")
             cells += (
                 f'<div style="flex:1;text-align:center;background:{bg};border-radius:8px;padding:6px 2px;">'
-                f'<div style="font-size:0.65rem;color:{fc};font-weight:700;">{days_tr[d]}</div>'
+                f'<div style="font-size:0.65rem;color:{fc};font-weight:700;">{html.escape(days_i18n[d])}</div>'
                 f'<div style="font-size:0.7rem;color:{fc};font-weight:600;">%{int(rate * 100)}</div>'
                 f"</div>"
             )
@@ -237,32 +251,30 @@ def _render_sentiment_summary(
     neg_p = int(len(neg_l) / total_all * 100) if total_all else 0
 
     if pos_p >= 55:
-        summary_title = "Topluluk Genel Olarak Olumlu"
-        tone_intro = f"Analiz edilen {total_all} yorumun %{pos_p}'ü olumlu. Kullanıcılar genel olarak deneyimlerinden memnun."
+        summary_title = _t("dash.summary_pos_title")
+        tone_intro = _t("dash.summary_pos_intro", n=total_all, pos=pos_p)
     elif neg_p >= 50:
-        summary_title = "Dikkat çeken olumsuz bir eğilim"
-        tone_intro = f"Yorumların %{neg_p}'si olumsuz. Teknik sorunlar veya kullanım zorlukları öne çıkıyor."
+        summary_title = _t("dash.summary_neg_title")
+        tone_intro = _t("dash.summary_neg_intro", neg=neg_p)
     else:
-        summary_title = "Dengeli kullanıcı deneyimi"
-        tone_intro = f"Yorumlar olumlu (%{pos_p}) ve olumsuz (%{neg_p}) arasında dengeli bir dağılım sergiliyor."
+        summary_title = _t("dash.summary_mixed_title")
+        tone_intro = _t("dash.summary_mixed_intro", pos=pos_p, neg=neg_p)
 
     pos_s = _sample_texts(rows, "Olumlu", 2)
     neg_s = _sample_texts(rows, "Olumsuz", 2)
-    pos_part = f"Öne çıkan ifadeler: {'; '.join(pos_s)}." if pos_s else ""
-    neg_part = f"Olumsuz örnekler: {'; '.join(neg_s)}." if neg_s else ""
+    pos_part = _t("dash.summary_key_phrases", items="; ".join(pos_s)) if pos_s else ""
+    neg_part = _t("dash.summary_neg_samples", items="; ".join(neg_s)) if neg_s else ""
     summary_body = f"{html.escape(tone_intro)} {pos_part} {neg_part}".strip()
 
     all_v = [str(r.get("Versiyon", "")).strip() for r in rows if r.get("Versiyon") and str(r.get("Versiyon")).strip() not in ("", "—")]
     top_v = Counter(all_v).most_common(1)
-    best_v = html.escape(top_v[0][0]) if top_v else "Belirlenemedi"
+    best_v = html.escape(top_v[0][0]) if top_v else html.escape(_t("dash.undetermined"))
     all_lang = [str(r.get("lang", "tr")).upper() for r in rows]
     top_l = Counter(all_lang).most_common(1)
     best_l = html.escape(top_l[0][0]) if top_l else "TR"
 
     subtitle = (
-        "Hızlı analiz özeti"
-        if use_fast
-        else "Zengin analiz — özet"
+        _t("dash.summary_subtitle_fast") if use_fast else _t("dash.summary_subtitle_rich")
     )
     quote_color = "#818cf8" if use_fast else "#7c3aed"
     title_color = "#6366F1" if use_fast else "#5b21b6"
@@ -271,9 +283,9 @@ def _render_sentiment_summary(
 <div style="margin-top:16px;padding:12px;background:#eff6ff;border-radius:10px;border:1px solid #dbeafe;">
     <div style="font-size:0.75rem;font-weight:700;color:#3b82f6;text-transform:uppercase;margin-bottom:4px;">{html.escape(_t("dash.persona"))}</div>
     <div style="font-size:0.85rem;color:#1e40af;line-height:1.5;">
-        • <b>En yoğun sürüm / kanal:</b> {best_v}<br>
-        • <b>Hakim dil etiketi:</b> {best_l}<br>
-        • <b>Not:</b> Örnek yorumlar yukarıda kısaltılmıştır.
+        • <b>{html.escape(_t("dash.persona_version"))}</b> {best_v}<br>
+        • <b>{html.escape(_t("dash.persona_language"))}</b> {best_l}<br>
+        • <b>{html.escape(_t("dash.persona_note_label"))}</b> {html.escape(_t("dash.persona_note"))}
     </div>
 </div>"""
 
@@ -291,7 +303,7 @@ def _render_sentiment_summary(
             <div style="width:8px;height:8px;border-radius:50%;background:#f43f5e;"></div>
             <div style="width:8px;height:8px;border-radius:50%;background:#818cf8;"></div>
         </div>
-        <span style="font-size:0.7rem;color:#94A3B8;font-weight:500;">{m_olumlu} olumlu · {m_olumsuz} olumsuz · {m_istek} görüş analiz edildi</span>
+        <span style="font-size:0.7rem;color:#94A3B8;font-weight:500;">{html.escape(_t("dash.summary_footer", pos=m_olumlu, neg=m_olumsuz, neu=m_istek))}</span>
     </div>
 </div>
 """,
@@ -299,17 +311,47 @@ def _render_sentiment_summary(
     )
 
 
+_FREQ_CODES = ("daily", "weekly", "monthly")
+_LEGACY_FREQ_MAP = {
+    "Günlük": "daily",
+    "Haftalık": "weekly",
+    "Aylık": "monthly",
+}
+
+
+def _stars_label(n: int) -> str:
+    return _t("dash.stars_suffix", n=n)
+
+
 def _render_puan_distribution(df: pd.DataFrame, *, key_suffix: str = "") -> None:
     if "Puan" not in df.columns or not df["Puan"].notna().any():
         return
     st.markdown("---")
     st.markdown(f"### {_t('dash.score_dist')}")
-    freq = st.radio(
-        "Zaman ölçeği",
-        ["Günlük", "Haftalık", "Aylık"],
+
+    radio_key = f"sr_puan_freq_sel{('_' + key_suffix) if key_suffix else ''}"
+    # Eski oturumlarda Türkçe etiket kayıtlıysa code'a migrate et.
+    _cur = st.session_state.get(radio_key)
+    if isinstance(_cur, str) and _cur in _LEGACY_FREQ_MAP:
+        st.session_state[radio_key] = _LEGACY_FREQ_MAP[_cur]
+    elif isinstance(_cur, str) and _cur not in _FREQ_CODES:
+        try:
+            del st.session_state[radio_key]
+        except KeyError:
+            pass
+
+    _freq_labels = {
+        "daily": _t("dash.freq_daily"),
+        "weekly": _t("dash.freq_weekly"),
+        "monthly": _t("dash.freq_monthly"),
+    }
+    freq_code = st.radio(
+        _t("dash.freq_label"),
+        list(_FREQ_CODES),
         horizontal=True,
         label_visibility="collapsed",
-        key=f"sr_puan_freq_sel{('_' + key_suffix) if key_suffix else ''}",
+        key=radio_key,
+        format_func=lambda c: _freq_labels.get(c, c),
     )
     df_puan = df.dropna(subset=["Tarih", "Puan"]).copy()
     try:
@@ -318,44 +360,34 @@ def _render_puan_distribution(df: pd.DataFrame, *, key_suffix: str = "") -> None
     except Exception:
         return
     if df_puan.empty:
-        st.caption("Tarih ve puan bilgisi olan yorum yok.")
+        st.caption(_t("dash.no_date_rating"))
         return
 
     df_puan["Tarih_dt"] = pd.to_datetime(df_puan["Tarih"])
     min_d = df_puan["Tarih_dt"].min().strftime("%d-%m-%Y")
     max_d = df_puan["Tarih_dt"].max().strftime("%d-%m-%Y")
-    st.caption(f"**Tespit Edilen Tarih Aralığı:** {min_d} ile {max_d}")
+    st.caption(_t("dash.date_range_label", min_d=min_d, max_d=max_d))
 
-    tr_months = {
-        1: "Ocak",
-        2: "Şubat",
-        3: "Mart",
-        4: "Nisan",
-        5: "Mayıs",
-        6: "Haziran",
-        7: "Temmuz",
-        8: "Ağustos",
-        9: "Eylül",
-        10: "Ekim",
-        11: "Kasım",
-        12: "Aralık",
-    }
+    months_i18n = {i: _t(f"dash.month_{i}") for i in range(1, 13)}
 
-    if freq == "Haftalık":
+    if freq_code == "weekly":
         df_puan["Grup"] = df_puan["Tarih_dt"].dt.to_period("W").apply(lambda r: r.start_time)
-        df_puan["Grup_Label"] = df_puan["Grup"].apply(lambda x: f"{x.day} {tr_months[x.month]} {x.year}")
-        title_txt = "Haftalık Puan Dağılımı"
-    elif freq == "Aylık":
-        df_puan["Grup_Label"] = df_puan["Tarih_dt"].apply(lambda x: f"{tr_months[x.month]} {x.year}")
+        df_puan["Grup_Label"] = df_puan["Grup"].apply(lambda x: f"{x.day} {months_i18n[x.month]} {x.year}")
+        title_txt = _t("dash.chart_title_weekly")
+    elif freq_code == "monthly":
+        df_puan["Grup_Label"] = df_puan["Tarih_dt"].apply(lambda x: f"{months_i18n[x.month]} {x.year}")
         df_puan["Grup"] = df_puan["Tarih_dt"].dt.to_period("M").apply(lambda r: r.start_time)
-        title_txt = "Aylık Puan Dağılımı"
+        title_txt = _t("dash.chart_title_monthly")
     else:
         df_puan["Grup_Label"] = df_puan["Tarih_dt"].dt.strftime("%d-%m-%Y")
         df_puan["Grup"] = df_puan["Tarih_dt"].dt.date
-        title_txt = "Günlük Puan Dağılımı"
+        title_txt = _t("dash.chart_title_daily")
+
+    star_labels = [_stars_label(i) for i in range(1, 6)]
+    star_label_map = {i: star_labels[i - 1] for i in range(1, 6)}
 
     dist_trend = df_puan.groupby(["Grup", "Grup_Label", "Puan_val"]).size().reset_index(name="Oy Sayısı")
-    dist_trend["Puan_Label"] = dist_trend["Puan_val"].apply(lambda x: f"{x} Yıldız")
+    dist_trend["Puan_Label"] = dist_trend["Puan_val"].apply(lambda x: star_label_map[int(x)])
     dist_trend = dist_trend.sort_values(["Grup", "Puan_val"], ascending=[True, True])
     _sorted_dates = dist_trend["Grup_Label"].unique().tolist()
 
@@ -366,23 +398,27 @@ def _render_puan_distribution(df: pd.DataFrame, *, key_suffix: str = "") -> None
         color="Puan_Label",
         title=title_txt,
         color_discrete_map={
-            "1 Yıldız": "#E53E3E",
-            "2 Yıldız": "#F6AD55",
-            "3 Yıldız": "#F6E05E",
-            "4 Yıldız": "#68D391",
-            "5 Yıldız": "#2F855A",
+            star_labels[0]: "#E53E3E",
+            star_labels[1]: "#F6AD55",
+            star_labels[2]: "#F6E05E",
+            star_labels[3]: "#68D391",
+            star_labels[4]: "#2F855A",
         },
         category_orders={
-            "Puan_Label": ["1 Yıldız", "2 Yıldız", "3 Yıldız", "4 Yıldız", "5 Yıldız"],
+            "Puan_Label": star_labels,
             "Grup_Label": _sorted_dates,
         },
-        labels={"Puan_Label": "", "Grup_Label": "Zaman", "Oy Sayısı": "Sayı"},
+        labels={
+            "Puan_Label": "",
+            "Grup_Label": _t("dash.chart_xaxis_time"),
+            "Oy Sayısı": _t("dash.chart_yaxis_count"),
+        },
     )
     fig_dist.update_layout(
         height=420,
         margin={"t": 60, "b": 100, "l": 10, "r": 10},
         xaxis_title="",
-        yaxis_title="Yorum / Puan Sayısı",
+        yaxis_title=_t("dash.chart_yaxis_count"),
         legend={
             "orientation": "h",
             "yanchor": "bottom",
@@ -447,19 +483,19 @@ def render_analysis_results_dashboard(
     <div class="sr-analysis-metric-row">
         <div class="sr-analysis-metric-pill">
             <div class="sr-analysis-metric-value" style="color:#10b981;">{m_olumlu}</div>
-            <div class="sr-analysis-metric-label">Olumlu</div>
+            <div class="sr-analysis-metric-label">{html.escape(_t("dash.sent_pos"))}</div>
         </div>
         <div class="sr-analysis-metric-pill">
             <div class="sr-analysis-metric-value" style="color:#f43f5e;">{m_olumsuz}</div>
-            <div class="sr-analysis-metric-label">Olumsuz</div>
+            <div class="sr-analysis-metric-label">{html.escape(_t("dash.sent_neg"))}</div>
         </div>
         <div class="sr-analysis-metric-pill">
             <div class="sr-analysis-metric-value" style="color:#3b82f6;">{m_istek}</div>
-            <div class="sr-analysis-metric-label">İstek / Görüş</div>
+            <div class="sr-analysis-metric-label">{html.escape(_t("dash.sent_req"))}</div>
         </div>
         <div class="sr-analysis-metric-pill">
             <div class="sr-analysis-metric-value" style="color:#a78bfa;">{n_total}</div>
-            <div class="sr-analysis-metric-label">Toplam Veri</div>
+            <div class="sr-analysis-metric-label">{html.escape(_t("dash.pill_total"))}</div>
         </div>
     </div>
     """,
