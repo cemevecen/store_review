@@ -1130,22 +1130,65 @@ def render_compare_tab(
                         render_analyzed_review_cards(rows_d, key_prefix="cmp_0")
                 else:
                     slugs = key_list
+                    icon_a = str((res.get(slugs[0]) or {}).get("icon") or "").strip()
+                    icon_b = str((res.get(slugs[1]) or {}).get("icon") or "").strip()
+                    title_a = str((res.get(slugs[0]) or {}).get("title") or slugs[0])
+                    title_b = str((res.get(slugs[1]) or {}).get("title") or slugs[1])
+                    have_icons = icon_a.startswith("http") and icon_b.startswith("http")
 
-                    def _seg_label(s: str) -> str:
-                        i = slugs.index(s)
-                        return _cmp_review_chip_label(res, s, "A" if i == 0 else "B")
+                    cur = st.session_state.get("cmp_review_slug")
+                    if cur not in slugs:
+                        cur = slugs[0]
+                        st.session_state["cmp_review_slug"] = cur
 
-                    pick = st.segmented_control(
-                        "Yorumlar",
-                        options=slugs,
-                        format_func=_seg_label,
-                        selection_mode="single",
-                        default=slugs[0],
-                        key="cmp_review_segment",
-                        label_visibility="collapsed",
-                        width="stretch",
-                    )
-                    slug = pick if pick is not None else slugs[0]
+                    if have_icons:
+                        st.markdown(
+                            "<style>"
+                            ".st-key-cmp_rev_sel_a button, .st-key-cmp_rev_sel_b button {"
+                            "  min-height: 56px !important;"
+                            "  background-size: 36px 36px !important;"
+                            "  background-position: center !important;"
+                            "  background-repeat: no-repeat !important;"
+                            "  font-size: 0 !important;"
+                            "  color: transparent !important;"
+                            "  padding: 6px !important;"
+                            "  border-radius: 12px !important;"
+                            "}"
+                            f".st-key-cmp_rev_sel_a button {{ background-image: url('{html.escape(icon_a, quote=True)}') !important; }}"
+                            f".st-key-cmp_rev_sel_b button {{ background-image: url('{html.escape(icon_b, quote=True)}') !important; }}"
+                            "</style>",
+                            unsafe_allow_html=True,
+                        )
+
+                    c1, c2 = st.columns(2, gap="small")
+                    with c1:
+                        with st.container(key="cmp_rev_sel_a"):
+                            label_a = " " if have_icons else _cmp_review_chip_label(res, slugs[0], "a")
+                            if st.button(
+                                label_a,
+                                key="cmp_rev_sel_a_btn",
+                                use_container_width=True,
+                                type="primary" if cur == slugs[0] else "secondary",
+                                help=title_a,
+                            ):
+                                st.session_state["cmp_review_slug"] = slugs[0]
+                                st.rerun()
+                    with c2:
+                        with st.container(key="cmp_rev_sel_b"):
+                            label_b = " " if have_icons else _cmp_review_chip_label(res, slugs[1], "b")
+                            if st.button(
+                                label_b,
+                                key="cmp_rev_sel_b_btn",
+                                use_container_width=True,
+                                type="primary" if cur == slugs[1] else "secondary",
+                                help=title_b,
+                            ):
+                                st.session_state["cmp_review_slug"] = slugs[1]
+                                st.rerun()
+
+                    slug = st.session_state.get("cmp_review_slug") or slugs[0]
+                    if slug not in slugs:
+                        slug = slugs[0]
                     idx = slugs.index(slug)
                     data = res.get(slug) or {}
                     title = html.escape(str(data.get("title") or slug))
