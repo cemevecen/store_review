@@ -22,13 +22,12 @@ _FOOTER_CSS = """
   width: 100vw !important;
   min-width: 100vw !important;
   max-width: 100vw !important;
-  position: fixed !important;
+  position: relative !important;
   left: 50% !important;
-  bottom: 0 !important;
   transform: translateX(-50%) !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
-  margin-top: 0 !important;
+  margin-top: 48px !important;
   margin-bottom: 0 !important;
   padding: 26px clamp(18px, 4vw, 44px) 22px !important;
   box-sizing: border-box !important;
@@ -37,7 +36,7 @@ _FOOTER_CSS = """
   border-top: 1px solid rgba(0, 0, 0, 0.14) !important;
   box-shadow: 0 -10px 32px rgba(48, 8, 16, 0.34) !important;
   overflow: hidden !important;
-  z-index: 40 !important;
+  z-index: 1 !important;
   background: linear-gradient(
     282deg,
     #120608 0%,
@@ -49,10 +48,6 @@ _FOOTER_CSS = """
   ) !important;
 }
 
-/* Sabit footer içerik üstüne binmesin: ana gövdeye alt boşluk bırak. */
-[data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"] {
-  padding-bottom: clamp(180px, 24vh, 280px) !important;
-}
 [data-testid="stVerticalBlock"].st-key-pg_footer::after,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer::after {
   content: "" !important;
@@ -211,7 +206,6 @@ _FOOTER_CSS = """
   [data-testid="stVerticalBlock"].st-key-pg_footer,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer {
     padding: 22px clamp(14px, 4vw, 20px) 18px !important;
-    z-index: 50 !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_footer [data-testid="stHorizontalBlock"],
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer [data-testid="stHorizontalBlock"] {
@@ -230,9 +224,6 @@ _FOOTER_CSS = """
   }
   .foot-about-chip-wrap { justify-content: flex-start; width: 100%; }
   .foot-brand { min-height: 0; }
-  [data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"] {
-    padding-bottom: clamp(250px, 40vh, 380px) !important;
-  }
 }
 </style>
 """
