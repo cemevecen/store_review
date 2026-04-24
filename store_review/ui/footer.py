@@ -16,6 +16,38 @@ from store_review.config.i18n import LANGUAGES, get_lang, lang_query_suffix, set
 
 _FOOTER_CSS = """
 <style>
+/*
+ * Sticky footer — pin yok (`position: fixed` yok). Kısa sayfada viewport
+ * dibine yapışır; uzun sayfada içerikle birlikte aşağı kayar.
+ * (1d42dcd ile kanıtlanan düzen; bf2a2c5'teki sabit 48px margin bunu bozuyordu.)
+ */
+html, body,
+[data-testid="stAppViewContainer"],
+[data-testid="stAppViewContainer"] > .main,
+[data-testid="stAppViewContainer"] section.main {
+  min-height: 100vh;
+}
+[data-testid="stAppViewContainer"] .main,
+[data-testid="stAppViewContainer"] section.main {
+  align-items: stretch !important;
+}
+[data-testid="stAppViewContainer"] .main .block-container,
+[data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"] {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: calc(100vh - 2rem) !important;
+}
+[data-testid="stAppViewContainer"] .main .block-container > [data-testid="stVerticalBlock"],
+[data-testid="stAppViewContainer"] .main .block-container > [data-testid="stVerticalBlockBorderWrapper"],
+[data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"],
+[data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlockBorderWrapper"] {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+
 /* Footer — masthead ile aynı bordo gradient, aynı pattern overlay. */
 [data-testid="stVerticalBlock"].st-key-pg_footer,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer {
@@ -27,7 +59,7 @@ _FOOTER_CSS = """
   transform: translateX(-50%) !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
-  margin-top: 48px !important;
+  margin-top: auto !important;
   margin-bottom: 0 !important;
   padding: 26px clamp(18px, 4vw, 44px) 22px !important;
   box-sizing: border-box !important;
@@ -46,6 +78,19 @@ _FOOTER_CSS = """
     #7a1f30 82%,
     #8f2840 100%
   ) !important;
+}
+/* Footer sarmalayıcıları: kalan dikey boşluğu üste iter. */
+[data-testid="stAppViewContainer"] .main [data-testid="element-container"]:has(
+  > [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer
+),
+[data-testid="stAppViewContainer"] .main [data-testid="element-container"]:has(
+  > [data-testid="stVerticalBlock"].st-key-pg_footer
+),
+[data-testid="stAppViewContainer"] .main [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer,
+[data-testid="stAppViewContainer"] .main [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"].st-key-pg_footer {
+  margin-top: auto !important;
+  margin-bottom: 0 !important;
+  width: 100% !important;
 }
 
 [data-testid="stVerticalBlock"].st-key-pg_footer::after,
