@@ -412,7 +412,33 @@ def main():
     rows = st.session_state.analysis_rows
     if rows:
         use_fast_last = bool(st.session_state.get("_last_analysis_use_fast", True))
-        render_analysis_results_dashboard(rows, use_fast=use_fast_last)
+        if _is_compare_src:
+            # Split: iki uygulama için dashboard/dağılım grafiklerini yan yana render et.
+            cmp_detail = st.session_state.get("cmp_detail_rows") or {}
+            cmp_res = st.session_state.get("cmp_results") or {}
+            slugs = [s for s in cmp_res.keys() if (cmp_detail.get(s) or [])][:2]
+            if len(slugs) == 2:
+                st.markdown(
+                    f'<h2 class="sr-analysis-page-title">{t("dash.page_title")}</h2>',
+                    unsafe_allow_html=True,
+                )
+                col_a, col_b = st.columns(2, gap="medium")
+                for col, slug in zip((col_a, col_b), slugs):
+                    meta = cmp_res.get(slug) or {}
+                    rows_slug = cmp_detail.get(slug) or []
+                    app_title = str(meta.get("title") or slug)
+                    with col:
+                        render_analysis_results_dashboard(
+                            rows_slug,
+                            use_fast=use_fast_last,
+                            key_suffix=slug,
+                            compact=True,
+                            section_title=app_title,
+                        )
+            else:
+                render_analysis_results_dashboard(rows, use_fast=use_fast_last)
+        else:
+            render_analysis_results_dashboard(rows, use_fast=use_fast_last)
         df = pd.DataFrame(rows)
 
         # Compare akışında yorumları compare_panel kendi a/b seçicisiyle üstte

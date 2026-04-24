@@ -616,6 +616,16 @@ div[data-testid="stDataFrame"] {
   margin: 0.35rem 0 0.45rem;
   letter-spacing: -0.02em;
 }
+.sr-analysis-page-title--sub {
+  font-size: 1.05rem;
+  color: #1f2937;
+  margin: 0.25rem 0 0.55rem;
+  padding: 0.4rem 0.75rem;
+  background: linear-gradient(135deg, rgba(255,237,213,0.65), rgba(255,255,255,0));
+  border-left: 3px solid #fb923c;
+  border-radius: 6px;
+  display: block;
+}
 .sr-analysis-metric-row {
   display: flex;
   justify-content: center;

@@ -299,7 +299,7 @@ def _render_sentiment_summary(
     )
 
 
-def _render_puan_distribution(df: pd.DataFrame) -> None:
+def _render_puan_distribution(df: pd.DataFrame, *, key_suffix: str = "") -> None:
     if "Puan" not in df.columns or not df["Puan"].notna().any():
         return
     st.markdown("---")
@@ -309,7 +309,7 @@ def _render_puan_distribution(df: pd.DataFrame) -> None:
         ["Günlük", "Haftalık", "Aylık"],
         horizontal=True,
         label_visibility="collapsed",
-        key="sr_puan_freq_sel",
+        key=f"sr_puan_freq_sel{('_' + key_suffix) if key_suffix else ''}",
     )
     df_puan = df.dropna(subset=["Tarih", "Puan"]).copy()
     try:
@@ -397,11 +397,30 @@ def _render_puan_distribution(df: pd.DataFrame) -> None:
         font=dict(color="#334155"),
     )
     fig_dist.update_xaxes(tickangle=-45)
-    st.plotly_chart(fig_dist, use_container_width=True)
+    st.plotly_chart(
+        fig_dist,
+        use_container_width=True,
+        key=f"puan_dist_chart{('_' + key_suffix) if key_suffix else ''}",
+    )
 
 
-def render_analysis_results_dashboard(rows: list[dict], *, use_fast: bool = True) -> None:
-    """nlp-sentiment tarzı özet paneli: metrik hapları, sol göstergeler, sağ metin özeti, isteğe bağlı puan grafiği."""
+def render_analysis_results_dashboard(
+    rows: list[dict],
+    *,
+    use_fast: bool = True,
+    key_suffix: str = "",
+    compact: bool = False,
+    section_title: str | None = None,
+) -> None:
+    """nlp-sentiment tarzı özet paneli: metrik hapları, sol göstergeler, sağ metin özeti, isteğe bağlı puan grafiği.
+
+    Args:
+        key_suffix: Birden fazla dashboard aynı sayfada render edildiğinde widget
+            key çakışmalarını önlemek için benzersiz bir ek.
+        compact: True ise üstteki büyük başlık gizlenir; split (yan yana)
+            düzenlerde alt-başlıkla kullanılır.
+        section_title: compact modda üste yazılacak alt-başlık (uygulama adı vs.).
+    """
     if not rows:
         return
     df = pd.DataFrame(rows)
@@ -412,10 +431,16 @@ def render_analysis_results_dashboard(rows: list[dict], *, use_fast: bool = True
     m_olumlu, m_olumsuz, m_istek, n_total = _counts(df)
     total_all = m_olumlu + m_olumsuz + m_istek
 
-    st.markdown(
-        f'<h2 class="sr-analysis-page-title">{html.escape(_t("dash.page_title"))}</h2>',
-        unsafe_allow_html=True,
-    )
+    if not compact:
+        st.markdown(
+            f'<h2 class="sr-analysis-page-title">{html.escape(_t("dash.page_title"))}</h2>',
+            unsafe_allow_html=True,
+        )
+    elif section_title:
+        st.markdown(
+            f'<h3 class="sr-analysis-page-title sr-analysis-page-title--sub">{html.escape(section_title)}</h3>',
+            unsafe_allow_html=True,
+        )
 
     st.markdown(
         f"""
@@ -441,14 +466,21 @@ def render_analysis_results_dashboard(rows: list[dict], *, use_fast: bool = True
         unsafe_allow_html=True,
     )
 
-    col_pie, col_summary = st.columns([1, 1], gap="medium")
-    with col_pie:
+    # Split (compact) modda iki sütun dar olduğu için alt grafikleri dikey dizelim.
+    if compact:
         _render_concentric_legend(m_olumlu, m_olumsuz, m_istek)
         _render_experience_score(m_olumlu, m_olumsuz, m_istek)
         _render_trend(rows)
         _render_daily_negative(rows)
-
-    with col_summary:
         _render_sentiment_summary(rows, m_olumlu, m_olumsuz, m_istek, total_all, use_fast)
+    else:
+        col_pie, col_summary = st.columns([1, 1], gap="medium")
+        with col_pie:
+            _render_concentric_legend(m_olumlu, m_olumsuz, m_istek)
+            _render_experience_score(m_olumlu, m_olumsuz, m_istek)
+            _render_trend(rows)
+            _render_daily_negative(rows)
+        with col_summary:
+            _render_sentiment_summary(rows, m_olumlu, m_olumsuz, m_istek, total_all, use_fast)
 
-    _render_puan_distribution(df)
+    _render_puan_distribution(df, key_suffix=key_suffix)
