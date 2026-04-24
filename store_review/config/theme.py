@@ -390,45 +390,68 @@ div[data-testid="stDataFrame"] {
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-_masthead_lang label {
   display: none !important;
 }
+/* Dil kutusu: yuvarlak rozet (bayrak + ok); varsayılan TR iken 🇹🇷 görünür */
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-_masthead_lang [data-baseweb="select"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-_masthead_lang [data-baseweb="select"] {
+  position: relative !important;
+}
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-_masthead_lang [data-baseweb="select"] > div,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-_masthead_lang [data-baseweb="select"] > div {
-  border-radius: 12px !important;
+  border-radius: 50% !important;
   background: rgba(255, 255, 255, 0.95) !important;
   border: 1px solid rgba(255, 255, 255, 0.35) !important;
   box-shadow: none !important;
-  min-height: 40px !important;
-  max-height: 44px !important;
+  width: 52px !important;
+  height: 52px !important;
   min-width: 52px !important;
-  max-width: 76px !important;
-  width: auto !important;
-  padding-left: 10px !important;
-  padding-right: 30px !important;
-  font-size: 1.25rem !important;
-  line-height: 1 !important;
+  max-width: 52px !important;
+  min-height: 52px !important;
+  max-height: 52px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
   justify-content: center !important;
+  font-size: 1.45rem !important;
+  line-height: 1 !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-_masthead_lang [data-baseweb="select"] > div p,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-_masthead_lang [data-baseweb="select"] > div p {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-_masthead_lang [data-baseweb="select"] svg,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-_masthead_lang [data-baseweb="select"] svg {
+  position: absolute !important;
+  right: 5px !important;
+  top: 50% !important;
+  transform: translateY(-50%) scale(0.85) !important;
+  flex-shrink: 0 !important;
 }
 
-/* Sağ üst dil: yalnızca bayrak + ok genişliği */
+/* Sağ üst dil: 14px aşağı; yalnızca bayrak + ok */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot {
   display: flex !important;
   justify-content: flex-end !important;
   align-items: flex-start !important;
   width: 100% !important;
-  max-width: 88px !important;
+  max-width: 96px !important;
   margin-left: auto !important;
+  margin-top: 14px !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-_masthead_lang,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-_masthead_lang {
   width: auto !important;
-  max-width: 80px !important;
+  max-width: 96px !important;
   min-width: 0 !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot [data-baseweb="select"],
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot [data-baseweb="select"] {
   width: auto !important;
-  max-width: 80px !important;
-  min-width: 56px !important;
+  max-width: 96px !important;
+  min-width: 52px !important;
 }
 
 /* Kaynak pill'lerinin yanında — Streamlit pill ile uyumlu beyaz chip */
