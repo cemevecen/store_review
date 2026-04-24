@@ -99,6 +99,12 @@ _FOOTER_CSS = """
   position: relative;
   z-index: 1;
 }
+.foot-label-spacer {
+  height: 20px;
+  margin: 0 0 8px 0;
+  visibility: hidden;
+  pointer-events: none;
+}
 
 /* Dil dropdown'ı: içeriğe yetecek kadar dar. */
 [data-testid="stVerticalBlock"].st-key-pg_footer .st-key-_lang_picker_label,
@@ -133,7 +139,7 @@ _FOOTER_CSS = """
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  min-height: 100%;
+  min-height: 48px;
   position: relative;
   z-index: 1;
 }
@@ -197,7 +203,7 @@ _FOOTER_CSS = """
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer .st-key-_lang_picker_label {
     max-width: 100% !important;
   }
-  .foot-col-right { justify-content: flex-start; margin-top: 2px; }
+  .foot-col-right { justify-content: flex-start; margin-top: 0; }
   .foot-about-chip-wrap { justify-content: flex-start; width: 100%; }
   .foot-brand { min-height: 0; }
 }
@@ -279,10 +285,7 @@ def render_footer(*, on_about: bool | None = None) -> None:
             )
 
         with col_about:
-            st.markdown(
-                f'<p class="foot-section-label">{t("footer.quick_access")}</p>',
-                unsafe_allow_html=True,
-            )
+            st.markdown('<div class="foot-label-spacer" aria-hidden="true"></div>', unsafe_allow_html=True)
             _q = lang_query_suffix()
             if on_about:
                 chip_html = (
