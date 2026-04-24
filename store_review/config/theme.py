@@ -396,6 +396,7 @@ div[data-testid="stDataFrame"] {
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button {
   box-sizing: border-box !important;
+  aspect-ratio: 1 / 1 !important;
   border-radius: 50% !important;
   overflow: hidden !important;
   width: 52px !important;
@@ -404,6 +405,8 @@ div[data-testid="stDataFrame"] {
   max-width: 52px !important;
   min-height: 52px !important;
   max-height: 52px !important;
+  flex: 0 0 auto !important;
+  align-self: center !important;
   padding: 0 !important;
   margin: 0 !important;
   font-size: 0 !important;
@@ -453,9 +456,27 @@ div[data-testid="stDataFrame"] {
   letter-spacing: 0 !important;
 }
 
+/* Dil popover: sütun bayrağı yatayda esnetmesin — kare daire */
+div[data-baseweb="popover"] [data-testid="stColumn"]:has([class*="st-key-masthead_pick_"]) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+}
+div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
 /* Dil popover içi (portal): yarı boy — yalnız masthead_pick_* */
 div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
   box-sizing: border-box !important;
+  aspect-ratio: 1 / 1 !important;
   border-radius: 50% !important;
   overflow: hidden !important;
   width: 44px !important;
@@ -464,6 +485,8 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
   max-width: 44px !important;
   min-height: 44px !important;
   max-height: 44px !important;
+  flex: 0 0 auto !important;
+  align-self: center !important;
   padding: 0 !important;
   margin: 4px auto !important;
   font-size: 0 !important;
