@@ -86,7 +86,7 @@ def render_masthead(*, on_about: bool) -> None:
                 with st.popover(
                     cur_flag,
                     key="masthead_lang_pop",
-                    width=52,
+                    width=104,
                     help=cur_name,
                     type="secondary",
                 ):
