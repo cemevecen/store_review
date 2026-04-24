@@ -31,6 +31,7 @@ from store_review.ui.store_link_panel import (
     RANGE_OPTIONS,
     _fmt_date_range,
     _inject_store_search_css,
+    _migrate_date_session,
 )
 
 _CMP_COMPACT_CSS = """
@@ -910,6 +911,7 @@ def render_compare_tab(
         with cb:
             _render_compare_app_picker(1, t("compare.slot_heading", i=2))
 
+        _migrate_date_session(("cmp_time_range",))
         with st.container(key="cmp_date_method_row"):
             tcol, _sp = st.columns([1, 2.2], gap="medium", vertical_alignment="center")
             with tcol:

@@ -24,18 +24,45 @@ from store_review.fetchers.google_play import fetch_google_play_reviews
 
 
 _DATE_I18N_KEYS = {
-    "Son 1 hafta": "date.week",
-    "Son 1 ay": "date.month1",
-    "Son 3 ay": "date.month3",
-    "Son 6 ay": "date.month6",
-    "Son 1 yıl": "date.year1",
-    "Son 2 yıl": "date.year2",
+    "w1": "date.week",
+    "m1": "date.month1",
+    "m3": "date.month3",
+    "m6": "date.month6",
+    "y1": "date.year1",
+    "y2": "date.year2",
+}
+
+# Daha önceki sürümlerde session state'e Türkçe string olarak kaydedilmiş
+# seçimleri dil-nötr koda taşımak için geriye dönük uyum haritası. Dil
+# değişince eski string option listesinde bulunamadığı için selectbox "kilitli"
+# görünüyordu — migrasyon bunu çözer.
+_LEGACY_DATE_LABELS = {
+    "Son 1 hafta": "w1", "son 1 hafta": "w1",
+    "Son 1 ay": "m1", "son 1 ay": "m1",
+    "Son 3 ay": "m3", "son 3 ay": "m3",
+    "Son 6 ay": "m6", "son 6 ay": "m6",
+    "Son 1 yıl": "y1", "son 1 yıl": "y1",
+    "Son 2 yıl": "y2", "son 2 yıl": "y2",
 }
 
 
-def _fmt_date_range(lbl: str) -> str:
-    k = _DATE_I18N_KEYS.get(lbl)
-    return t(k) if k else lbl
+def _fmt_date_range(code: str) -> str:
+    k = _DATE_I18N_KEYS.get(code)
+    return t(k) if k else code
+
+
+def _migrate_date_session(keys: tuple[str, ...]) -> None:
+    """Eski sürümden kalan Türkçe string değerleri dil-nötr koda çevir."""
+    for k in keys:
+        v = st.session_state.get(k)
+        if isinstance(v, str) and v in _LEGACY_DATE_LABELS:
+            st.session_state[k] = _LEGACY_DATE_LABELS[v]
+        elif isinstance(v, str) and v not in _DATE_I18N_KEYS:
+            # Hiçbirine uymuyorsa temizle; selectbox default'a düşer
+            try:
+                del st.session_state[k]
+            except KeyError:
+                pass
 
 
 def _run_store_search_with_progress(query: str, platform_filter: str) -> list:
@@ -437,21 +464,14 @@ def _banner_ios(app_id: str) -> None:
     )
 
 
-RANGE_OPTIONS = [
-    "Son 1 hafta",
-    "Son 1 ay",
-    "Son 3 ay",
-    "Son 6 ay",
-    "Son 1 yıl",
-    "Son 2 yıl",
-]
+RANGE_OPTIONS = ["w1", "m1", "m3", "m6", "y1", "y2"]
 RANGE_DAYS = {
-    "Son 1 hafta": 7,
-    "Son 1 ay": 30,
-    "Son 3 ay": 90,
-    "Son 6 ay": 180,
-    "Son 1 yıl": 365,
-    "Son 2 yıl": 730,
+    "w1": 7,
+    "m1": 30,
+    "m3": 90,
+    "m6": 180,
+    "y1": 365,
+    "y2": 730,
 }
 
 
@@ -592,6 +612,7 @@ def render_store_link_tab() -> None:
         else:
             _banner_play(resolved.app_id)
 
+    _migrate_date_session(("sl_time_range",))
     time_label = st.selectbox(
         t("date.range"),
         RANGE_OPTIONS,
