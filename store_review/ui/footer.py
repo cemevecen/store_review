@@ -17,57 +17,50 @@ from store_review.config.i18n import LANGUAGES, get_lang, lang_query_suffix, set
 _FOOTER_CSS = """
 <style>
 /*
- * Sticky footer — `position: fixed` yok. Kısa sayfada (analiz öncesi, karşılaştırma,
- * boş formlar) footer viewport dibine yapışır; uzun sayfada scroll ile iner.
- * Zincir: stAppViewContainer → section.main → stMainBlockContainer → block-container
- * → kök sütun → footer margin-top:auto.
+ * Sticky footer — `position: fixed` yok. Streamlit 1.55+: ana sütun
+ * [data-testid="stAppScrollToBottomContainer"] (.stMain); eski .main / section.main
+ * seçicileri eşleşmiyordu. stAppViewContainer satır flex — column yapma (sidebar bozulur).
+ * Streamlit, hasBottom kapalıyken stMainBlockContainer'a padding-bottom: 10rem veriyor;
+ * bu footer altında geniş açık renk şeridi bırakıyor → sıfırlanır.
  */
 html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 100dvh !important;
+}
+.stApp {
   min-height: 100dvh !important;
 }
 [data-testid="stAppViewContainer"] {
   min-height: 100dvh !important;
-  display: flex !important;
-  flex-direction: column !important;
 }
-[data-testid="stAppViewContainer"] > .main,
+[data-testid="stAppScrollToBottomContainer"],
+[data-testid="stAppViewContainer"] section.stMain,
 [data-testid="stAppViewContainer"] section.main {
   flex: 1 1 auto !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: stretch !important;
-  align-content: stretch !important;
   min-height: 100dvh !important;
   min-width: 0 !important;
 }
-[data-testid="stAppViewContainer"] .main [data-testid="stMainBlockContainer"] {
+[data-testid="stMainBlockContainer"] {
   flex: 1 1 auto !important;
   display: flex !important;
   flex-direction: column !important;
   min-height: 0 !important;
   width: 100% !important;
   padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
 }
-[data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"] > .block-container,
-[data-testid="stAppViewContainer"] .main > .block-container {
-  display: flex !important;
-  flex-direction: column !important;
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  width: 100% !important;
-  padding-bottom: 0 !important;
-}
-/* Kök içerik sütunu — doğrudan stVerticalBlock veya ara div sarmalayıcı */
-[data-testid="stAppViewContainer"] .main .block-container > [data-testid="stVerticalBlock"],
-[data-testid="stAppViewContainer"] .main .block-container > [data-testid="stVerticalBlockBorderWrapper"],
-[data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"],
-[data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlockBorderWrapper"] {
+[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"],
+[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlockBorderWrapper"] {
   flex: 1 1 auto !important;
   display: flex !important;
   flex-direction: column !important;
   min-height: 0 !important;
 }
-[data-testid="stAppViewContainer"] .main .block-container > *:first-child {
+[data-testid="stMainBlockContainer"] > *:first-child {
   flex: 1 1 auto !important;
   display: flex !important;
   flex-direction: column !important;
@@ -108,14 +101,22 @@ html, body {
   ) !important;
 }
 /* Footer sarmalayıcıları: kalan dikey boşluğu üste iter. */
-[data-testid="stAppViewContainer"] .main [data-testid="element-container"]:has(
+[data-testid="stAppScrollToBottomContainer"] [data-testid="element-container"]:has(
   > [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer
 ),
-[data-testid="stAppViewContainer"] .main [data-testid="element-container"]:has(
+[data-testid="stAppScrollToBottomContainer"] [data-testid="element-container"]:has(
   > [data-testid="stVerticalBlock"].st-key-pg_footer
 ),
-[data-testid="stAppViewContainer"] .main [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer,
-[data-testid="stAppViewContainer"] .main [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"].st-key-pg_footer {
+[data-testid="stAppViewContainer"] section.stMain [data-testid="element-container"]:has(
+  > [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer
+),
+[data-testid="stAppViewContainer"] section.stMain [data-testid="element-container"]:has(
+  > [data-testid="stVerticalBlock"].st-key-pg_footer
+),
+[data-testid="stAppScrollToBottomContainer"] [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer,
+[data-testid="stAppScrollToBottomContainer"] [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"].st-key-pg_footer,
+[data-testid="stAppViewContainer"] section.stMain [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer,
+[data-testid="stAppViewContainer"] section.stMain [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"].st-key-pg_footer {
   margin-top: auto !important;
   margin-bottom: 0 !important;
   width: 100% !important;

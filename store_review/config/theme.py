@@ -26,45 +26,45 @@ APP_CSS = """
 }
 
 /* Ana sütun — widget aralıklarını sıkılaştır */
-[data-testid="stAppViewContainer"] .main [data-testid="element-container"] {
+[data-testid="stAppViewContainer"] .main [data-testid="element-container"], [data-testid="stAppScrollToBottomContainer"] [data-testid="element-container"] {
   margin-top: 0 !important;
   margin-bottom: 0.2rem !important;
 }
-[data-testid="stAppViewContainer"] .main hr {
+[data-testid="stAppViewContainer"] .main hr, [data-testid="stAppScrollToBottomContainer"] hr {
   margin: 0.25rem 0 !important;
 }
-[data-testid="stAppViewContainer"] .main .stMarkdown {
+[data-testid="stAppViewContainer"] .main .stMarkdown, [data-testid="stAppScrollToBottomContainer"] .stMarkdown {
   margin-bottom: 0.15rem !important;
 }
-[data-testid="stAppViewContainer"] .main .stRadio {
+[data-testid="stAppViewContainer"] .main .stRadio, [data-testid="stAppScrollToBottomContainer"] .stRadio {
   margin-bottom: 0.1rem !important;
   padding-bottom: 0 !important;
 }
-[data-testid="stAppViewContainer"] .main .stButton {
+[data-testid="stAppViewContainer"] .main .stButton, [data-testid="stAppScrollToBottomContainer"] .stButton {
   margin-bottom: 0.15rem !important;
 }
-[data-testid="stAppViewContainer"] .main [data-testid="stMetricContainer"] {
+[data-testid="stAppViewContainer"] .main [data-testid="stMetricContainer"], [data-testid="stAppScrollToBottomContainer"] [data-testid="stMetricContainer"] {
   margin-bottom: 0 !important;
   padding-top: 0.2rem !important;
   padding-bottom: 0.2rem !important;
 }
-[data-testid="stAppViewContainer"] .main [data-testid="stPlotlyChart"] {
+[data-testid="stAppViewContainer"] .main [data-testid="stPlotlyChart"], [data-testid="stAppScrollToBottomContainer"] [data-testid="stPlotlyChart"] {
   margin-top: 0.2rem !important;
   margin-bottom: 0.2rem !important;
 }
-[data-testid="stAppViewContainer"] .main [data-testid="stColumn"] {
+[data-testid="stAppViewContainer"] .main [data-testid="stColumn"], [data-testid="stAppScrollToBottomContainer"] [data-testid="stColumn"] {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
-[data-testid="stAppViewContainer"] .main .streamlit-expander {
+[data-testid="stAppViewContainer"] .main .streamlit-expander, [data-testid="stAppScrollToBottomContainer"] .streamlit-expander {
   margin-top: 0.15rem !important;
   margin-bottom: 0.15rem !important;
 }
-[data-testid="stAppViewContainer"] .main [data-testid="stCaption"] {
+[data-testid="stAppViewContainer"] .main [data-testid="stCaption"], [data-testid="stAppScrollToBottomContainer"] [data-testid="stCaption"] {
   margin-top: 0.1rem !important;
   margin-bottom: 0.1rem !important;
 }
-[data-testid="stAppViewContainer"] .main .stProgress {
+[data-testid="stAppViewContainer"] .main .stProgress, [data-testid="stAppScrollToBottomContainer"] .stProgress {
   margin-top: 0.15rem !important;
   margin-bottom: 0.15rem !important;
 }
@@ -234,7 +234,9 @@ div[data-testid="stDataFrame"] {
 
 /* Tam genişlik header taşması — Streamlit ana sütunu kırpmasın */
 [data-testid="stAppViewContainer"] .main,
-[data-testid="stAppViewContainer"] .main .block-container {
+[data-testid="stAppScrollToBottomContainer"],
+[data-testid="stAppViewContainer"] .main .block-container,
+[data-testid="stAppScrollToBottomContainer"] [data-testid="stMainBlockContainer"] {
   overflow-x: visible !important;
 }
 
@@ -664,14 +666,14 @@ div[data-testid="stDataFrame"] {
     padding-right: clamp(0.5rem, 3vw, 1rem) !important;
     max-width: 100% !important;
   }
-  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"] {
+  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"], [data-testid="stAppScrollToBottomContainer"] [data-testid="stHorizontalBlock"] {
     flex-direction: column !important;
     align-items: stretch !important;
     width: 100% !important;
     min-width: 0 !important;
   }
-  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
-  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"] > [data-testid="column"] {
+  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"] > [data-testid="stColumn"], [data-testid="stAppScrollToBottomContainer"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"] > [data-testid="column"], [data-testid="stAppScrollToBottomContainer"] [data-testid="stHorizontalBlock"] > [data-testid="column"] {
     width: 100% !important;
     min-width: 0 !important;
     flex: 1 1 auto !important;
@@ -719,11 +721,11 @@ div[data-testid="stDataFrame"] {
   [data-testid="stTabs"] [data-baseweb="tab"] span {
     font-size: 0.8rem !important;
   }
-  [data-testid="stAppViewContainer"] .main .stRadio div[role="radiogroup"] {
+  [data-testid="stAppViewContainer"] .main .stRadio div[role="radiogroup"], [data-testid="stAppScrollToBottomContainer"] .stRadio div[role="radiogroup"] {
     flex-wrap: wrap !important;
     gap: 8px !important;
   }
-  [data-testid="stAppViewContainer"] .main .stRadio div[role="radiogroup"] label {
+  [data-testid="stAppViewContainer"] .main .stRadio div[role="radiogroup"] label, [data-testid="stAppScrollToBottomContainer"] .stRadio div[role="radiogroup"] label {
     flex: 1 1 auto !important;
     min-height: 44px !important;
     margin-right: 0 !important;
