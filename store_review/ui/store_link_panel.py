@@ -369,7 +369,8 @@ def _inject_store_search_css() -> None:
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 6px 0 2px;
+  /* Altındaki analiz metodu butonlarıyla arasında görünür bir 6px boşluk kalsın. */
+  margin: 6px 0 6px;
 }
 .sl-fetch-chip {
   display: inline-flex;
