@@ -550,40 +550,131 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about {
   width: 100% !important;
   --masthead-chip-w: 14rem;
+  --masthead-chip-h: 40px;
+  /* Sol 4 kaynak pill (Hakkında hariç) — sabit kutu */
+  --masthead-pill-w: 224px;
+  --masthead-pill-h: 44px;
+  --masthead-chip-px: 12px;
+  --masthead-chip-bg: #ffffff;
+  --masthead-chip-fg: #0f172a;
+  --masthead-chip-border: rgba(15, 23, 42, 0.12);
+  --masthead-chip-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --masthead-chip-radius: 9999px;
 }
-/* Tüm kaynak pill + hakkında: aynı yatay genişlik (en uzun çeviriye göre) */
+/* Kaynak pill satırı: genişlik/yükseklik --masthead-pill-* ; Hakkında --masthead-chip-* */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: wrap !important;
-  align-items: center !important;
+  align-items: stretch !important;
   gap: 8px !important;
   width: 100% !important;
   justify-content: flex-start !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button,
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"],
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"] {
   box-sizing: border-box !important;
-  width: var(--masthead-chip-w) !important;
-  min-width: var(--masthead-chip-w) !important;
-  max-width: var(--masthead-chip-w) !important;
-  flex: 0 0 var(--masthead-chip-w) !important;
+  width: var(--masthead-pill-w) !important;
+  min-width: var(--masthead-pill-w) !important;
+  max-width: var(--masthead-pill-w) !important;
+  height: var(--masthead-pill-h) !important;
+  min-height: var(--masthead-pill-h) !important;
+  max-height: var(--masthead-pill-h) !important;
+  flex: 0 0 var(--masthead-pill-w) !important;
+  padding: 0 var(--masthead-chip-px) !important;
+  margin: 0 !important;
   justify-content: center !important;
+  align-items: center !important;
   text-align: center !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  border-radius: var(--masthead-chip-radius) !important;
+  background: var(--masthead-chip-bg) !important;
+  background-color: var(--masthead-chip-bg) !important;
+  color: var(--masthead-chip-fg) !important;
+  border: 1px solid var(--masthead-chip-border) !important;
+  box-shadow: var(--masthead-chip-shadow) !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"][kind="primary"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"][kind="primary"],
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"][kind="secondary"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"][kind="secondary"],
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"][kind="tertiary"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"][kind="tertiary"] {
+  background: var(--masthead-chip-bg) !important;
+  background-color: var(--masthead-chip-bg) !important;
+  color: var(--masthead-chip-fg) !important;
+  border: 1px solid var(--masthead-chip-border) !important;
+  box-shadow: var(--masthead-chip-shadow) !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button:hover,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button:hover,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"]:hover,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"]:hover {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  color: var(--masthead-chip-fg) !important;
+  border-color: rgba(15, 23, 42, 0.2) !important;
+  box-shadow: var(--masthead-chip-shadow) !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button[aria-checked="true"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button[aria-checked="true"],
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"][aria-checked="true"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"][aria-checked="true"],
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button[aria-pressed="true"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button[aria-pressed="true"],
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"][aria-pressed="true"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"][aria-pressed="true"] {
+  background: var(--masthead-chip-bg) !important;
+  background-color: var(--masthead-chip-bg) !important;
+  color: var(--masthead-chip-fg) !important;
+  border: 1px solid var(--masthead-chip-border) !important;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.2), var(--masthead-chip-shadow) !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"] > div,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"] > div {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: inherit !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button:focus-visible,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button:focus-visible,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"]:focus-visible,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"]:focus-visible {
+  outline: 2px solid rgba(15, 23, 42, 0.35) !important;
+  outline-offset: 2px !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button p,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button p,
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"] p,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"] p {
+  margin: 0 !important;
+  padding: 0 !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
   max-width: 100% !important;
+  line-height: 1.2 !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:first-child [data-testid="element-container"],
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child [data-testid="element-container"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:first-child [data-testid="element-container"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child [data-testid="element-container"] {
+  min-height: 0 !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"],
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] {
@@ -592,7 +683,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   gap: 8px !important;
   column-gap: 8px !important;
   row-gap: 8px !important;
-  min-height: 48px !important;
+  min-height: max(calc(var(--masthead-pill-h) + 8px), calc(var(--masthead-chip-h) + 8px)) !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="column"],
@@ -626,8 +717,10 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab {
   width: fit-content !important;
   max-width: 100% !important;
-  min-height: 44px !important;
+  min-height: var(--masthead-pill-h) !important;
   align-self: center !important;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 /* Hakkında sütunu: Streamlit dikey blokları sütunu doldurur, chip ortada */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:last-child [data-testid="stVerticalBlock"],
@@ -649,8 +742,40 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  flex: 1 1 auto !important;
+  flex: 0 0 auto !important;
   width: 100% !important;
+  min-height: 0 !important;
+  max-height: var(--masthead-chip-h) !important;
+  height: var(--masthead-chip-h) !important;
+  overflow: hidden !important;
+}
+/* Streamlit markdown iç sarmalayıcısı — varsayılan ~44px dokunma yüksekliğini chip ile eşitle */
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stColumn"]:last-child [data-testid="stMarkdownContainer"] > div,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stColumn"]:last-child [data-testid="stMarkdownContainer"] > div {
+  box-sizing: border-box !important;
+  min-height: 0 !important;
+  max-height: var(--masthead-chip-h) !important;
+  height: var(--masthead-chip-h) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stColumn"]:last-child [data-testid="stMarkdownContainer"] > div > div,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stColumn"]:last-child [data-testid="stMarkdownContainer"] > div > div {
+  box-sizing: border-box !important;
+  min-height: 0 !important;
+  max-height: var(--masthead-chip-h) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stColumn"]:last-child [data-testid="element-container"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stColumn"]:last-child [data-testid="element-container"] {
   min-height: 0 !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill-wrap,
@@ -661,39 +786,66 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   width: var(--masthead-chip-w) !important;
   min-width: 0 !important;
   max-width: var(--masthead-chip-w) !important;
-  min-height: 44px !important;
-  max-height: none !important;
+  height: var(--masthead-chip-h) !important;
+  min-height: var(--masthead-chip-h) !important;
+  max-height: var(--masthead-chip-h) !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill {
   box-sizing: border-box !important;
-  width: var(--masthead-chip-w) !important;
-  min-width: var(--masthead-chip-w) !important;
-  max-width: var(--masthead-chip-w) !important;
-  min-height: 42px !important;
-  height: auto !important;
-  max-height: none !important;
-  padding: 8px 14px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: var(--masthead-chip-h) !important;
+  min-height: var(--masthead-chip-h) !important;
+  max-height: var(--masthead-chip-h) !important;
+  padding: 0 var(--masthead-chip-px) !important;
+  margin: 0 !important;
   justify-content: center !important;
+  align-items: center !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
+  line-height: 1.2 !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  border-radius: var(--masthead-chip-radius) !important;
+  background: var(--masthead-chip-bg) !important;
+  background-color: var(--masthead-chip-bg) !important;
+  color: var(--masthead-chip-fg) !important;
+  border: 1px solid var(--masthead-chip-border) !important;
+  box-shadow: var(--masthead-chip-shadow) !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill:hover,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill:hover {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  border-color: rgba(15, 23, 42, 0.2) !important;
+  transform: none !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill-dot,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill-dot {
+  width: 16px !important;
+  height: 16px !important;
+  font-size: 0.62rem !important;
 }
 
-/* Kaynak pill'lerinin yanında — Streamlit pill ile uyumlu beyaz chip */
+/* Kaynak pill'lerinin yanında — Streamlit pill ile uyumlu beyaz chip (yükseklik masthead'te --masthead-chip-h ile eşitlenir) */
 .masthead-source-pill-wrap {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   width: 100% !important;
-  min-height: 44px !important;
+  min-height: 40px !important;
 }
 .masthead-source-pill {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 6px !important;
-  min-height: 38px !important;
+  min-height: 40px !important;
   padding: 0 14px !important;
   border-radius: 9999px !important;
   background: #ffffff !important;
@@ -1052,6 +1204,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about {
     --masthead-chip-w: min(14rem, 88vw) !important;
+    --masthead-pill-w: min(224px, 88vw) !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead {
