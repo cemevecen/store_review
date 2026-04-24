@@ -361,26 +361,24 @@ div[data-testid="stDataFrame"] {
   align-items: stretch !important;
   min-height: 78px !important;
 }
-/* Dil bayrağı 104px + margin — ilk satır (marka + dil) */
+/* Dil 52px + margin-top 34px — ilk satır (marka + dil) */
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type {
-  min-height: 132px !important;
+  min-height: 94px !important;
 }
 
-/* Masthead — orta sütun: başlık + pills tam ortada (yatay + dikey) */
-[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2),
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2) {
+/* Dil sütunu yalnız ilk satır (Hakkında sütununa uygulanmasın) */
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:nth-child(2),
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:nth-child(2),
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="column"]:nth-child(2),
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="column"]:nth-child(2) {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   gap: 12px !important;
   text-align: center !important;
-  min-height: 78px !important;
-}
-[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type [data-testid="stColumn"]:nth-child(2),
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type [data-testid="stColumn"]:nth-child(2) {
-  min-height: 128px !important;
+  min-height: 88px !important;
 }
 
 /* Masthead — st.pills satırı ortada */
@@ -400,12 +398,12 @@ div[data-testid="stDataFrame"] {
   box-sizing: border-box !important;
   border-radius: 50% !important;
   overflow: hidden !important;
-  width: 104px !important;
-  height: 104px !important;
-  min-width: 104px !important;
-  max-width: 104px !important;
-  min-height: 104px !important;
-  max-height: 104px !important;
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  max-width: 52px !important;
+  min-height: 52px !important;
+  max-height: 52px !important;
   padding: 0 !important;
   margin: 0 !important;
   font-size: 0 !important;
@@ -414,8 +412,8 @@ div[data-testid="stDataFrame"] {
   align-items: center !important;
   justify-content: center !important;
   background: rgba(255, 255, 255, 0.96) !important;
-  border: 3px solid rgba(15, 23, 42, 0.14) !important;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12) !important;
+  border: 2px solid rgba(15, 23, 42, 0.14) !important;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1) !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button svg,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button svg {
@@ -450,31 +448,31 @@ div[data-testid="stDataFrame"] {
   justify-content: center !important;
   border-radius: 50% !important;
   overflow: hidden !important;
-  font-size: 5.75rem !important;
+  font-size: 2.88rem !important;
   line-height: 1 !important;
   letter-spacing: 0 !important;
 }
 
-/* Dil popover içi (portal): aynı daire + dolu bayrak — yalnız masthead_pick_* */
+/* Dil popover içi (portal): yarı boy — yalnız masthead_pick_* */
 div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
   box-sizing: border-box !important;
   border-radius: 50% !important;
   overflow: hidden !important;
-  width: 88px !important;
-  height: 88px !important;
-  min-width: 88px !important;
-  max-width: 88px !important;
-  min-height: 88px !important;
-  max-height: 88px !important;
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
   padding: 0 !important;
-  margin: 8px auto !important;
+  margin: 4px auto !important;
   font-size: 0 !important;
   line-height: 0 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  border: 3px solid rgba(15, 23, 42, 0.14) !important;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1) !important;
+  border: 2px solid rgba(15, 23, 42, 0.14) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
 }
 div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button > div {
   margin: 0 !important;
@@ -500,27 +498,74 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   justify-content: center !important;
   border-radius: 50% !important;
   overflow: hidden !important;
-  font-size: 4.85rem !important;
+  font-size: 2.42rem !important;
   line-height: 1 !important;
   letter-spacing: 0 !important;
 }
 
-/* Sağ üst dil: önceki 14px + 10px = 24px aşağı */
+/* Sağ üst dil: 24px + 10px = 34px aşağı */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot {
   display: flex !important;
   justify-content: flex-end !important;
   align-items: flex-start !important;
   width: 100% !important;
-  max-width: 120px !important;
+  max-width: 68px !important;
   margin-left: auto !important;
-  margin-top: 24px !important;
+  margin-top: 34px !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop {
   width: auto !important;
-  max-width: 120px !important;
+  max-width: 68px !important;
   min-width: 0 !important;
+}
+
+/* Kaynak pill + Hakkında chip: aynı satırda dikey merkez, chip yüksekliği pill ile hizalı */
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about {
+  width: 100% !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] {
+  align-items: center !important;
+  min-height: 44px !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="column"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="column"] {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-self: center !important;
+  min-height: 0 !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab {
+  min-height: 44px !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stColumn"]:last-child [data-testid="stMarkdownContainer"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stColumn"]:last-child [data-testid="stMarkdownContainer"] {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 44px !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill-wrap,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill-wrap {
+  min-height: 44px !important;
+  max-height: 44px !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill {
+  min-height: 40px !important;
+  height: 40px !important;
+  max-height: 40px !important;
+  padding: 0 14px !important;
+  box-sizing: border-box !important;
 }
 
 /* Kaynak pill'lerinin yanında — Streamlit pill ile uyumlu beyaz chip */

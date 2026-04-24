@@ -86,7 +86,7 @@ def render_masthead(*, on_about: bool) -> None:
                 with st.popover(
                     cur_flag,
                     key="masthead_lang_pop",
-                    width=104,
+                    width=52,
                     help=cur_name,
                     type="secondary",
                 ):
@@ -114,35 +114,36 @@ def render_masthead(*, on_about: bool) -> None:
             "Metin": t("source.text"),
             "Uygulama karşılaştır": t("source.compare"),
         }
-        row_pills, row_about = st.columns([1, 0.26], vertical_alignment="center", gap="small")
-        with row_pills:
-            st.pills(
-                t("nav.data_source"),
-                SOURCE_OPTIONS,
-                selection_mode="single",
-                default=SOURCE_OPTIONS[0],
-                format_func=lambda v: _source_labels.get(v, v),
-                key="main_data_source_tab",
-                label_visibility="collapsed",
-                width="stretch",
-                on_change=_on_about_source_change if on_about else _on_data_source_change,
-            )
-        with row_about:
-            _q = lang_query_suffix()
-            if on_about:
-                chip = (
-                    '<div class="masthead-source-pill-wrap">'
-                    f'<a class="masthead-source-pill" href="./{_q}" '
-                    f'aria-label="{t("nav.home")}" title="{t("nav.home")}">'
-                    f'<span class="masthead-source-pill-dot">x</span>{t("nav.home")}'
-                    "</a></div>"
+        with st.container(key="masthead_pills_about"):
+            row_pills, row_about = st.columns([1, 0.26], vertical_alignment="center", gap="small")
+            with row_pills:
+                st.pills(
+                    t("nav.data_source"),
+                    SOURCE_OPTIONS,
+                    selection_mode="single",
+                    default=SOURCE_OPTIONS[0],
+                    format_func=lambda v: _source_labels.get(v, v),
+                    key="main_data_source_tab",
+                    label_visibility="collapsed",
+                    width="stretch",
+                    on_change=_on_about_source_change if on_about else _on_data_source_change,
                 )
-            else:
-                chip = (
-                    '<div class="masthead-source-pill-wrap">'
-                    f'<a class="masthead-source-pill" href="about{_q}" '
-                    f'aria-label="{t("nav.about")}" title="{t("nav.about")}">'
-                    f'<span class="masthead-source-pill-dot">i</span>{t("nav.about")}'
-                    "</a></div>"
-                )
-            st.markdown(chip, unsafe_allow_html=True)
+            with row_about:
+                _q = lang_query_suffix()
+                if on_about:
+                    chip = (
+                        '<div class="masthead-source-pill-wrap">'
+                        f'<a class="masthead-source-pill" href="./{_q}" '
+                        f'aria-label="{t("nav.home")}" title="{t("nav.home")}">'
+                        f'<span class="masthead-source-pill-dot">x</span>{t("nav.home")}'
+                        "</a></div>"
+                    )
+                else:
+                    chip = (
+                        '<div class="masthead-source-pill-wrap">'
+                        f'<a class="masthead-source-pill" href="about{_q}" '
+                        f'aria-label="{t("nav.about")}" title="{t("nav.about")}">'
+                        f'<span class="masthead-source-pill-dot">i</span>{t("nav.about")}'
+                        "</a></div>"
+                    )
+                st.markdown(chip, unsafe_allow_html=True)
