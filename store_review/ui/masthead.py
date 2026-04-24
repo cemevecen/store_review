@@ -53,22 +53,11 @@ def _on_about_source_change() -> None:
         pass
 
 
-def _on_masthead_lang_change() -> None:
-    """Selectbox seçenekleri yalnızca bayrak emojisi."""
-    label = st.session_state.get("_masthead_lang")
-    if not isinstance(label, str):
-        return
-    for code, _name, flag in LANGUAGES:
-        if label == flag:
-            set_lang(code)
-            return
-
-
 def render_masthead(*, on_about: bool) -> None:
     """Ana sayfa ve /about sayfasında paylaşılan üst bant.
 
-    Dil: sağ üstte yalnızca bayrak + ok genişliği. Kaynak pill'lerinin yanında
-    ayrı bir “chip” ile Hakkında / Ana sayfa.
+    Dil: sağ üstte yuvarlak bayrak; tıklanınca popover içinde yuvarlak bayrak
+    ızgarası. Kaynak pill'lerinin yanında ayrı bir “chip” ile Hakkında / Ana sayfa.
     """
     _hdr_uri = header_logo_data_uri()
     logo_html = ""
@@ -92,16 +81,24 @@ def render_masthead(*, on_about: bool) -> None:
         with row_lang:
             with st.container(key="masthead_lang_slot"):
                 cur = get_lang()
-                flag_options = [flag for _c, _n, flag in LANGUAGES]
-                cur_idx = next((i for i, (c, _, _) in enumerate(LANGUAGES) if c == cur), 0)
-                st.selectbox(
-                    "lang",
-                    options=flag_options,
-                    index=cur_idx,
-                    key="_masthead_lang",
-                    label_visibility="collapsed",
-                    on_change=_on_masthead_lang_change,
-                )
+                cur_flag = next(f for c, _, f in LANGUAGES if c == cur)
+                cur_name = next(n for c, n, _ in LANGUAGES if c == cur)
+                with st.popover(
+                    cur_flag,
+                    key="masthead_lang_pop",
+                    width=52,
+                    help=cur_name,
+                    type="secondary",
+                ):
+                    _per_row = 5
+                    for i in range(0, len(LANGUAGES), _per_row):
+                        chunk = LANGUAGES[i : i + _per_row]
+                        cols = st.columns(len(chunk))
+                        for col, (code, name, flag) in zip(cols, chunk):
+                            with col:
+                                if st.button(flag, key=f"masthead_pick_{code}", help=name):
+                                    set_lang(code)
+                                    st.rerun()
 
         _pill_raw = st.session_state.get("main_data_source_tab")
         if isinstance(_pill_raw, (list, tuple)):
