@@ -11,54 +11,63 @@ def get_app_store_reviews(
     app_id: str,
     _progress_callback: Optional[Callable[[float], None]] = None,
     _days_limit: int = 30,
+    scope: str = "global",
 ) -> List[Dict[str, Any]]:
-    """Parallel App Store RSS fetch (40 storefronts)."""
+    """Parallel App Store RSS fetch.
+
+    scope:
+      - "global": 40 ülke storefront'u üzerinden paralel çekim (varsayılan).
+      - "local" : yalnızca TR storefront'u — Türkiye App Store yorumları.
+    """
     all_reviews_map: Dict[str, Dict[str, Any]] = {}
     now = datetime.now()
     threshold_dt = now - timedelta(days=_days_limit)
 
-    countries = [
-        "tr",
-        "us",
-        "de",
-        "az",
-        "nl",
-        "fr",
-        "gb",
-        "at",
-        "be",
-        "ch",
-        "kz",
-        "uz",
-        "tm",
-        "kg",
-        "ru",
-        "cy",
-        "gr",
-        "ro",
-        "bg",
-        "pl",
-        "hu",
-        "cz",
-        "se",
-        "no",
-        "dk",
-        "it",
-        "es",
-        "ca",
-        "au",
-        "sa",
-        "ae",
-        "qa",
-        "kw",
-        "jo",
-        "lb",
-        "eg",
-        "ly",
-        "dz",
-        "ma",
-        "tn",
-    ]
+    if scope == "local":
+        countries = ["tr"]
+    else:
+        countries = [
+            "tr",
+            "us",
+            "de",
+            "az",
+            "nl",
+            "fr",
+            "gb",
+            "at",
+            "be",
+            "ch",
+            "kz",
+            "uz",
+            "tm",
+            "kg",
+            "ru",
+            "cy",
+            "gr",
+            "ro",
+            "bg",
+            "pl",
+            "hu",
+            "cz",
+            "se",
+            "no",
+            "dk",
+            "it",
+            "es",
+            "ca",
+            "au",
+            "sa",
+            "ae",
+            "qa",
+            "kw",
+            "jo",
+            "lb",
+            "eg",
+            "ly",
+            "dz",
+            "ma",
+            "tn",
+        ]
 
     def fetch_country_reviews(country: str):
         country_reviews: list[dict[str, Any]] = []

@@ -262,8 +262,18 @@ def _prepare_pool(rows: list[dict]) -> list[dict]:
     return out
 
 
+def _cmp_scope_for_slot(slot: int) -> str:
+    """Slot için yerel/global seçimini canonical ('local'/'global') string'e çevir."""
+    raw = st.session_state.get(f"cmp_scope_{slot}")
+    return "local" if raw == "Yerel" else "global"
+
+
 def _cmp_prepared_key() -> str:
-    return f"{_cmp_slot_effective_raw(0)}|{_cmp_slot_effective_raw(1)}|{st.session_state.get('cmp_time_range', '')}"
+    return (
+        f"{_cmp_slot_effective_raw(0)}|{_cmp_slot_effective_raw(1)}|"
+        f"{st.session_state.get('cmp_time_range', '')}|"
+        f"{_cmp_scope_for_slot(0)}|{_cmp_scope_for_slot(1)}"
+    )
 
 
 def _reset_prepared_pools() -> None:
@@ -333,10 +343,15 @@ def _fetch_compare_pools(days: int) -> tuple[dict[str, dict[str, Any]], list[str
             else:
                 progress_state[slot]["pct"] = max(0.0, min(1.0, val))
 
+        scope_val = _cmp_scope_for_slot(slot)
         if res.platform == "android":
-            pool = fetch_google_play_reviews(res.app_id, days, _progress_callback=_cb)
+            pool = fetch_google_play_reviews(
+                res.app_id, days, _progress_callback=_cb, scope=scope_val
+            )
         else:
-            pool = get_app_store_reviews(res.app_id, _progress_callback=_cb, _days_limit=days)
+            pool = get_app_store_reviews(
+                res.app_id, _progress_callback=_cb, _days_limit=days, scope=scope_val
+            )
         progress_state[slot]["done"] = 1.0
         return pool
 
@@ -676,6 +691,22 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
                 if sid and st.button("Sıfırla", key=f"cmp_slot_reset_{slot}", use_container_width=False):
                     _reset_cmp_slot(slot)
                     st.rerun()
+
+        with st.container(key=f"cmp_scope_row_{slot}"):
+            st.markdown(
+                '<p class="sl-scope-label">Yorum kaynağı</p>',
+                unsafe_allow_html=True,
+            )
+            st.segmented_control(
+                "Yorum kaynağı",
+                options=["Yerel", "Global"],
+                selection_mode="single",
+                default="Global",
+                key=f"cmp_scope_{slot}",
+                label_visibility="collapsed",
+                width="stretch",
+                help="yerel: yalnızca türkiye storefront'u. global: tüm ülkelerden birleşik havuz (varsayılan).",
+            )
 
         filt = st.session_state.get(f"{p}last_filter", "Android")
         if looks_like_search_keyword(text) and len(text) >= 2:

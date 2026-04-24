@@ -176,6 +176,13 @@ def _inject_store_search_css() -> None:
   font-size:0.82rem; color:#64748b; font-weight:700; text-transform:uppercase;
   letter-spacing:0.06em; margin:6px 0 10px;
 }
+.sl-scope-label {
+  font-size: 0.78rem; color: #64748b; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; margin: 10px 0 4px 0;
+}
+@media (max-width: 640px) {
+  .sl-scope-label { font-size: 0.72rem; }
+}
 .sl-row-icon img { width:40px; height:40px; border-radius:50%; object-fit:cover; display:block; }
 .sl-row-noicon {
   width:40px; height:40px; border-radius:50%; background:#e2e8f0; color:#64748b;
@@ -572,6 +579,20 @@ def render_store_link_tab() -> None:
     time_label = st.selectbox("Tarih aralığı", RANGE_OPTIONS, index=1, key="sl_time_range")
     days = RANGE_DAYS[time_label]
 
+    st.markdown('<p class="sl-scope-label">Yorum kaynağı</p>', unsafe_allow_html=True)
+    scope_pick = st.segmented_control(
+        "Yorum kaynağı",
+        options=["Yerel", "Global"],
+        selection_mode="single",
+        default="Global",
+        key="sl_scope",
+        label_visibility="collapsed",
+        width="stretch",
+        help="yerel: yalnızca türkiye storefront'u. global: tüm ülkelerden birleşik havuz (varsayılan).",
+    )
+    scope_lbl = scope_pick if scope_pick is not None else st.session_state.get("sl_scope", "Global")
+    scope_val = "local" if scope_lbl == "Yerel" else "global"
+
     if st.button("Yorumları çek", type="secondary", use_container_width=True, key="sl_fetch_btn"):
         app_id: str | None = None
         platform: str | None = None
@@ -611,19 +632,21 @@ def render_store_link_tab() -> None:
                     app_id,
                     days,
                     _progress_callback=_on_progress,
+                    scope=scope_val,
                 )
             else:
                 pool = get_app_store_reviews(
                     app_id,
                     _progress_callback=_on_progress,
                     _days_limit=days,
+                    scope=scope_val,
                 )
             st.session_state.review_pool_store = pool
             st.session_state.analysis_rows = []
             st.session_state._sl_pool_owner = f"{platform}:{app_id}"
             prog.empty()
             prog_txt.empty()
-            st.caption(f"{len(pool)} benzersiz yorum yüklendi ({time_label}).")
+            st.caption(f"{len(pool)} benzersiz yorum yüklendi ({time_label} · {scope_lbl.lower()}).")
         except Exception as e:
             prog.empty()
             prog_txt.empty()

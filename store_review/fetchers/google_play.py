@@ -11,34 +11,43 @@ def fetch_google_play_reviews(
     app_id: str,
     days_limit: int,
     _progress_callback: Optional[Callable[[float], None]] = None,
+    scope: str = "global",
 ) -> List[dict[str, Any]]:
-    """Parallel Google Play fetch: multi locale × sorts × star filters + unfiltered fresh."""
+    """Parallel Google Play fetch.
+
+    scope:
+      - "global": tüm dil/ülke matrisi üzerinden paralel çekim (varsayılan davranış).
+      - "local" : yalnızca TR (tr-tr) üzerinden çekim — Türkiye Play Store yorumları.
+    """
     all_fetched_map: dict[str, dict[str, Any]] = {}
     now = datetime.now()
     threshold_date = now - timedelta(days=days_limit)
 
-    LANG_COUNTRY_PAIRS = [
-        ("tr", "tr"),
-        ("en", "us"),
-        ("en", "gb"),
-        ("en", "au"),
-        ("en", "ca"),
-        ("ar", "sa"),
-        ("ar", "ae"),
-        ("de", "de"),
-        ("fr", "fr"),
-        ("ru", "ru"),
-        ("nl", "nl"),
-        ("es", "es"),
-        ("es", "mx"),
-        ("pt", "br"),
-        ("it", "it"),
-        ("pl", "pl"),
-        ("ro", "ro"),
-        ("bg", "bg"),
-        ("uk", "ua"),
-        ("kk", "kz"),
-    ]
+    if scope == "local":
+        LANG_COUNTRY_PAIRS = [("tr", "tr")]
+    else:
+        LANG_COUNTRY_PAIRS = [
+            ("tr", "tr"),
+            ("en", "us"),
+            ("en", "gb"),
+            ("en", "au"),
+            ("en", "ca"),
+            ("ar", "sa"),
+            ("ar", "ae"),
+            ("de", "de"),
+            ("fr", "fr"),
+            ("ru", "ru"),
+            ("nl", "nl"),
+            ("es", "es"),
+            ("es", "mx"),
+            ("pt", "br"),
+            ("it", "it"),
+            ("pl", "pl"),
+            ("ro", "ro"),
+            ("bg", "bg"),
+            ("uk", "ua"),
+            ("kk", "kz"),
+        ]
 
     sort_strategies = [Sort.NEWEST, Sort.MOST_RELEVANT]
     scores = [1, 2, 3, 4, 5]
@@ -153,7 +162,10 @@ def fetch_google_play_reviews(
                 break
         return fresh_data
 
-    initial_pairs = [("tr", "tr"), ("en", "us"), ("de", "de"), ("ru", "ru")]
+    initial_pairs = (
+        [("tr", "tr")] if scope == "local"
+        else [("tr", "tr"), ("en", "us"), ("de", "de"), ("ru", "ru")]
+    )
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(initial_pairs)) as init_executor:
         init_futures = [init_executor.submit(fetch_unfiltered, lp, cp) for lp, cp in initial_pairs]
         for f in concurrent.futures.as_completed(init_futures):
