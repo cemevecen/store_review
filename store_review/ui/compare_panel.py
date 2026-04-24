@@ -886,23 +886,30 @@ def render_compare_tab(
                 time_label = st.selectbox(
                     "Tarih",
                     RANGE_OPTIONS,
-                    index=1,
+                    index=None,
+                    placeholder="tarih aralığı seç",
                     key="cmp_time_range",
                     label_visibility="hidden",
                 )
             with _sp:
                 st.empty()
-        days = RANGE_DAYS[time_label]
+
+        both_selected = bool(_cmp_slot_effective_raw(0)) and bool(_cmp_slot_effective_raw(1))
+        date_chosen = isinstance(time_label, str) and time_label in RANGE_DAYS
+        days = RANGE_DAYS[time_label] if date_chosen else 0
 
         res = st.session_state.get("cmp_results") or {}
 
-        # 1) Her iki slotta da seçim/giriş varsa + tarih seçiliyse
-        #    havuzu otomatik hazırla (progress bar ile). State'e önbelleklenir.
-        both_selected = bool(_cmp_slot_effective_raw(0)) and bool(_cmp_slot_effective_raw(1))
-        current_key = _cmp_prepared_key()
+        # 1) Havuzu yalnızca "iki uygulama seçildi + tarih elle belirlendi" durumunda
+        #    otomatik hazırla. Açılış sırasında ön-seçili bir tarih yok; böylece
+        #    kullanıcı tarih aralığına bilinçli karar vermeden çekim başlamaz.
+        if both_selected and not date_chosen:
+            st.caption("iki uygulamayı seçtikten sonra tarih aralığı seçince havuzlar otomatik hazırlanır.")
+        current_key = _cmp_prepared_key() if date_chosen else ""
         prepared_pools = st.session_state.get("cmp_prepared_pools") or {}
         if (
             both_selected
+            and date_chosen
             and st.session_state.get("_cmp_prepared_key") != current_key
         ):
             prepared_pools, prep_errors = _fetch_compare_pools(days)
