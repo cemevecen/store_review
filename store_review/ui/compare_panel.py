@@ -10,7 +10,6 @@ import time
 from typing import Any, Optional
 
 import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
 
 from store_review.config.i18n import t
@@ -1128,39 +1127,9 @@ def render_compare_tab(
                             + "</p>",
                             unsafe_allow_html=True,
                         )
-                    st.metric("Duygu skoru (0–100)", int(data.get("score", 0)))
-                    st.metric("Analiz edilen yorum", int(data.get("total", 0)))
-                    st.caption(f"Olumlu %{data.get('pos_pct', 0)}")
-                    st.progress(min(1.0, max(0.0, int(data.get("pos_pct", 0)) / 100.0)))
-                    st.caption(f"Olumsuz %{data.get('neg_pct', 0)}")
-                    st.progress(min(1.0, max(0.0, int(data.get("neg_pct", 0)) / 100.0)))
-                    st.caption(f"İstek/Görüş %{data.get('neu_pct', 0)}")
-                    st.progress(min(1.0, max(0.0, int(data.get("neu_pct", 0)) / 100.0)))
-
-            names = [res[k].get("chart_label") or res[k].get("title") or k for k in res.keys()]
-            keys = list(res.keys())
-            fig = go.Figure(
-                data=[
-                    go.Bar(name="Olumlu", x=names, y=[res[k]["pos_pct"] for k in keys], marker_color="#34D399"),
-                    go.Bar(name="Olumsuz", x=names, y=[res[k]["neg_pct"] for k in keys], marker_color="#F87171"),
-                    go.Bar(
-                        name="İstek/Görüş",
-                        x=names,
-                        y=[res[k]["neu_pct"] for k in keys],
-                        marker_color="#60A5FA",
-                    ),
-                ]
-            )
-            fig.update_layout(
-                barmode="group",
-                paper_bgcolor="rgba(0,0,0,0)",
-                plot_bgcolor="rgba(0,0,0,0)",
-                font=dict(color="#334155"),
-                margin=dict(t=22, b=28),
-                yaxis_title="Yüzde",
-                height=320,
-            )
-            st.plotly_chart(fig, use_container_width=True)
+                    # Duygu skoru / progress bar ikili özet + olumlu-olumsuz bar grafiği
+                    # compare akışında kaldırıldı — aynı bilgi altta split dashboard'ta
+                    # (metric pill'ler + duygu dağılımı + puan dağılımı) gösteriliyor.
 
             st.markdown("#### Yorumlar")
             detail = st.session_state.get("cmp_detail_rows") or {}
