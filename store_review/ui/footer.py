@@ -61,9 +61,10 @@ _FOOTER_CSS = """
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 0 0 18px 0;
+  margin: 0;
   position: relative;
   z-index: 1;
+  min-height: 48px;
 }
 .foot-brand-logo {
   width: 40px;
@@ -174,46 +175,31 @@ _FOOTER_CSS = """
   justify-content: center;
   line-height: 1;
 }
-.foot-divider {
-  height: 1px;
-  background: linear-gradient(
-    90deg, transparent 0%,
-    rgba(255, 255, 255, 0.24) 20%,
-    rgba(255, 255, 255, 0.24) 80%,
-    transparent 100%
-  );
-  margin: 16px 0 12px 0;
-  position: relative;
-  z-index: 1;
-}
-.foot-meta {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.76rem;
-  color: rgba(255, 255, 255, 0.62);
-  position: relative;
-  z-index: 1;
-}
-.foot-meta-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.34);
+/* Yatay tek satır: marka | dil | chip — dikey ortalı ve geniş boşluklu. */
+[data-testid="stVerticalBlock"].st-key-pg_footer [data-testid="stHorizontalBlock"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer [data-testid="stHorizontalBlock"] {
+  align-items: center !important;
+  gap: 24px !important;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 820px) {
   [data-testid="stVerticalBlock"].st-key-pg_footer,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer {
     padding: 22px clamp(14px, 4vw, 20px) 18px !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_footer [data-testid="stHorizontalBlock"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer [data-testid="stHorizontalBlock"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_footer .st-key-_lang_picker_label,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer .st-key-_lang_picker_label {
     max-width: 100% !important;
   }
-  .foot-col-right { justify-content: flex-start; margin-top: 12px; }
+  .foot-col-right { justify-content: flex-start; margin-top: 2px; }
   .foot-about-chip-wrap { justify-content: flex-start; width: 100%; }
+  .foot-brand { min-height: 0; }
 }
 </style>
 """
@@ -261,16 +247,19 @@ def render_footer(*, on_about: bool | None = None) -> None:
         )
 
     with st.container(border=True, key="pg_footer", width="stretch"):
-        st.markdown(
-            f'<div class="foot-brand">{logo_html}'
-            '<div class="foot-brand-text">'
-            '<span class="foot-brand-title">ai store review analysis</span>'
-            f'<span class="foot-brand-sub">{t("footer.developed_by")}</span>'
-            "</div></div>",
-            unsafe_allow_html=True,
+        col_brand, col_lang, col_about = st.columns(
+            [3, 2, 2], vertical_alignment="center", gap="medium"
         )
 
-        col_lang, col_about = st.columns([2, 1], vertical_alignment="center")
+        with col_brand:
+            st.markdown(
+                f'<div class="foot-brand">{logo_html}'
+                '<div class="foot-brand-text">'
+                '<span class="foot-brand-title">ai store review analysis</span>'
+                f'<span class="foot-brand-sub">{t("footer.developed_by")}</span>'
+                "</div></div>",
+                unsafe_allow_html=True,
+            )
 
         with col_lang:
             st.markdown(
@@ -312,13 +301,3 @@ def render_footer(*, on_about: bool | None = None) -> None:
                     "</a></div></div>"
                 )
             st.markdown(chip_html, unsafe_allow_html=True)
-
-        st.markdown('<div class="foot-divider"></div>', unsafe_allow_html=True)
-        st.markdown(
-            '<div class="foot-meta">'
-            f'<span>{t("footer.developed_by")}</span>'
-            '<span class="foot-meta-dot"></span>'
-            '<span>ai store review analysis</span>'
-            "</div>",
-            unsafe_allow_html=True,
-        )
