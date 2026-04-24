@@ -244,6 +244,32 @@ _CMP_COMPACT_CSS = """
     gap: 2px;
   }
   .cmp-pool-summary-row .cmp-pool-meta { margin-left: 0; }
+  [data-testid="stVerticalBlock"].st-key-cmp_shell [data-baseweb="segmented-control"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [data-baseweb="segmented-control"] {
+    flex-wrap: wrap !important;
+    min-width: 0 !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-cmp_shell [data-baseweb="segmented-control"] button,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-cmp_shell [data-baseweb="segmented-control"] button {
+    flex: 1 1 min(100%, 10rem) !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  [class*="st-key-cmp_plat_row_"] [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+  [class*="st-key-cmp_plat_row_"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:last-child,
+  [class*="st-key-cmp_reset_row_"] [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+  [class*="st-key-cmp_reset_row_"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:last-child {
+    justify-content: center !important;
+    width: 100% !important;
+  }
+  [class*="st-key-cmp_plat_row_"] [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton > button,
+  [class*="st-key-cmp_plat_row_"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:last-child .stButton > button,
+  [class*="st-key-cmp_reset_row_"] [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child .stButton > button,
+  [class*="st-key-cmp_reset_row_"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:last-child .stButton > button {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
 }
 </style>
 """
@@ -742,27 +768,31 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
                 )
                 n_show = min(int(st.session_state.get(f"{p}display_n") or 12), len(results))
                 for idx, app in enumerate(results[:n_show]):
-                    ic, inf, bt = st.columns([0.14, 0.62, 0.24])
-                    with ic:
-                        icon = app.get("icon") or ""
-                        if isinstance(icon, str) and icon.startswith("http"):
+                    aid = app.get("appId", "")
+                    plat = app.get("platform", "Android")
+                    with st.container(border=True, key=f"cmp_hit_{slot}_{idx}"):
+                        ic, inf = st.columns([1, 4], gap="small")
+                        with ic:
+                            icon = app.get("icon") or ""
+                            if isinstance(icon, str) and icon.startswith("http"):
+                                st.markdown(
+                                    f'<div class="sl-row-icon"><img src="{html.escape(icon)}" alt=""/></div>',
+                                    unsafe_allow_html=True,
+                                )
+                            else:
+                                st.markdown('<div class="sl-row-noicon">app</div>', unsafe_allow_html=True)
+                        with inf:
+                            t_esc = html.escape(str(app.get("title", "—")))
+                            id_esc = html.escape(str(app.get("appId", "")))
                             st.markdown(
-                                f'<div class="sl-row-icon"><img src="{html.escape(icon)}" alt=""/></div>',
+                                f'<div class="sl-row-title">{t_esc}</div><div class="sl-row-id">{id_esc}</div>',
                                 unsafe_allow_html=True,
                             )
-                        else:
-                            st.markdown('<div class="sl-row-noicon">app</div>', unsafe_allow_html=True)
-                    with inf:
-                        t_esc = html.escape(str(app.get("title", "—")))
-                        id_esc = html.escape(str(app.get("appId", "")))
-                        st.markdown(
-                            f'<div class="sl-row-title">{t_esc}</div><div class="sl-row-id">{id_esc}</div>',
-                            unsafe_allow_html=True,
-                        )
-                    with bt:
-                        aid = app.get("appId", "")
-                        plat = app.get("platform", "Android")
-                        if st.button(t("common.select"), key=f"cmp_sel_{slot}_{idx}_{aid}", use_container_width=True):
+                        if st.button(
+                            t("common.select"),
+                            key=f"cmp_sel_{slot}_{idx}_{aid}",
+                            use_container_width=True,
+                        ):
                             st.session_state[f"{p}selected_id"] = aid
                             st.session_state[f"{p}selected_platform"] = plat
                             st.session_state[f"{p}selected_title"] = str(app.get("title") or "")[:120]

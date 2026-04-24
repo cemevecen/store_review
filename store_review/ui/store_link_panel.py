@@ -311,7 +311,14 @@ def _inject_store_search_css() -> None:
   display:flex; align-items:center; justify-content:center; font-size:0.62rem;
   font-weight:700; letter-spacing:0.02em;
 }
-.sl-row-title { font-weight:700; color:#0f172a; font-size:0.9rem; line-height:1.25; }
+.sl-row-title {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 0.9rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 .sl-row-id { font-size:0.72rem; color:#94a3b8; margin-top:2px; word-break:break-all; }
 .sl-app-banner {
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -415,7 +422,58 @@ def _inject_store_search_css() -> None:
   color: #c2410c;
   border-color: #fed7aa;
 }
+/* Uygulama arama sonucu kartı: üstte ikon+başlık (yan yana), altta tam genişlik seç — mobilde çakışmayı önler */
+.sl-row-icon {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+}
+[class*="st-key-sl_hit_"] .stButton,
+[class*="st-key-cmp_hit_"] .stButton {
+  margin-top: 8px !important;
+}
+[class*="st-key-sl_hit_"] .stButton > button,
+[class*="st-key-cmp_hit_"] .stButton > button {
+  border-radius: 12px !important;
+}
+.stApp [class*="st-key-sl_hit_"] [data-testid="stHorizontalBlock"],
+.stApp [class*="st-key-cmp_hit_"] [data-testid="stHorizontalBlock"] {
+  align-items: flex-start !important;
+  gap: 10px !important;
+}
 @media (max-width: 768px) {
+  .stApp [class*="st-key-sl_hit_"] [data-testid="stHorizontalBlock"],
+  .stApp [class*="st-key-cmp_hit_"] [data-testid="stHorizontalBlock"] {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .stApp [class*="st-key-sl_hit_"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+  .stApp [class*="st-key-sl_hit_"] [data-testid="stHorizontalBlock"] > [data-testid="column"],
+  .stApp [class*="st-key-cmp_hit_"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+  .stApp [class*="st-key-cmp_hit_"] [data-testid="stHorizontalBlock"] > [data-testid="column"] {
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+  .stApp [class*="st-key-sl_hit_"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:first-child,
+  .stApp [class*="st-key-sl_hit_"] [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,
+  .stApp [class*="st-key-cmp_hit_"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:first-child,
+  .stApp [class*="st-key-cmp_hit_"] [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child {
+    flex: 0 0 48px !important;
+    min-width: 48px !important;
+    max-width: 52px !important;
+  }
+  .stApp [class*="st-key-sl_hit_"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:nth-child(2),
+  .stApp [class*="st-key-sl_hit_"] [data-testid="stHorizontalBlock"] > [data-testid="column"]:nth-child(2),
+  .stApp [class*="st-key-cmp_hit_"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:nth-child(2),
+  .stApp [class*="st-key-cmp_hit_"] [data-testid="stHorizontalBlock"] > [data-testid="column"]:nth-child(2) {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
   .sl-app-banner-grid {
     flex-direction: column !important;
     align-items: center !important;
@@ -623,34 +681,37 @@ def render_store_link_tab() -> None:
                 )
                 n_show = min(st.session_state.sl_display_n, len(results))
                 for idx, app in enumerate(results[:n_show]):
-                    ic, inf, bt = st.columns([0.14, 0.62, 0.24])
-                    with ic:
-                        icon = app.get("icon") or ""
-                        if isinstance(icon, str) and icon.startswith("http"):
+                    aid = app.get("appId", "")
+                    plat = app.get("platform", "Android")
+                    with st.container(border=True, key=f"sl_hit_{idx}"):
+                        ic, inf = st.columns([1, 4], gap="small")
+                        with ic:
+                            icon = app.get("icon") or ""
+                            if isinstance(icon, str) and icon.startswith("http"):
+                                st.markdown(
+                                    f'<div class="sl-row-icon"><img src="{html.escape(icon)}" alt=""/></div>',
+                                    unsafe_allow_html=True,
+                                )
+                            else:
+                                st.markdown('<div class="sl-row-noicon">app</div>', unsafe_allow_html=True)
+                        with inf:
+                            t_esc = html.escape(str(app.get("title", "—")))
+                            id_esc = html.escape(str(app.get("appId", "")))
                             st.markdown(
-                                f'<div class="sl-row-icon"><img src="{icon}" alt=""/></div>',
+                                f'<div class="sl-row-title">{t_esc}</div><div class="sl-row-id">{id_esc}</div>',
                                 unsafe_allow_html=True,
                             )
-                        else:
-                            st.markdown('<div class="sl-row-noicon">app</div>', unsafe_allow_html=True)
-                    with inf:
-                        t_esc = html.escape(str(app.get("title", "—")))
-                        id_esc = html.escape(str(app.get("appId", "")))
-                        st.markdown(
-                            f'<div class="sl-row-title">{t_esc}</div><div class="sl-row-id">{id_esc}</div>',
-                            unsafe_allow_html=True,
-                        )
-                    with bt:
-                        aid = app.get("appId", "")
-                        plat = app.get("platform", "Android")
-                        if st.button(t("common.select"), key=f"sl_sel_{idx}_{aid}", use_container_width=True):
+                        if st.button(
+                            t("common.select"),
+                            key=f"sl_sel_{idx}_{aid}",
+                            use_container_width=True,
+                        ):
                             st.session_state.sl_selected_id = aid
                             st.session_state.sl_selected_platform = plat
                             st.session_state.sl_show_search = False
                             st.session_state.sl_search_results = []
                             st.session_state.sl_last_query = ""
                             st.session_state["_pending_sl_store_input"] = aid
-                            # Yeni uygulama seçimi: önceki havuz/analiz sıfırlanır
                             st.session_state.review_pool_store = []
                             st.session_state.analysis_rows = []
                             st.session_state._sl_pool_owner = None
