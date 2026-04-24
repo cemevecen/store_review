@@ -440,13 +440,14 @@ def main():
         "main_analysis_method", "Hızlı (heuristic)"
     )
     use_fast = method == "Hızlı (heuristic)"
-    depth = st.radio(
-        "Derinlik (yalnız zengin)",
-        ["Standart", "Gelişmiş"],
-        horizontal=True,
-        disabled=use_fast,
-        key="main_depth",
-    )
+    depth = "Standart"
+    if not use_fast:
+        depth = st.radio(
+            "Derinlik (yalnız zengin)",
+            ["Standart", "Gelişmiş"],
+            horizontal=True,
+            key="main_depth",
+        )
     # Zengin analiz: önce Gemini, kota / hata olursa RichAnalyzer zincirinde Groq → OpenAI.
     provider = "Google Gemini"
     model = DEFAULT_MODELS["Google Gemini"]
