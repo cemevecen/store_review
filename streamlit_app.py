@@ -51,7 +51,6 @@ from store_review.ui.store_link_panel import render_store_link_tab
 from store_review.utils.exporters import df_to_csv_bytes, df_to_excel_bytes
 from store_review.utils.pdf_export import (
     build_analysis_pdf_bytes,
-    build_raw_pool_pdf_bytes,
     safe_pdf_filename,
 )
 from store_review.utils.validators import is_valid_comment
@@ -322,7 +321,7 @@ def main():
     if (not _is_compare_src_early) and pool:
         raw_df = pd.DataFrame(pool)
         with st.expander(t("download.raw_section"), expanded=False):
-            c1, c2, c3 = st.columns(3)
+            c1, c2 = st.columns(2)
             with c1:
                 st.download_button(
                     t("download.csv"),
@@ -339,23 +338,6 @@ def main():
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     use_container_width=True,
                 )
-            with c3:
-                try:
-                    _raw_pdf = build_raw_pool_pdf_bytes(
-                        raw_df.to_dict("records"),
-                        source_label=src_cur,
-                    )
-                    st.download_button(
-                        t("download.pdf"),
-                        data=_raw_pdf,
-                        file_name=safe_pdf_filename(f"yorum_havuzu_{src_cur}"),
-                        mime="application/pdf",
-                        use_container_width=True,
-                    )
-                except FileNotFoundError as e:
-                    st.caption(str(e))
-                except Exception as e:
-                    st.caption(f"PDF: {e}")
 
     _is_compare_src = src_cur == "Uygulama karşılaştır"
 
