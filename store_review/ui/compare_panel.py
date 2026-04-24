@@ -686,9 +686,34 @@ def render_compare_tab(
         days = RANGE_DAYS[time_label]
 
         res = st.session_state.get("cmp_results") or {}
-        # Script order: yöntem (ve derinlik) önce, böylece "Başlat" tıklanınca güncel state okunur.
-        # Karşılaştırma ekranında yöntem seçimi ana analiz ayarlarından gelir;
-        # bu satırda yalnızca "Karşılaştırmayı başlat" butonunu gösteririz.
+
+        # Analiz yöntemi ve derinlik seçimi doğrudan "Karşılaştırmayı başlat"
+        # butonunun üstünde; böylece hangi modda çalışacağı görsel olarak net.
+        st.markdown(
+            '<p class="section-title section-title--tight">Analiz ayarları</p>',
+            unsafe_allow_html=True,
+        )
+        _method_pick_cmp = st.segmented_control(
+            "Analiz yöntemi",
+            options=["Hızlı (heuristic)", "Zengin (LLM)"],
+            selection_mode="single",
+            default="Hızlı (heuristic)",
+            key="main_analysis_method",
+            label_visibility="collapsed",
+            width="stretch",
+        )
+        _method_cmp = _method_pick_cmp if _method_pick_cmp is not None else st.session_state.get(
+            "main_analysis_method", "Hızlı (heuristic)"
+        )
+        use_fast_cmp = _method_cmp == "Hızlı (heuristic)"
+        if not use_fast_cmp:
+            st.radio(
+                "Derinlik (yalnız zengin)",
+                ["Standart", "Gelişmiş"],
+                horizontal=True,
+                key="main_depth",
+            )
+
         with st.container(key="cmp_start_method_row"):
             if st.button("Karşılaştırmayı başlat", type="primary", use_container_width=True, key="cmp_start"):
                 main_pick = st.session_state.get("main_analysis_method", "Hızlı (heuristic)")

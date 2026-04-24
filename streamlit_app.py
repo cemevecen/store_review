@@ -565,36 +565,54 @@ def main():
                 except Exception as e:
                     st.caption(f"PDF: {e}")
 
-    st.markdown('<p class="section-title">Analiz ayarları</p>', unsafe_allow_html=True)
+    _is_compare_src = src_cur == "Uygulama karşılaştır"
+    _cmp_has_results = bool(st.session_state.get("cmp_results"))
 
-    method_pick = st.segmented_control(
-        "Analiz yöntemi",
-        options=["Hızlı (heuristic)", "Zengin (LLM)"],
-        selection_mode="single",
-        default="Hızlı (heuristic)",
-        key="main_analysis_method",
-        label_visibility="collapsed",
-        width="stretch",
-    )
-    method = method_pick if method_pick is not None else st.session_state.get(
-        "main_analysis_method", "Hızlı (heuristic)"
-    )
-    use_fast = method == "Hızlı (heuristic)"
-    depth = "Standart"
-    if not use_fast:
-        depth = st.radio(
-            "Derinlik (yalnız zengin)",
-            ["Standart", "Gelişmiş"],
-            horizontal=True,
-            key="main_depth",
+    # Compare kaynağında "Analiz ayarları" compare panel içinde render edilir.
+    # Buradaki ana blok yalnız diğer kaynaklarda ve compare sonuçları hazır olduğunda görünür.
+    if not _is_compare_src:
+        st.markdown('<p class="section-title">Analiz ayarları</p>', unsafe_allow_html=True)
+
+        method_pick = st.segmented_control(
+            "Analiz yöntemi",
+            options=["Hızlı (heuristic)", "Zengin (LLM)"],
+            selection_mode="single",
+            default="Hızlı (heuristic)",
+            key="main_analysis_method",
+            label_visibility="collapsed",
+            width="stretch",
         )
+        method = method_pick if method_pick is not None else st.session_state.get(
+            "main_analysis_method", "Hızlı (heuristic)"
+        )
+        use_fast = method == "Hızlı (heuristic)"
+        depth = "Standart"
+        if not use_fast:
+            depth = st.radio(
+                "Derinlik (yalnız zengin)",
+                ["Standart", "Gelişmiş"],
+                horizontal=True,
+                key="main_depth",
+            )
+    else:
+        # Compare panel içinde seçilen ayarları okuyoruz
+        method = st.session_state.get("main_analysis_method", "Hızlı (heuristic)") or "Hızlı (heuristic)"
+        use_fast = method == "Hızlı (heuristic)"
+        depth = st.session_state.get("main_depth", "Standart") or "Standart"
+
     # Zengin analiz: önce Gemini, kota / hata olursa RichAnalyzer zincirinde Groq → OpenAI.
     provider = "Google Gemini"
     model = DEFAULT_MODELS["Google Gemini"]
 
     mode_idx = 0 if depth == "Standart" else 1
 
-    if st.button("Duygu analizini başlat", type="primary", use_container_width=True):
+    # Compare kaynağında "Duygu analizini başlat" yalnızca karşılaştırma
+    # tamamlandığında (cmp_results dolduğunda) görünür.
+    _show_start_analysis_btn = (not _is_compare_src) or _cmp_has_results
+
+    if _show_start_analysis_btn and st.button(
+        "Duygu analizini başlat", type="primary", use_container_width=True
+    ):
         src_now = _session_main_data_source()
         if src_now == "Uygulama karşılaştır":
             if not use_fast and not (gk or gqk or ok):
