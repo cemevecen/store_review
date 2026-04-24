@@ -190,7 +190,6 @@ _CMP_COMPACT_CSS = """
   line-height: 1.2;
 }
 .cmp-prepare-chip--pct { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
-.cmp-prepare-chip--cnt { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
 .cmp-prepare-chip--elapsed { background: #f1f5f9; border-color: #e2e8f0; color: #475569; }
 .cmp-pool-summary {
   margin: 8px 0 10px;
@@ -327,8 +326,8 @@ def _fetch_compare_pools(days: int) -> tuple[dict[str, dict[str, Any]], list[str
                 slots_ui[slot] = (title, bar, status, meta_preview, res)
 
     progress_state: dict[int, dict[str, float]] = {
-        0: {"pct": 0.0, "cnt": 0.0, "done": 0.0},
-        1: {"pct": 0.0, "cnt": 0.0, "done": 0.0},
+        0: {"pct": 0.0, "done": 0.0},
+        1: {"pct": 0.0, "done": 0.0},
     }
     start_ts = time.perf_counter()
 
@@ -338,10 +337,7 @@ def _fetch_compare_pools(days: int) -> tuple[dict[str, dict[str, Any]], list[str
                 val = float(x)
             except Exception:
                 val = 0.0
-            if val > 1.5:
-                progress_state[slot]["cnt"] = val
-            else:
-                progress_state[slot]["pct"] = max(0.0, min(1.0, val))
+            progress_state[slot]["pct"] = max(0.0, min(1.0, val))
 
         scope_val = _cmp_scope_for_slot(slot)
         if res.platform == "android":
@@ -367,14 +363,12 @@ def _fetch_compare_pools(days: int) -> tuple[dict[str, dict[str, Any]], list[str
             for slot, f in futures.items():
                 title, bar, status, _meta, _res = slots_ui[slot]
                 pct_now = float(progress_state[slot]["pct"])
-                cnt_now = int(progress_state[slot]["cnt"])
                 elapsed = time.perf_counter() - start_ts
                 bar.progress(min(0.99, pct_now) if pct_now > 0 else min(0.99, 1.0 - (2.71828 ** (-elapsed / 6.0))))
                 status.markdown(
                     (
                         '<div class="cmp-prepare-status">'
                         f'<span class="cmp-prepare-chip cmp-prepare-chip--pct">%{int(pct_now * 100)}</span>'
-                        f'<span class="cmp-prepare-chip cmp-prepare-chip--cnt">{cnt_now}</span>'
                         f'<span class="cmp-prepare-chip cmp-prepare-chip--elapsed">geçen {_fmt_cmp_duration(elapsed)}</span>'
                         "</div>"
                     ),
