@@ -81,6 +81,7 @@ def _one_card_html(row: dict[str, Any], fallback_index: int) -> str:
 
 
 PAGE_SIZE = 50
+PREVIEW_SIZE = 5
 _MAX_PAGE_BUTTONS = 15
 
 
@@ -101,15 +102,50 @@ def render_analyzed_review_cards(rows: list[dict[str, Any]], *, key_prefix: str 
     sig_k = f"{key_prefix}_review_list_sig"
     page_k = f"{key_prefix}_review_cards_page"
     show_all_k = f"{key_prefix}_review_cards_show_all"
+    expanded_k = f"{key_prefix}_review_cards_expanded"
     sig = _list_sig(rows)
     if st.session_state.get(sig_k) != sig:
         st.session_state[sig_k] = sig
         st.session_state[page_k] = 0
         st.session_state[show_all_k] = False
+        st.session_state[expanded_k] = False
 
     n = len(rows)
     show_all = bool(st.session_state.get(show_all_k, False))
+    expanded = bool(st.session_state.get(expanded_k, False))
 
+    # Önizleme modu: ilk 5 yorum + turuncu "genişlet" butonu.
+    # Aşağıdaki grafikler / özetler görünür kalsın diye varsayılan açılış bu.
+    if n > PREVIEW_SIZE and not expanded:
+        slice_rows = rows[:PREVIEW_SIZE]
+        inner = "".join(_one_card_html(r, i) for i, r in enumerate(slice_rows))
+        st.markdown(
+            f'<div class="review-card-list" data-cards="{html.escape(key_prefix)}">{inner}</div>',
+            unsafe_allow_html=True,
+        )
+        with st.container(key=f"{key_prefix}_preview_expand"):
+            st.markdown(
+                f"<style>.st-key-{key_prefix}_preview_expand button {{"
+                "  background: linear-gradient(90deg,#fb923c,#ea580c) !important;"
+                "  color: #fff !important;"
+                "  border: 0 !important;"
+                "  font-weight: 600 !important;"
+                "  letter-spacing: 0.2px !important;"
+                "  margin-top: 8px !important;"
+                "}</style>",
+                unsafe_allow_html=True,
+            )
+            if st.button(
+                f"genişlet · {n - PREVIEW_SIZE} yorum daha göster",
+                key=f"{key_prefix}_expand_reviews",
+                use_container_width=True,
+            ):
+                st.session_state[expanded_k] = True
+                st.session_state[page_k] = 0
+                st.rerun()
+        return
+
+    # Genişletilmiş mod: mevcut 50'şer sayfalama + "Tümünü gör" davranışı.
     if n <= PAGE_SIZE:
         slice_rows = rows
     elif show_all:
@@ -173,3 +209,26 @@ def render_analyzed_review_cards(rows: list[dict[str, Any]], *, key_prefix: str 
         f'<div class="review-card-list" data-cards="{html.escape(key_prefix)}">{inner}</div>',
         unsafe_allow_html=True,
     )
+
+    # Genişletilmiş moddayken tekrar önizlemeye dönmek için küçük bir "daralt" linki.
+    if n > PREVIEW_SIZE and expanded:
+        with st.container(key=f"{key_prefix}_collapse_preview"):
+            st.markdown(
+                f"<style>.st-key-{key_prefix}_collapse_preview button {{"
+                "  background: transparent !important;"
+                "  color: #64748b !important;"
+                "  border: 1px solid #e2e8f0 !important;"
+                "  font-size: 0.82rem !important;"
+                "  margin-top: 6px !important;"
+                "}</style>",
+                unsafe_allow_html=True,
+            )
+            if st.button(
+                "daralt · ilk 5 yoruma dön",
+                key=f"{key_prefix}_collapse_preview_btn",
+                use_container_width=True,
+            ):
+                st.session_state[expanded_k] = False
+                st.session_state[show_all_k] = False
+                st.session_state[page_k] = 0
+                st.rerun()
