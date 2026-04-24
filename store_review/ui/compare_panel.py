@@ -330,8 +330,8 @@ def _fetch_compare_pools(days: int) -> tuple[dict[str, dict[str, Any]], list[str
                 slots_ui[slot] = (title, bar, status, meta_preview, res)
 
     progress_state: dict[int, dict[str, float]] = {
-        0: {"pct": 0.0, "done": 0.0},
-        1: {"pct": 0.0, "done": 0.0},
+        0: {"pct": 0.0, "done": 0.0, "display": 0.0},
+        1: {"pct": 0.0, "done": 0.0, "display": 0.0},
     }
     start_ts = time.perf_counter()
 
@@ -341,7 +341,11 @@ def _fetch_compare_pools(days: int) -> tuple[dict[str, dict[str, Any]], list[str
                 val = float(x)
             except Exception:
                 val = 0.0
-            progress_state[slot]["pct"] = max(0.0, min(1.0, val))
+            new_pct = max(0.0, min(1.0, val))
+            # Gerçek ilerleme asla geri gitmesin
+            progress_state[slot]["pct"] = max(
+                float(progress_state[slot]["pct"]), new_pct
+            )
 
         scope_val = _cmp_scope_for_slot(slot)
         if res.platform == "android":
@@ -368,11 +372,24 @@ def _fetch_compare_pools(days: int) -> tuple[dict[str, dict[str, Any]], list[str
                 title, bar, status, _meta, _res = slots_ui[slot]
                 pct_now = float(progress_state[slot]["pct"])
                 elapsed = time.perf_counter() - start_ts
-                bar.progress(min(0.99, pct_now) if pct_now > 0 else min(0.99, 1.0 - (2.71828 ** (-elapsed / 6.0))))
+                # Sentetik ramp: yalnızca alt sınır olarak, %25'i asla geçmez
+                # (gerçek veri gelmediyse "çalışıyor" hissi için). Gerçek veri
+                # gelince onu kullanırız ve display'i maksimum ile izleriz ki
+                # asla geri gitmesin.
+                if pct_now > 0.0:
+                    candidate = min(0.99, pct_now)
+                else:
+                    candidate = min(0.25, 1.0 - (2.71828 ** (-elapsed / 14.0)))
+                prev_display = float(progress_state[slot]["display"])
+                display_pct = max(prev_display, candidate)
+                progress_state[slot]["display"] = display_pct
+                bar.progress(min(0.99, display_pct))
+                # Kullanıcıya gösterilen % da geri gitmesin: display'i baz al
+                shown_pct = int(display_pct * 100)
                 status.markdown(
                     (
                         '<div class="cmp-prepare-status">'
-                        f'<span class="cmp-prepare-chip cmp-prepare-chip--pct">%{int(pct_now * 100)}</span>'
+                        f'<span class="cmp-prepare-chip cmp-prepare-chip--pct">%{shown_pct}</span>'
                         f'<span class="cmp-prepare-chip cmp-prepare-chip--elapsed">{html.escape(t("compare.elapsed"))} {_fmt_cmp_duration(elapsed)}</span>'
                         "</div>"
                     ),

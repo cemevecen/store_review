@@ -120,12 +120,15 @@ def get_app_store_reviews(
 
     total_countries = len(countries)
     completed = 0
+    if _progress_callback:
+        _progress_callback(0.02)
     with concurrent.futures.ThreadPoolExecutor(max_workers=40) as executor:
         future_to_country = {executor.submit(fetch_country_reviews, c): c for c in countries}
         for future in concurrent.futures.as_completed(future_to_country):
             completed += 1
             if _progress_callback:
-                _progress_callback(min(completed / total_countries, 0.99))
+                ratio = completed / max(1, total_countries)
+                _progress_callback(min(0.99, 0.02 + 0.97 * ratio))
             for r in future.result():
                 all_reviews_map[str(r["id"])] = r
 

@@ -24,29 +24,54 @@ def fetch_google_play_reviews(
     threshold_date = now - timedelta(days=days_limit)
 
     if scope == "local":
+        # Yerel: yalnız TR storefront + yalnız tr lang.
         LANG_COUNTRY_PAIRS = [("tr", "tr")]
     else:
+        # Global: TR dahil geniş ülke matrisi. "Global" semantiği gereği
+        # yerel de bunun alt kümesidir; bu nedenle global ≥ yerel olur.
+        # Kapsamı genişletmek için coğrafi çeşitlilik yüksek tutuldu.
         LANG_COUNTRY_PAIRS = [
             ("tr", "tr"),
             ("en", "us"),
             ("en", "gb"),
             ("en", "au"),
             ("en", "ca"),
+            ("en", "in"),
+            ("en", "sg"),
+            ("en", "za"),
+            ("en", "ie"),
+            ("en", "nz"),
             ("ar", "sa"),
             ("ar", "ae"),
+            ("ar", "eg"),
+            ("ar", "ma"),
             ("de", "de"),
+            ("de", "at"),
+            ("de", "ch"),
             ("fr", "fr"),
+            ("fr", "be"),
+            ("fr", "ca"),
             ("ru", "ru"),
+            ("ru", "by"),
             ("nl", "nl"),
             ("es", "es"),
             ("es", "mx"),
+            ("es", "ar"),
+            ("es", "co"),
             ("pt", "br"),
+            ("pt", "pt"),
             ("it", "it"),
             ("pl", "pl"),
             ("ro", "ro"),
             ("bg", "bg"),
             ("uk", "ua"),
             ("kk", "kz"),
+            ("ja", "jp"),
+            ("ko", "kr"),
+            ("zh", "tw"),
+            ("id", "id"),
+            ("th", "th"),
+            ("vi", "vn"),
         ]
 
     sort_strategies = [Sort.NEWEST, Sort.MOST_RELEVANT]
@@ -166,9 +191,17 @@ def fetch_google_play_reviews(
         [("tr", "tr")] if scope == "local"
         else [("tr", "tr"), ("en", "us"), ("de", "de"), ("ru", "ru")]
     )
+    # İlerleme budget'ı: ilk faz ~%10, kanal fazı %10–%99
+    init_total = len(initial_pairs)
+    init_done = 0
+    if _progress_callback:
+        _progress_callback(0.01)
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(initial_pairs)) as init_executor:
         init_futures = [init_executor.submit(fetch_unfiltered, lp, cp) for lp, cp in initial_pairs]
         for f in concurrent.futures.as_completed(init_futures):
+            init_done += 1
+            if _progress_callback:
+                _progress_callback(min(0.10, 0.01 + 0.09 * (init_done / max(1, init_total))))
             for r in f.result():
                 all_fetched_map[str(r["id"])] = r
 
@@ -181,7 +214,9 @@ def fetch_google_play_reviews(
         for future in concurrent.futures.as_completed(future_to_channel):
             completed_channels += 1
             if _progress_callback:
-                _progress_callback(min(completed_channels / total_channels, 0.99))
+                # 0.10 → 0.99 arası eşit dağıtım
+                ratio = completed_channels / max(1, total_channels)
+                _progress_callback(min(0.99, 0.10 + 0.89 * ratio))
             for r in future.result():
                 all_fetched_map[str(r["id"])] = r
 

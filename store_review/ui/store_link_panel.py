@@ -661,9 +661,14 @@ def render_store_link_tab() -> None:
         prog = st.progress(0.0)
         prog_txt = st.empty()
         t0 = time.perf_counter()
+        # Progress asla geri gitmesin — fetcher veya UI kaynaklı değerleri
+        # burada maksimum ile izleriz.
+        _pct_state: dict[str, float] = {"max": 0.0}
 
         def _on_progress(x: float) -> None:
             pct = min(max(float(x), 0.0), 1.0)
+            pct = max(_pct_state["max"], pct)
+            _pct_state["max"] = pct
             prog.progress(pct)
             elapsed = time.perf_counter() - t0
             if pct > 0.001:
