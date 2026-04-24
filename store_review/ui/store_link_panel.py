@@ -198,18 +198,24 @@ def _inject_store_search_css() -> None:
 [data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] > div {
   width: 100% !important;
 }
+/* 2 eşit sütunlu grid: min-content farkları (android vs ios) eşitliği bozmasın.
+ * flex yerine grid kullanılıyor çünkü flex-basis:0 + flex-grow:1 dar alanlarda
+ * min-content sızıntısı yüzünden asimetrik kutular üretiyordu. */
 [data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"],
 [data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] {
-  display: flex !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
   gap: 12px !important;
-  flex-wrap: wrap !important;
+  width: 100% !important;
 }
 [data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label,
 [data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label {
-  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  width: 100% !important;
   min-height: 48px !important;
+  box-sizing: border-box !important;
   margin: 0 !important;
-  padding: 12px 18px !important;
+  padding: 12px 14px !important;
   border-radius: 14px !important;
   border: 2px solid #cbd5e1 !important;
   background: #ffffff !important;
@@ -219,7 +225,21 @@ def _inject_store_search_css() -> None:
   align-items: center !important;
   justify-content: center !important;
   gap: 10px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+/* İç metin (android / ios) — kendi de taşmasın ve satıra sığsın. */
+[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label p,
+[data-testid="stVerticalBlock"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label span,
+[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label p,
+[data-testid="stVerticalBlockBorderWrapper"][class*="plat_radio_wrap"] [data-testid="stRadio"] div[role="radiogroup"] label span {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  min-width: 0 !important;
+  margin: 0 !important;
 }
 /* Streamlit'in yerleşik radyo dairesini gizle — logoyu biz basıyoruz.
  * Streamlit 1.40+ yapısı: <label data-baseweb="radio"> > <input> + <div> (daire)

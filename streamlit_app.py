@@ -67,13 +67,104 @@ def _secrets_get(key: str):
 def _prepare_pool(rows: list[dict]) -> list[dict]:
     out = []
     for r in dedupe_reviews(rows):
-        t = str(r.get("text", "")).strip()
-        if len(t) < 2:
+        txt = str(r.get("text", "")).strip()
+        if len(txt) < 2:
             continue
         rr = dict(r)
-        rr["is_valid"] = is_valid_comment(t)
+        rr["is_valid"] = is_valid_comment(txt)
         out.append(rr)
     return out
+
+
+# LLM analizinde tek seferde değerlendirilen yorum sayısı. Çok büyük havuzlarda
+# kota ve gecikmeyi sınırlamak için partilere bölünür; "devam et" butonuyla
+# kullanıcı isteğe bağlı olarak sonraki partiyi ekleyebilir.
+LLM_BATCH_SIZE = 500
+
+
+def _pool_signature(pool: list[dict]) -> tuple:
+    """Hazırlanan havuzun kimliği — pool değişince biriken analiz sıfırlanabilsin diye.
+    Tam hash yerine (uzunluk, ilk/son metin önekleri) yeterince seçici ve ucuz."""
+    n = len(pool)
+    if n == 0:
+        return (0,)
+    head = str(pool[0].get("text", ""))[:80]
+    tail = str(pool[-1].get("text", ""))[:80]
+    return (n, head, tail)
+
+
+def _reset_incremental_state() -> None:
+    """Yeni bir kaynak / kaynak değişimi / yeni başlat'ta biriken durumu sil."""
+    st.session_state.analysis_rows = []
+    st.session_state["_analyzed_offset"] = 0
+    st.session_state.pop("_analyzed_pool_sig", None)
+
+
+def _run_analysis_segment(
+    segment: list[dict],
+    *,
+    offset: int,
+    kind: str,  # "first" | "next" | "last" | "plain"
+    use_fast: bool,
+    rich: RichAnalyzer,
+    provider: str,
+    model: str,
+    mode_idx: int,
+    pool_sig: tuple,
+) -> None:
+    """Tek partiyi analiz eder ve birikmiş satırlara ekler.
+
+    - `kind="first"`  → "İlk N yorum analiz ediliyor" status metni
+    - `kind="next"`   → "Sonraki N yorum analiz ediliyor"
+    - `kind="last"`   → "Kalan N yorum analiz ediliyor"
+    - `kind="plain"`  → yalnızca "done / total"
+    """
+    if not segment:
+        return
+    with st.spinner(t("analysis.spinner")):
+        bar = st.progress(0.0)
+        status = st.empty()
+        seg_n = len(segment)
+
+        def prog(done: int, total: int):
+            bar.progress(done / max(total, 1))
+            if kind == "first":
+                status.text(t("analysis.status_first_n", n=seg_n, done=done))
+            elif kind == "next":
+                status.text(t("analysis.status_next_n", n=seg_n, done=done))
+            elif kind == "last":
+                status.text(t("analysis.status_last_n", n=seg_n, done=done))
+            else:
+                status.text(t("analysis.status_plain", done=done, total=total))
+
+        rows = analyze_batch(
+            segment,
+            use_heuristic_only=use_fast,
+            analysis_mode=mode_idx,
+            rich=None if use_fast else rich,
+            provider=provider,
+            model=(model.strip() or DEFAULT_MODELS[provider]),
+            max_workers=28 if use_fast else 12,
+            progress=prog,
+            # Segment zaten kesildiği için `analyze_batch` içinde tekrar kesilmesin.
+            max_rich_items=max(seg_n, 1),
+        )
+
+        # `analyze_batch` "No"'yu 1..N olarak verir; birikmiş dashboard'da
+        # pozisyonu bozmamak için offset kadar kaydır.
+        for r in rows:
+            try:
+                r["No"] = int(r.get("No") or 0) + offset
+            except (TypeError, ValueError):
+                pass
+
+        prev = list(st.session_state.get("analysis_rows") or [])
+        st.session_state.analysis_rows = prev + rows
+        st.session_state["_analyzed_offset"] = offset + seg_n
+        st.session_state["_analyzed_pool_sig"] = pool_sig
+        st.session_state["_last_analysis_use_fast"] = use_fast
+        bar.empty()
+        status.empty()
 
 
 def _inject_css() -> None:
@@ -376,38 +467,108 @@ def main():
 
     mode_idx = 0 if depth == "Standart" else 1
 
-    if (not _is_compare_src) and st.button(
-        t("analysis.start"), type="primary", use_container_width=True
-    ):
+    # --- Analiz akışı: ilk parti + isteğe bağlı "devam et" partileri ---
+    if not _is_compare_src:
         prepared = _prepare_pool(pool)
-        if not prepared:
-            st.warning(t("analysis.warn_load_first"))
-        elif not use_fast and not (gk or gqk or ok):
-            st.error(t("analysis.err_need_api"))
-        else:
-            with st.spinner(t("analysis.spinner")):
-                bar = st.progress(0.0)
-                status = st.empty()
+        prep_sig = _pool_signature(prepared)
+        prev_sig = st.session_state.get("_analyzed_pool_sig")
 
-                def prog(done: int, total: int):
-                    bar.progress(done / max(total, 1))
-                    status.text(f"{done} / {total}")
+        # Havuz değiştiyse birikmiş durumu sıfırla — rerun'a gerek yok, aynı akış
+        # start butonunu gösterecek.
+        if prev_sig is not None and prev_sig != prep_sig:
+            _reset_incremental_state()
 
-                rows = analyze_batch(
-                    prepared,
-                    use_heuristic_only=use_fast,
-                    analysis_mode=mode_idx,
-                    rich=None if use_fast else rich,
+        # Yöntem değişimi de birikmiş analizi geçersiz kılar (hızlı↔zengin).
+        prev_fast = st.session_state.get("_last_analysis_use_fast")
+        if (
+            prev_fast is not None
+            and bool(prev_fast) != bool(use_fast)
+            and (st.session_state.get("analysis_rows") or [])
+        ):
+            _reset_incremental_state()
+
+        analyzed_offset = int(st.session_state.get("_analyzed_offset") or 0)
+        rows_existing = list(st.session_state.get("analysis_rows") or [])
+        total_pool = len(prepared)
+        remaining = max(0, total_pool - analyzed_offset)
+        has_partial = bool(rows_existing) and analyzed_offset > 0
+        batched_llm = (not use_fast) and total_pool > LLM_BATCH_SIZE
+
+        # 1) İlk başlat butonu — henüz hiçbir parti analiz edilmediyse.
+        if not has_partial and st.button(
+            t("analysis.start"), type="primary", use_container_width=True
+        ):
+            if not prepared:
+                st.warning(t("analysis.warn_load_first"))
+            elif not use_fast and not (gk or gqk or ok):
+                st.error(t("analysis.err_need_api"))
+            else:
+                _reset_incremental_state()
+                if batched_llm:
+                    segment = prepared[:LLM_BATCH_SIZE]
+                    kind = "first"
+                else:
+                    segment = prepared
+                    kind = "plain"
+                _run_analysis_segment(
+                    segment,
+                    offset=0,
+                    kind=kind,
+                    use_fast=use_fast,
+                    rich=rich,
                     provider=provider,
-                    model=model.strip() or DEFAULT_MODELS[provider],
-                    max_workers=28 if use_fast else 12,
-                    progress=prog,
-                    max_rich_items=500,
+                    model=model,
+                    mode_idx=mode_idx,
+                    pool_sig=prep_sig,
                 )
-                st.session_state.analysis_rows = rows
-                st.session_state._last_analysis_use_fast = use_fast
-                bar.empty()
-                status.empty()
+                st.rerun()
+
+        # 2) Devam et butonu — kısmi analiz var ve havuzda daha yorum kaldıysa.
+        if has_partial and remaining > 0 and not use_fast:
+            if remaining > LLM_BATCH_SIZE:
+                next_n = LLM_BATCH_SIZE
+                btn_label = t("analysis.continue_next", n=next_n)
+                kind = "next"
+            else:
+                next_n = remaining
+                btn_label = t("analysis.continue_remaining", n=next_n)
+                kind = "last"
+
+            cont_c, reset_c = st.columns([3, 1])
+            with cont_c:
+                do_continue = st.button(
+                    btn_label,
+                    type="primary",
+                    use_container_width=True,
+                    key="btn_analysis_continue",
+                )
+            with reset_c:
+                do_reset = st.button(
+                    t("analysis.restart"),
+                    type="secondary",
+                    use_container_width=True,
+                    key="btn_analysis_restart",
+                )
+            if do_reset:
+                _reset_incremental_state()
+                st.rerun()
+            if do_continue:
+                segment = prepared[analyzed_offset : analyzed_offset + next_n]
+                _run_analysis_segment(
+                    segment,
+                    offset=analyzed_offset,
+                    kind=kind,
+                    use_fast=use_fast,
+                    rich=rich,
+                    provider=provider,
+                    model=model,
+                    mode_idx=mode_idx,
+                    pool_sig=prep_sig,
+                )
+                st.rerun()
+
+            # Kullanıcı ilerlemeyi net görsün: şu ana kadar toplam analiz edilen.
+            st.caption(t("analysis.batch_caption", done=analyzed_offset, total=total_pool))
 
     rows = st.session_state.analysis_rows
     if rows:
