@@ -16,6 +16,41 @@ from store_review.config.i18n import LANGUAGES, get_lang, lang_query_suffix, set
 
 _FOOTER_CSS = """
 <style>
+/*
+ * Sticky footer düzeni — pinlenmeden sayfanın en altında kalsın.
+ * Plan:
+ *   1. Ana blok konteyneri dikey flex sütununa çevir ve en az viewport
+ *      yüksekliği boyunda tut.
+ *   2. İçindeki ilk `stVerticalBlock` (tüm sayfa elemanlarını sarar) kendisi
+ *      de dikey flex olup kalan yüksekliği doldursun (`flex: 1 1 auto`).
+ *   3. Footer'ın doğrudan parent'ı olan element-container / wrapper'a
+ *      `margin-top: auto` ver — bu, kalan tüm boşluğu üste iter ve footer'ı
+ *      sütunun dibine yapıştırır.
+ * İçerik uzunsa footer sayfayla birlikte aşağı iner (scrollla hareket eder),
+ * kısaysa ekranın en altına yapışır. Hiçbir zaman `position: fixed` kullanılmaz.
+ */
+html, body,
+[data-testid="stAppViewContainer"],
+[data-testid="stAppViewContainer"] > .main,
+[data-testid="stAppViewContainer"] section.main {
+  min-height: 100vh;
+}
+[data-testid="stAppViewContainer"] .main .block-container,
+[data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"] {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: calc(100vh - 2rem) !important;
+}
+/* Ana blok konteynerin doğrudan çocuğu olan üst seviye vertical-block
+ * de sütunu doldursun ki içindeki footer'ın `margin-top: auto`'su çalışsın. */
+[data-testid="stAppViewContainer"] .main .block-container > [data-testid="stVerticalBlock"],
+[data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+
 /* Footer — masthead ile aynı bordo gradient, aynı pattern overlay. */
 [data-testid="stVerticalBlock"].st-key-pg_footer,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer {
@@ -27,7 +62,7 @@ _FOOTER_CSS = """
   transform: translateX(-50%) !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
-  margin-top: 48px !important;
+  margin-top: auto !important;
   margin-bottom: 0 !important;
   padding: 26px clamp(18px, 4vw, 44px) 22px !important;
   box-sizing: border-box !important;
@@ -46,6 +81,21 @@ _FOOTER_CSS = """
     #7a1f30 82%,
     #8f2840 100%
   ) !important;
+}
+/* Footer'ı barındıran element-container / wrapper (flex sütununun son çocuğu)
+ * auto-marj alsın; böylece kalan yükseklik üste verilir ve footer dibe yapışır.
+ * Streamlit her widget'ı kendi element-container'ına sarar. */
+[data-testid="stAppViewContainer"] .main [data-testid="element-container"]:has(
+  > [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer
+),
+[data-testid="stAppViewContainer"] .main [data-testid="element-container"]:has(
+  > [data-testid="stVerticalBlock"].st-key-pg_footer
+),
+[data-testid="stAppViewContainer"] .main [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer,
+[data-testid="stAppViewContainer"] .main [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"].st-key-pg_footer {
+  margin-top: auto !important;
+  margin-bottom: 0 !important;
+  width: 100% !important;
 }
 
 [data-testid="stVerticalBlock"].st-key-pg_footer::after,
