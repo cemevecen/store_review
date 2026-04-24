@@ -16,57 +16,125 @@ from store_review.config.i18n import LANGUAGES, get_lang, lang_query_suffix, set
 
 _FOOTER_CSS = """
 <style>
+/* Footer — masthead ile aynı bordo gradient, aynı pattern overlay. */
 [data-testid="stVerticalBlock"].st-key-pg_footer,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer {
-  margin-top: 34px !important;
+  width: 100vw !important;
+  min-width: 100vw !important;
+  max-width: 100vw !important;
+  position: relative !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  margin-top: 48px !important;
+  margin-bottom: -1.25rem !important;
+  padding: 26px clamp(18px, 4vw, 44px) 22px !important;
+  box-sizing: border-box !important;
+  border: none !important;
+  border-radius: 22px 22px 0 0 !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.14) !important;
+  box-shadow: 0 -10px 32px rgba(48, 8, 16, 0.34) !important;
+  overflow: hidden !important;
+  background: linear-gradient(
+    282deg,
+    #120608 0%,
+    #1f0a0e 18%,
+    #3a0f18 40%,
+    #5c1524 62%,
+    #7a1f30 82%,
+    #8f2840 100%
+  ) !important;
 }
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer {
-  background: linear-gradient(180deg,#ffffff 0%, #f8fafc 100%) !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 22px !important;
-  box-shadow: 0 1px 10px rgba(15, 23, 42, 0.04) !important;
-  padding: 22px 22px 18px !important;
+[data-testid="stVerticalBlock"].st-key-pg_footer::after,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  border-radius: inherit !important;
+  opacity: 0.05 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z'/%3E%3C/svg%3E") !important;
+  background-size: 24px 24px !important;
 }
 .foot-brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 0 0 14px 0;
+  margin: 0 0 18px 0;
+  position: relative;
+  z-index: 1;
 }
 .foot-brand-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.22);
 }
 .foot-brand-text {
   display: flex;
   flex-direction: column;
-  line-height: 1.1;
+  line-height: 1.15;
 }
 .foot-brand-title {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #ffffff;
   letter-spacing: -0.01em;
 }
 .foot-brand-sub {
-  font-size: 0.75rem;
-  color: #64748b;
-  margin-top: 2px;
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.68);
+  margin-top: 3px;
 }
 .foot-section-label {
   font-size: 0.72rem;
   font-weight: 700;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.72);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   margin: 0 0 8px 0;
+  position: relative;
+  z-index: 1;
 }
+
+/* Dil dropdown'ı: içeriğe yetecek kadar dar. */
+[data-testid="stVerticalBlock"].st-key-pg_footer .st-key-_lang_picker_label,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer .st-key-_lang_picker_label {
+  max-width: 260px !important;
+  width: 100% !important;
+  position: relative;
+  z-index: 1;
+}
+[data-testid="stVerticalBlock"].st-key-pg_footer [data-testid="stSelectbox"] > label,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer [data-testid="stSelectbox"] > label {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+}
+/* Dropdown gövdesini koyu zeminde de okunur göster. */
+[data-testid="stVerticalBlock"].st-key-pg_footer div[data-baseweb="select"] > div,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer div[data-baseweb="select"] > div {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-radius: 12px !important;
+  color: #1f2937 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18) !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_footer div[data-baseweb="select"] svg,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer div[data-baseweb="select"] svg {
+  fill: #4b5563 !important;
+  color: #4b5563 !important;
+}
+
 .foot-col-right {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   min-height: 100%;
+  position: relative;
+  z-index: 1;
 }
 .foot-about-chip-wrap {
   display: inline-flex;
@@ -79,18 +147,18 @@ _FOOTER_CSS = """
   gap: 7px;
   padding: 8px 16px;
   border-radius: 999px;
-  background: linear-gradient(90deg,#fff7ed,#ffedd5);
+  background: rgba(255, 255, 255, 0.95);
   color: #c2410c;
   font-weight: 600;
   font-size: 0.85rem;
   text-decoration: none;
-  border: 1px solid #fed7aa;
+  border: 1px solid rgba(255, 237, 213, 0.6);
   transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 .foot-about-chip:hover {
   text-decoration: none;
-  filter: brightness(1.02);
-  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.16);
+  filter: brightness(1.04);
+  box-shadow: 0 4px 16px rgba(234, 88, 12, 0.28);
   transform: translateY(-1px);
 }
 .foot-about-chip-dot {
@@ -108,8 +176,15 @@ _FOOTER_CSS = """
 }
 .foot-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, #e2e8f0 20%, #e2e8f0 80%, transparent 100%);
-  margin: 14px 0 10px 0;
+  background: linear-gradient(
+    90deg, transparent 0%,
+    rgba(255, 255, 255, 0.24) 20%,
+    rgba(255, 255, 255, 0.24) 80%,
+    transparent 100%
+  );
+  margin: 16px 0 12px 0;
+  position: relative;
+  z-index: 1;
 }
 .foot-meta {
   display: flex;
@@ -117,23 +192,25 @@ _FOOTER_CSS = """
   align-items: center;
   gap: 8px;
   font-size: 0.76rem;
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.62);
+  position: relative;
+  z-index: 1;
 }
 .foot-meta-dot {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #cbd5e1;
+  background: rgba(255, 255, 255, 0.34);
 }
-[data-testid="stVerticalBlock"].st-key-pg_footer [data-testid="stSelectbox"] > label {
-  display: none !important;
-  height: 0 !important;
-  margin: 0 !important;
-}
+
 @media (max-width: 720px) {
+  [data-testid="stVerticalBlock"].st-key-pg_footer,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer {
-    padding: 18px 16px 14px !important;
-    border-radius: 18px !important;
+    padding: 22px clamp(14px, 4vw, 20px) 18px !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_footer .st-key-_lang_picker_label,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_footer .st-key-_lang_picker_label {
+    max-width: 100% !important;
   }
   .foot-col-right { justify-content: flex-start; margin-top: 12px; }
   .foot-about-chip-wrap { justify-content: flex-start; width: 100%; }
