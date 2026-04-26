@@ -561,6 +561,18 @@ STRINGS: dict[str, dict[str, str]] = {
         "fr": "Analyse des apps…", "ar": "جارٍ تحليل التطبيقات…",
         "zh": "正在分析应用……", "ru": "Анализируем приложения…", "pt": "Analisando apps…",
     },
+    "compare.analysis_caption": {
+        "tr": "{title}: {done}/{total} yorum işlendi",
+        "en": "{title}: {done}/{total} reviews processed",
+        "es": "{title}: {done}/{total} reseñas procesadas",
+        "de": "{title}: {done}/{total} Bewertungen verarbeitet",
+        "fr": "{title} : {done}/{total} avis traités",
+        "ar": "{title}: تمت معالجة {done}/{total} مراجعة",
+        "zh": "{title}: 已处理 {done}/{total} 条评论",
+        "ru": "{title}: обработано {done}/{total} отзывов",
+        "pt": "{title}: {done}/{total} avaliações processadas",
+        "ja": "{title}: {done}/{total} 件のレビューを処理",
+    },
     "compare.warn_need_pools": {
         "tr": "Önce iki uygulama için de yorum havuzu hazırlanmalı.",
         "en": "Prepare review pools for both apps first.",

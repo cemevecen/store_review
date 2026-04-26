@@ -890,47 +890,72 @@ def execute_compare_analysis(
 
     results: dict[str, dict[str, Any]] = {}
     detail_rows: dict[str, list[dict]] = {}
+    n_pool = len(prepared_pools)
+    bar = st.progress(0.0)
+    status = st.empty()
+    try:
+        for idx, (slug, entry) in enumerate(prepared_pools.items()):
+            meta = entry.get("meta") or {}
+            title = meta.get("title") or slug
+            try:
+                prepared = entry.get("prepared") or []
+                pool_n = int(entry.get("fetched_n") or 0)
+                prep_n = len(prepared)
+                if not prepared:
+                    errors.append(f"{title}: analiz edilecek yorum yok.")
+                    continue
+                title_short = str(title)[:44] + ("…" if len(str(title)) > 44 else "")
 
-    for slug, entry in prepared_pools.items():
-        meta = entry.get("meta") or {}
-        title = meta.get("title") or slug
-        try:
-            prepared = entry.get("prepared") or []
-            pool_n = int(entry.get("fetched_n") or 0)
-            prep_n = len(prepared)
-            if not prepared:
-                errors.append(f"{title}: analiz edilecek yorum yok.")
-                continue
-            rows = analyze_batch(
-                prepared,
-                use_heuristic_only=use_heuristic_only,
-                analysis_mode=analysis_mode,
-                rich=None if use_heuristic_only else rich,
-                provider=provider,
-                model=model,
-                max_workers=28 if use_heuristic_only else 12,
-                progress=None,
-                max_rich_items=500,
-                ui_lang=get_lang(),
-            )
-            agg = _aggregate_rows(rows)
-            detail_rows[slug] = list(rows)
-            rich_cap = (not use_heuristic_only) and (prep_n > 500)
-            platform = entry.get("platform") or "android"
-            app_id = entry.get("app_id") or slug
-            results[slug] = {
-                **meta,
-                **agg,
-                "app_id": app_id,
-                "platform": platform,
-                "chart_label": f"{title[:36]}{'…' if len(title) > 36 else ''} ({'Play' if platform == 'android' else 'App Store'})",
-                "cmp_pool_fetched": pool_n,
-                "cmp_pool_prepared": prep_n,
-                "cmp_rich_capped": rich_cap,
-                "cmp_rich_cap_limit": 500 if rich_cap else None,
-            }
-        except Exception as e:
-            errors.append(f"{title}: {e}")
+                def _prog(
+                    done: int,
+                    total: int,
+                    *,
+                    _ts: str = title_short,
+                    _i: int = idx,
+                    _np: int = n_pool,
+                ) -> None:
+                    base = _i / max(_np, 1)
+                    span = 1.0 / max(_np, 1)
+                    frac = base + span * (done / max(total, 1))
+                    bar.progress(min(0.99, frac))
+                    status.caption(
+                        t("compare.analysis_caption", title=_ts, done=done, total=total)
+                    )
+
+                rows = analyze_batch(
+                    prepared,
+                    use_heuristic_only=use_heuristic_only,
+                    analysis_mode=analysis_mode,
+                    rich=None if use_heuristic_only else rich,
+                    provider=provider,
+                    model=model,
+                    max_workers=28 if use_heuristic_only else 12,
+                    progress=_prog,
+                    max_rich_items=500,
+                    ui_lang=get_lang(),
+                )
+                agg = _aggregate_rows(rows)
+                detail_rows[slug] = list(rows)
+                rich_cap = (not use_heuristic_only) and (prep_n > 500)
+                platform = entry.get("platform") or "android"
+                app_id = entry.get("app_id") or slug
+                results[slug] = {
+                    **meta,
+                    **agg,
+                    "app_id": app_id,
+                    "platform": platform,
+                    "chart_label": f"{title[:36]}{'…' if len(title) > 36 else ''} ({'Play' if platform == 'android' else 'App Store'})",
+                    "cmp_pool_fetched": pool_n,
+                    "cmp_pool_prepared": prep_n,
+                    "cmp_rich_capped": rich_cap,
+                    "cmp_rich_cap_limit": 500 if rich_cap else None,
+                }
+            except Exception as e:
+                errors.append(f"{title}: {e}")
+        bar.progress(1.0)
+    finally:
+        bar.empty()
+        status.empty()
 
     st.session_state.cmp_results = results
     st.session_state.cmp_detail_rows = detail_rows
