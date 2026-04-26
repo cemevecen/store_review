@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import streamlit as st
 
 from store_review.branding import header_logo_data_uri
@@ -20,6 +21,8 @@ SOURCE_POOL_KEY = {
     "Metin": "paste",
     "Uygulama karşılaştır": "compare",
 }
+# st.pills on_change içinde st.switch_page / st.rerun yasak; bayrak + sonraki script turu.
+_DEFER_NAV_MAIN_KEY = "_sr_defer_nav_main"
 _LEGACY_SOURCE_TAB = {
     "Mağaza (ara / link)": "Mağaza",
     "Dosya yükle": "Dosya",
@@ -46,8 +49,15 @@ def _on_data_source_change() -> None:
 
 
 def _on_about_source_change() -> None:
-    """About sayfasında pill seçildiğinde ana sayfaya dön + seçimi uygula."""
+    """About sayfasında pill seçildiğinde analizi sıfırla; ana sayfaya geçiş script gövdesinde yapılır."""
     st.session_state.analysis_rows = []
+    st.session_state[_DEFER_NAV_MAIN_KEY] = True
+
+
+def consume_deferred_nav_to_main() -> None:
+    """About sayfasında pills on_change sonrası ana sayfaya yönlendir (callback dışında)."""
+    if not st.session_state.pop(_DEFER_NAV_MAIN_KEY, False):
+        return
     try:
         st.switch_page("streamlit_app.py")
     except Exception:
@@ -60,12 +70,18 @@ def render_masthead(*, on_about: bool) -> None:
     Dil: sağ üstte yuvarlak bayrak; tıklanınca popover içinde yuvarlak bayrak
     ızgarası. Kaynak pill'lerinin yanında ayrı bir “chip” ile Hakkında / Ana sayfa.
     """
+    _q = lang_query_suffix()
+    _home_href = f"./{_q}"
+    _home_tip = html.escape(t("nav.home"), quote=True)
     _hdr_uri = header_logo_data_uri()
     logo_html = ""
     if _hdr_uri:
         logo_html = (
+            f'<a class="hero-brand-logo-link" href="{_home_href}" '
+            f'aria-label="{_home_tip}" title="{_home_tip}">'
             f'<img class="hero-brand-logo" src="{_hdr_uri}" width="48" height="48" alt="" '
             'loading="lazy" decoding="async" />'
+            "</a>"
         )
 
     with st.container(border=True, key="pg_masthead", width="stretch"):
@@ -116,36 +132,42 @@ def render_masthead(*, on_about: bool) -> None:
             "Uygulama karşılaştır": t("source.compare"),
         }
         with st.container(key="masthead_pills_about"):
-            # Oranlar CSS ile sütun genişliği eziliyor; gap pill satırıyla aynı (8px) theme'de
-            row_pills, row_about = st.columns([1, 1], vertical_alignment="center", gap="small")
-            with row_pills:
-                st.pills(
-                    t("nav.data_source"),
-                    SOURCE_OPTIONS,
-                    selection_mode="single",
-                    default=SOURCE_OPTIONS[0],
-                    format_func=lambda v: _source_labels.get(v, v),
-                    key="main_data_source_tab",
-                    label_visibility="collapsed",
-                    width="content",
-                    on_change=_on_about_source_change if on_about else _on_data_source_change,
+            # Mobil yatay kaydırma hedefi: theme'de .st-key-hero_chip_row (≈ hero-chip-row)
+            with st.container(key="hero_chip_row"):
+                # Oranlar CSS ile sütun genişliği eziliyor; gap pill satırıyla aynı (8px) theme'de
+                row_pills, row_about = st.columns(
+                    [1, 1], vertical_alignment="center", gap="small"
                 )
-            with row_about:
-                _q = lang_query_suffix()
-                if on_about:
-                    chip = (
-                        '<div class="masthead-source-pill-wrap">'
-                        f'<a class="masthead-source-pill" href="./{_q}" '
-                        f'aria-label="{t("nav.home")}" title="{t("nav.home")}">'
-                        f'<span class="masthead-source-pill-dot">x</span>{t("nav.home")}'
-                        "</a></div>"
+                with row_pills:
+                    st.pills(
+                        t("nav.data_source"),
+                        SOURCE_OPTIONS,
+                        selection_mode="single",
+                        default=SOURCE_OPTIONS[0],
+                        format_func=lambda v: _source_labels.get(v, v),
+                        key="main_data_source_tab",
+                        label_visibility="collapsed",
+                        width="content",
+                        on_change=_on_about_source_change
+                        if on_about
+                        else _on_data_source_change,
                     )
-                else:
-                    chip = (
-                        '<div class="masthead-source-pill-wrap">'
-                        f'<a class="masthead-source-pill" href="about{_q}" '
-                        f'aria-label="{t("nav.about")}" title="{t("nav.about")}">'
-                        f'<span class="masthead-source-pill-dot">i</span>{t("nav.about")}'
-                        "</a></div>"
-                    )
-                st.markdown(chip, unsafe_allow_html=True)
+                with row_about:
+                    _about = html.escape(t("nav.about"), quote=True)
+                    if on_about:
+                        chip = (
+                            '<div class="masthead-source-pill-wrap">'
+                            f'<a class="masthead-source-pill" href="./{_q}" '
+                            f'aria-label="{_about}" title="{_about}">'
+                            f'<span class="masthead-source-pill-dot">i</span>{t("nav.about")}'
+                            "</a></div>"
+                        )
+                    else:
+                        chip = (
+                            '<div class="masthead-source-pill-wrap">'
+                            f'<a class="masthead-source-pill" href="about{_q}" '
+                            f'aria-label="{_about}" title="{_about}">'
+                            f'<span class="masthead-source-pill-dot">i</span>{t("nav.about")}'
+                            "</a></div>"
+                        )
+                    st.markdown(chip, unsafe_allow_html=True)

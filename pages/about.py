@@ -19,7 +19,7 @@ if str(ROOT) not in sys.path:
 from store_review.branding import ensure_branding_assets, favicon_abs_path
 from store_review.config.i18n import get_lang, t
 from store_review.config.theme import APP_CSS
-from store_review.ui.masthead import render_masthead
+from store_review.ui.masthead import consume_deferred_nav_to_main, render_masthead
 
 
 ABOUT_BODY: dict[str, str] = {
@@ -420,6 +420,7 @@ def main() -> None:
         initial_sidebar_state="collapsed",
         page_icon=_fav if _fav else None,
     )
+    consume_deferred_nav_to_main()
     _inject_css()
     render_masthead(on_about=True)
     _render_about_body()

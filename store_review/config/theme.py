@@ -326,6 +326,21 @@ div[data-testid="stDataFrame"] {
   text-align: center !important;
 }
 
+.hero-brand-logo-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  text-decoration: none !important;
+  color: inherit !important;
+  line-height: 0 !important;
+  flex-shrink: 0 !important;
+  border-radius: 12px !important;
+}
+
+.hero-brand-logo-link:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.55) !important;
+  outline-offset: 3px !important;
+}
+
 .hero-brand-logo {
   width: 48px !important;
   height: 48px !important;
@@ -1242,14 +1257,18 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     padding-right: clamp(0.5rem, 3vw, 1rem) !important;
     max-width: 100% !important;
   }
-  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"], [data-testid="stAppScrollToBottomContainer"] [data-testid="stHorizontalBlock"] {
+  /* pg_masthead içi hariç: chip/pill iç yatay blokları dikey yığma */
+  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-pg_masthead"] [data-testid="stHorizontalBlock"])),
+  [data-testid="stAppScrollToBottomContainer"] [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-pg_masthead"] [data-testid="stHorizontalBlock"])) {
     flex-direction: column !important;
     align-items: stretch !important;
     width: 100% !important;
     min-width: 0 !important;
   }
-  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"] > [data-testid="stColumn"], [data-testid="stAppScrollToBottomContainer"] [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
-  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"] > [data-testid="column"], [data-testid="stAppScrollToBottomContainer"] [data-testid="stHorizontalBlock"] > [data-testid="column"] {
+  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-pg_masthead"] [data-testid="stHorizontalBlock"])) > [data-testid="stColumn"],
+  [data-testid="stAppScrollToBottomContainer"] [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-pg_masthead"] [data-testid="stHorizontalBlock"])) > [data-testid="stColumn"],
+  [data-testid="stAppViewContainer"] .main [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-pg_masthead"] [data-testid="stHorizontalBlock"])) > [data-testid="column"],
+  [data-testid="stAppScrollToBottomContainer"] [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-pg_masthead"] [data-testid="stHorizontalBlock"])) > [data-testid="column"] {
     width: 100% !important;
     min-width: 0 !important;
     flex: 1 1 auto !important;
@@ -1283,18 +1302,18 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     flex: 0 0 auto !important;
     min-width: 0 !important;
   }
-  /* Masthead: çok sütunlu satırlar dikey yığılsın (marka+dil, pill+chip) */
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"],
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] {
+  /* Masthead: yalnız marka+dil satırı dikey; pill+chip (masthead_pills_about) hariç */
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-masthead_pills_about"] [data-testid="stHorizontalBlock"])),
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-masthead_pills_about"] [data-testid="stHorizontalBlock"])) {
     flex-direction: column !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
     gap: 10px !important;
   }
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"],
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] > [data-testid="column"] {
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-masthead_pills_about"] [data-testid="stHorizontalBlock"])) > [data-testid="stColumn"],
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-masthead_pills_about"] [data-testid="stHorizontalBlock"])) > [data-testid="column"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-masthead_pills_about"] [data-testid="stHorizontalBlock"])) > [data-testid="stColumn"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-masthead_pills_about"] [data-testid="stHorizontalBlock"])) > [data-testid="column"] {
     width: 100% !important;
     max-width: 100% !important;
     flex: 1 1 auto !important;
@@ -1307,12 +1326,60 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about {
-    --masthead-chip-w: min(14rem, 88vw) !important;
-    --masthead-pill-w: min(224px, 92vw) !important;
+    /* Mobilde sabit geniş pill yok — metin kadar, satır yatay kayar */
+    --masthead-chip-w: max-content !important;
+    --masthead-pill-w: max-content !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-hero_chip_row,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-hero_chip_row {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child {
     justify-content: flex-start !important;
+  }
+  /*
+   * hero-chip-row (st-key-hero_chip_row): yalnız pill+hakkında dış satırı kayar.
+   * st.pills iç içe HB'leri :not(:is(...)) ile hariç tutulur.
+   */
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"])),
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"])) {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 10px !important;
+    column-gap: 10px !important;
+    row-gap: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 4px 16px 12px 16px !important;
+    box-sizing: border-box !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-x: contain !important;
+    scroll-snap-type: x proximity !important;
+    scrollbar-width: none !important;
+    min-height: max(calc(var(--masthead-pill-h) + 8px), calc(var(--masthead-chip-h) + 8px)) !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"]))::-webkit-scrollbar,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"]))::-webkit-scrollbar {
+    display: none !important;
+    height: 0 !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"])) > [data-testid="stColumn"],
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"])) > [data-testid="column"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"])) > [data-testid="stColumn"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"])) > [data-testid="column"] {
+    width: auto !important;
+    max-width: none !important;
+    flex: 0 0 auto !important;
+    min-width: max-content !important;
+    scroll-snap-align: start !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"],
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] {
@@ -1321,7 +1388,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     align-items: center !important;
     width: 100% !important;
     max-width: min(100vw, 100%) !important;
-    padding-bottom: 6px !important;
+    padding-bottom: 0 !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="column"],
@@ -1331,6 +1398,29 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     max-width: none !important;
     flex: 0 0 auto !important;
     min-width: 0 !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button,
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button"] {
+    width: auto !important;
+    min-width: max-content !important;
+    max-width: none !important;
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill {
+    width: auto !important;
+    min-width: max-content !important;
+    max-width: none !important;
+    white-space: nowrap !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill-wrap,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .masthead-source-pill-wrap {
+    width: auto !important;
+    min-width: max-content !important;
+    max-width: none !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead {
