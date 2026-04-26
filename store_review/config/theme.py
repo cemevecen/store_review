@@ -1400,12 +1400,46 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     max-width: 100% !important;
     flex: 1 1 auto !important;
   }
+  /* Marka + dil satırı: dil sütunu akıştan çıkar — sağ üst; marka ortada kalır, bayrak için sağ boşluk */
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type {
+    position: relative !important;
+    min-height: 0 !important;
+    gap: 0 !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:first-child,
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="column"]:first-child,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:first-child,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="column"]:first-child {
+    padding-right: 44px !important;
+    box-sizing: border-box !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:nth-child(2),
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="column"]:nth-child(2),
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:nth-child(2),
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="column"]:nth-child(2) {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    width: auto !important;
+    max-width: 48px !important;
+    min-height: 0 !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    align-items: flex-end !important;
+    justify-content: flex-start !important;
+    z-index: 5 !important;
+  }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot {
-    justify-content: center !important;
-    max-width: 100% !important;
+    justify-content: flex-end !important;
+    align-items: flex-start !important;
+    max-width: 48px !important;
+    width: 100% !important;
     margin-left: 0 !important;
-    margin-top: 6px !important;
+    margin-top: 0 !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about {
@@ -1549,7 +1583,19 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead {
     padding: 14px clamp(12px, 4vw, 20px) 10px !important;
     min-height: 0 !important;
-    gap: 6px !important;
+    /* Marka bloğu ile pill şeridi arası hedef ~10px (justify flex-start ile ekstra dağılım yok) */
+    gap: 10px !important;
+    justify-content: flex-start !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead div[data-testid="stMarkdownContainer"]:has(.hero-band-target),
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead div[data-testid="stMarkdownContainer"]:has(.hero-band-target) {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
   }
   [data-testid="stTabs"] [data-baseweb="tab-list"] {
     flex-wrap: wrap !important;
