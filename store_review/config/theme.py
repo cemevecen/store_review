@@ -1373,22 +1373,12 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     min-width: 0 !important;
   }
   /* Masthead: yalnız marka+dil satırı dikey; pill+chip (masthead_pills_about) hariç */
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type,
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type {
-    min-height: 0 !important;
-  }
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:nth-child(2),
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="column"]:nth-child(2),
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:nth-child(2),
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="column"]:nth-child(2) {
-    min-height: 0 !important;
-  }
   [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-masthead_pills_about"] [data-testid="stHorizontalBlock"])),
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-masthead_pills_about"] [data-testid="stHorizontalBlock"])) {
     flex-direction: column !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
-    gap: 4px !important;
+    gap: 6px !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-masthead_pills_about"] [data-testid="stHorizontalBlock"])) > [data-testid="stColumn"],
   [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-masthead_pills_about"] [data-testid="stHorizontalBlock"])) > [data-testid="column"],
@@ -1403,27 +1393,44 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     justify-content: center !important;
     max-width: 100% !important;
     margin-left: 0 !important;
-    margin-top: 2px !important;
+    margin-top: 6px !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about {
     /* Mobilde sabit geniş pill yok — metin kadar, satır yatay kayar */
     --masthead-chip-w: max-content !important;
     --masthead-pill-w: max-content !important;
-    --masthead-pill-h: 42px !important;
-    --masthead-chip-h: 38px !important;
-    margin-top: 0 !important;
-    padding-top: 0 !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-hero_chip_row,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-hero_chip_row {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+    box-sizing: border-box !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child {
     justify-content: flex-start !important;
+    /* Tek satır st.pills (Hakkında dahil): dış HB olmadan yatay kaydırma bu flex sarmalayıcıda */
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-x: contain !important;
+    box-sizing: border-box !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-bottom: 6px !important;
+    scrollbar-width: none !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child::-webkit-scrollbar,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child::-webkit-scrollbar {
+    display: none !important;
+    height: 0 !important;
   }
   /*
    * hero-chip-row (st-key-hero_chip_row): yalnız pill+hakkında dış satırı kayar.
@@ -1435,13 +1442,13 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
-    gap: 6px !important;
-    column-gap: 6px !important;
-    row-gap: 6px !important;
+    gap: 8px !important;
+    column-gap: 8px !important;
+    row-gap: 8px !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
-    padding: 0 10px 3px 10px !important;
+    padding: 2px 12px 8px 12px !important;
     box-sizing: border-box !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
@@ -1449,7 +1456,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     overscroll-behavior-x: contain !important;
     scroll-snap-type: x proximity !important;
     scrollbar-width: none !important;
-    min-height: max(calc(var(--masthead-pill-h) + 2px), calc(var(--masthead-chip-h) + 2px)) !important;
+    min-height: max(calc(var(--masthead-pill-h) + 4px), calc(var(--masthead-chip-h) + 4px)) !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"]))::-webkit-scrollbar,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"]))::-webkit-scrollbar {
@@ -1509,15 +1516,9 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead {
-    padding: 8px clamp(10px, 3.5vw, 16px) 5px !important;
+    padding: 14px clamp(12px, 4vw, 20px) 10px !important;
     min-height: 0 !important;
-    margin-bottom: 2px !important;
-    gap: 4px !important;
-    justify-content: flex-start !important;
-  }
-  [data-testid="stVerticalBlock"].st-key-pg_masthead div[data-testid="stMarkdownContainer"]:has(.hero-band-target),
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead div[data-testid="stMarkdownContainer"]:has(.hero-band-target) {
-    margin-top: 0 !important;
+    gap: 6px !important;
   }
   [data-testid="stTabs"] [data-baseweb="tab-list"] {
     flex-wrap: wrap !important;
@@ -1564,7 +1565,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   }
   .hero-about-chip-wrap {
     justify-content: center !important;
-    margin-top: 2px !important;
+    margin-top: 6px !important;
   }
   .hero-about-chip {
     height: 34px !important;
