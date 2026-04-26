@@ -370,12 +370,6 @@ div[data-testid="stDataFrame"] {
   margin-right: auto !important;
 }
 
-/* Masthead: logo + başlık ikilisi 6px aşağı */
-[data-testid="stVerticalBlock"].st-key-pg_masthead .hero-masthead-brand,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .hero-masthead-brand {
-  margin-top: 6px !important;
-}
-
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"],
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] {
   width: 100% !important;
@@ -386,6 +380,8 @@ div[data-testid="stDataFrame"] {
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand),
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) {
   min-height: 48px !important;
+  padding-top: 8px !important;
+  box-sizing: border-box !important;
 }
 
 /* Dil sütunu — yalnız logo satırındaki sütun (pill satırlarına sızmasın) */
@@ -451,7 +447,7 @@ div[data-testid="stDataFrame"] {
   align-items: center !important;
   justify-content: center !important;
   background-size: auto 138% !important;
-  background-position: calc(50% + 2px) center !important;
+  background-position: center !important;
   background-repeat: no-repeat !important;
   background-color: transparent !important;
   border: 1px solid rgba(15, 23, 42, 0.1) !important;
@@ -546,7 +542,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
   align-items: center !important;
   justify-content: center !important;
   background-size: auto 138% !important;
-  background-position: calc(50% + 2px) center !important;
+  background-position: center !important;
   background-repeat: no-repeat !important;
   background-color: transparent !important;
   border: 1px solid rgba(15, 23, 42, 0.1) !important;
@@ -597,7 +593,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   width: 100% !important;
   max-width: 45px !important;
   margin-left: auto !important;
-  margin-top: 8px !important;
+  margin-top: 0 !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop {
@@ -1442,6 +1438,8 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) {
     min-height: 0 !important;
     gap: 0 !important;
+    padding-top: 8px !important;
+    box-sizing: border-box !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="stColumn"]:has(.hero-masthead-brand),
   [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="column"]:has(.hero-masthead-brand),
@@ -1455,7 +1453,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="stColumn"]:has(.st-key-masthead_lang_slot),
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="column"]:has(.st-key-masthead_lang_slot) {
     position: absolute !important;
-    top: 14px !important;
+    top: 22px !important;
     right: clamp(12px, 4vw, 20px) !important;
     left: auto !important;
     width: auto !important;
