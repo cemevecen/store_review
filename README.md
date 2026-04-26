@@ -1,46 +1,52 @@
 # Mağaza yorumu duygu analizi
 
-Mobil uygulama mağazalarından gelen kullanıcı yorumlarını toplayıp, **olumlu / olumsuz / istek–nötr** üçlü sınıflandırma ve özet göstergelerle sunan bir **Streamlit** uygulamasıdır. Amaç; geliştirici veya ürün ekibinin yorumları hızlıca anlaması ve gerektiğinde tablo veya PDF olarak paylaşmasıdır.
+**Store Review Sentiment** — Google Play ve App Store (ve dosya / yapıştırma) kaynaklı kullanıcı yorumlarını toplayıp **olumlu / olumsuz / istek–nötr** üçlü sınıflandırma, özet göstergeler ve dışa aktarma ile sunan bir **[Streamlit](https://streamlit.io/)** uygulamasıdır.
 
-**English:** A Streamlit app that pulls mobile store reviews, classifies sentiment into three buckets, and shows a compact dashboard with CSV, Excel, and PDF export. Fast mode runs locally without an API; optional “rich” mode can call a configured LLM provider.
+**English:** A Streamlit app that ingests mobile-store (or file / pasted) reviews, classifies sentiment into three buckets, shows a compact dashboard with charts and sample cards, supports **side-by-side app comparison**, and exports **CSV, Excel, and PDF**. **Fast** mode runs with local heuristics; optional **rich** mode uses your configured LLM provider.
 
 ---
 
 ## Bu proje ne yapar?
 
-1. **Veri alır** — Google Play ve App Store üzerinden arama veya mağaza bağlantısı; isteğe bağlı yerel veya daha geniş (çok dil–ülke) kapsam; ayrıca tablo dosyası veya panodan yapıştırılan metin (CSV/TSV algısı).
-2. **İşler** — **Hızlı:** kural ve sözlük tabanlı analiz, internette ek bir “analiz servisi” gerektirmez. **Zengin:** açıkça seçildiğinde, sizin tanımladığınız API anahtarıyla desteklenen model çağrısı (isteğe bağlı).
-3. **Gösterir** — Özet metrikler, dağılımlar, trend ve örnek yorum listesi; iki uygulamayı yan yana karşılaştırma modu.
-4. **Dışa verir** — Sonuç tablosu için CSV ve Excel; ekrandaki özet düzenine yakın PDF.
+| Adım | Açıklama |
+|------|-----------|
+| **1. Veri** | **Mağaza:** arama veya mağaza linki / paket adı / ID; tarih aralığı; **yerel** (Türkiye vitrini) veya **global** (çok ülke) yorum kapsamı. **Dosya:** CSV / Excel. **Metin:** panodan yapıştırma (CSV/TSV algısı). **Karşılaştır:** iki uygulama seçimi + ortak tarih aralığı ile havuz hazırlama. |
+| **2. Analiz** | **Hızlı (heuristic):** kural + sözlük; ek API gerekmez. **Zengin (LLM):** `.env` / barındırıcı secrets ile tanımlanan anahtarlarla isteğe bağlı model çağrısı. |
+| **3. Sunum** | Metrikler, dağılımlar, trend, örnek yorum kartları; karşılaştırma özeti. |
+| **4. Dışa aktarma** | CSV, Excel; ekrana yakın düzenle **PDF**. |
 
-Kapsam, tüketici mağaza yorumlarıdır; başka metin türleri için tasarlanmamıştır.
+Kapsam tüketici mağaza yorumlarıdır; genel amaçlı metin analizi aracı değildir.
 
 ---
 
 ## Kimler kullanır?
 
-Ürün sahibi, geliştirici veya destek ekibi: sürüm notu sonrası tepkiyi, yıldız dağılımını ve yorum metnindeki duyguyu tek ekranda görmek isteyenler.
+Ürün, geliştirme veya destek ekipleri: sürüm sonrası tepki, yıldız dağılımı ve yorum metnindeki duygu tonunu tek ekranda görmek isteyenler.
 
 ---
 
-## Diller
+## Diller ve arayüz
 
-Arayüz ve dışa aktarılan metinler **birden çok dilde** sunulabilir (Türkçe varsayılan; diğer diller uygulama içi katalogdan). Dil seçimi oturumda ve isteğe bağlı olarak adres çubuğundaki `?lang=` parametresiyle hatırlanabilir.
+- Arayüz metinleri **çok dillidir**; varsayılan **Türkçe** (`tr`).
+- Desteklenen dil kodları: **tr, en, es, de, fr, ar, zh, ru, pt, ja** (Japonca metinler `store_review/config/i18n_ja.json` üzerinden birleştirilir).
+- Dil, masthead’deki **bayrak / dil menüsü** ile seçilir; oturumda saklanır ve isteğe bağlı olarak **`?lang=ru`** gibi sorgu parametresiyle paylaşılabilir.
+- Tarih aralığı seçimi ve yerel/global kapsam gibi kontroller **dil değişince** otomatik olarak seçilen dildeki etiketlerle güncellenir (oturum değerleri dil-nötr kodlarla tutulur).
 
 ---
 
 ## Gizlilik ve güvenlik (özet)
 
-- **Depoya API anahtarı veya kişisel veri koymayın.** Örnek dosya `.env.example` yalnızca *hangi değişken isimlerinin* kullanıldığını gösterir; değerleri siz yerelde veya barındırıcı “secrets” alanında doldurursunuz.
-- **Hızlı analiz:** Yorum metni uygulamanın çalıştığı ortamda işlenir; zengin mod için tanımlanmamışsa harici modele gönderilmez.
-- **Zengin analiz:** Yorum metni, sizin yapılandırdığınız sağlayıcının kurallarına tabi olmak üzere ilgili API’ye gider. Bu modu açmadan önce kendi kurum politikanızı ve sağlayıcı koşullarını gözden geçirmeniz gerekir.
-- Mağaza araması ve çekme, herkese açık mağaza sayfalarına benzer isteklerle yapılır; bu README içinde özel token, iç ağ adresi veya kişisel hesap bilgisi paylaşılmaz.
+- **Depoya gerçek API anahtarı veya kişisel veri koymayın.** `.env.example` yalnızca *değişken adları* için şablondur; değerleri yerelde veya barındırıcı **Secrets** alanında tutun.
+- **Hızlı analiz:** Yorum metni uygulamanın çalıştığı ortamda işlenir; zengin mod yapılandırılmadıkça harici modele gönderilmez.
+- **Zengin analiz:** Metin, tanımladığınız sağlayıcının koşullarına tabi şekilde ilgili API’ye gider. Kurum politikanızı ve sağlayıcı şartlarını gözden geçirin.
+- Mağaza araması ve çekme, herkese açık mağaza arayüzüne benzer isteklerle yapılır; bu belgede token veya hesap bilgisi yoktur.
 
 ---
 
-## Çalıştırma (yerel)
+## Gereksinimler ve çalıştırma
 
-**Gereksinim:** Python 3.10 veya üzeri önerilir. Bağımlılıklar `requirements.txt` içindedir.
+- **Python:** 3.10 veya üzeri önerilir.
+- **Bağımlılıklar:** `requirements.txt` (ör. `streamlit>=1.40`, `pandas`, `plotly`, `fpdf2`, …).
 
 ```bash
 python3 -m venv .venv
@@ -48,64 +54,84 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Zengin analizi deneyecekseniz, proje kökünde `.env` oluşturup `.env.example` ile aynı isimlerde anahtarları tanımlayın; dosyayı **asla** git’e eklemeyin.
-
-Yerel geliştirme için `run_local.sh` varsayılan olarak özel bir port kullanır; dağıtımda Streamlit’in beklediği varsayılan portu kendi yapılandırmanızla hizalayın. Doğrudan:
+Zengin analiz denemek için proje kökünde `.env` oluşturun; değişken isimleri için `.env.example` dosyasına bakın. **`.env` dosyasını git’e eklemeyin.**
 
 ```bash
 streamlit run streamlit_app.py
 ```
 
----
-
-## Dağıtım notu
-
-Streamlit Community Cloud gibi ortamlarda uygulama genelde `streamlit_app.py` girişi ve repodaki `requirements.txt` ile çalışır. API anahtarları **yalnızca** barındırıcının gizli alanında (ör. Streamlit Secrets) tutulmalıdır; depoda düz metin olarak bulunmamalıdır.
+İsteğe bağlı yerel betik: `run_local.sh` (ortamınıza göre port / seçenekler).
 
 ---
 
-## Sayfa yapısı
+## Dağıtım
 
-- Ana akış: kök URL (`/`). **Hakkında** içeriği masthead’deki pill ile aynı sayfada açılır (tam sayfa `~/+/about` geçişi yok).
-- Eski `/about` veya Streamlit’in `~/+/about` yolu: `pages/about.py` yalnızca ana betiğe yönlendirir (yer imleri kırılmasın diye).
+**Streamlit Community Cloud** (ve benzeri): giriş noktası `streamlit_app.py`, bağımlılıklar `requirements.txt`. API anahtarları yalnızca barındırıcı **Secrets** içinde olmalıdır.
 
 ---
 
-## Depo yapısı (özet)
+## Sayfa yapısı ve gezinme
+
+- Ana uygulama kök betikte: **`streamlit_app.py`**.
+- Üst bant (**masthead**): logo, başlık, **dil seçici**, veri kaynağı **pill**’leri (Mağaza, Dosya, Metin, Uygulama karşılaştır, Hakkında). **Hakkında** içeriği aynı sayfada gövdede açılır (ayrı tam sayfa `~/+/about` akışı yok).
+- **`pages/about.py`:** Eski `/about` veya `~/+/about` bağlantıları için ana akışa yönlendirme (yer imi kırılmasın diye).
+
+---
+
+## Depo yapısı
 
 ```text
-streamlit_app.py          # Giriş noktası, akış ve sayfa bileşimi
-pages/about.py            # Hakkında sayfası
-run_local.sh              # İsteğe bağlı yerel çalıştırma betiği
+streamlit_app.py              # Giriş: masthead, kaynak sekmeleri, analiz, dışa aktarma
+pages/about.py                # Hakkında yönlendirmesi
+run_local.sh                  # İsteğe bağlı yerel çalıştırma
 requirements.txt
-.env.example              # Yalnız isim şablonu; değer içermez
-store_review/             # Python paketi
-  config/                 # Ayarlar, çok dillilik, tema (CSS)
-  core/                   # Analiz motoru ve isteğe bağlı model katmanı
-  data/                   # Heuristik verisi, PDF fontu vb.
-  fetchers/               # Mağaza, dosya ve yapıştırma kaynakları
-  ui/                     # Paneller, dashboard, masthead
-  utils/                  # Dışa aktarma, doğrulama, yardımcılar
+.env.example                  # Yalnız isim şablonu; gizli değer yok
+store_review/                 # Ana Python paketi
+  branding/                   # Logo / favicon yardımcıları
+  config/
+    settings.py               # Ortam ayarları
+    theme.py                  # Streamlit’e enjekte edilen geniş CSS (masthead, mobil, formlar)
+    i18n.py                   # Çeviri sözlüğü + get_lang / set_lang / t()
+    i18n_ja.json              # Japonca metinler (i18n_ja_overlay ile birleşir)
+    i18n_ja_overlay.py
+  core/                       # Heuristik, analiz, LLM sağlayıcı soyutlaması
+  data/                       # Heuristik sözlük vb.
+  fetchers/                   # Play, App Store, dosya, yapıştırma, keşif
+  ui/
+    masthead.py               # Üst bant + dil popover
+    masthead_flags.py         # Bayrak görselleri (flagcdn) için enjekte CSS
+    store_link_panel.py       # Mağaza sekmesi (arama, tarih, kapsam, çekme)
+    compare_panel.py          # İki uygulama karşılaştırma
+    analysis_results_dashboard.py
+    review_cards.py
+    about_page.py
+  utils/                      # CSV/Excel/PDF, doğrulama, mağaza URL’leri
 ```
 
 ---
 
-## Davranışa dair kısa notlar
+## Davranış notları
 
-- Aynı yorumun tekrarı ve anlamsız satırlar mümkün olduğunca elenir; yeni uygulama veya kaynak seçildiğinde önceki havuz karışmaması için durum sıfırlanır.
-- Zengin modda çok büyük havuzlar, kararlılık için parçalara bölünebilir; arayüzde “devam” benzeri adımlarla ilerlenebilir (sürüme bağlıdır).
-- Kural tabanlı sözlük `store_review/data/heuristic_lexicon.json` dosyasındadır; değişiklikten sonra uygulamayı yeniden başlatmak gerekir.
+- Yinelenen ve anlamsız yorumlar mümkün olduğunca elenir; uygulama / kaynak değişince ilgili **havuz ve analiz** durumu sıfırlanır ki veri karışmasın.
+- Çok büyük havuzlarda zengin mod **partiler** halinde işlenebilir; arayüzde ilerleme ve isteğe bağlı “devam” akışı kullanılır.
+- Heuristik sözlük: `store_review/data/heuristic_lexicon.json` — değişiklikten sonra süreç yeniden başlatılmalıdır.
+
+---
+
+## Katkı / geliştirici
+
+- Yeni kullanıcı metinleri için `store_review/config/i18n.py` içinde anahtar ekleyin; mümkünse tüm diller için çeviri sağlayın. Japonca için gerekiyorsa `i18n_ja.json` güncellenir.
+- Masthead ve form görünümü büyük ölçüde `theme.py` içindeki `APP_CSS` ile yönetilir.
 
 ---
 
 ## English summary
 
-**Purpose:** Ingest Play / App Store reviews (or file / paste), classify into **positive / negative / request–neutral**, show a dashboard, and export **CSV, Excel, and PDF**.
-
-**Modes:** **Fast** — local heuristics, no API keys. **Rich** — optional LLM path when you configure provider keys in `.env` or host secrets.
-
-**Privacy:** Never commit real keys or personal data. Rich mode sends review text to your chosen provider under their terms. Use `.env.example` only as a variable name template.
-
-**Run:** Python 3.10+, `pip install -r requirements.txt`, then `streamlit run streamlit_app.py`. Optional `.env` for rich mode.
-
-**Layout:** Main app in `streamlit_app.py`; package code under `store_review/`.
+| Topic | Detail |
+|--------|--------|
+| **Purpose** | Ingest Play / App Store reviews (or **file** / **paste**), optional **compare two apps**, classify **positive / negative / request–neutral**, dashboard + **CSV, Excel, PDF**. |
+| **Modes** | **Fast** — local heuristics, no API keys. **Rich** — optional LLM when you configure provider keys (`.env` or host secrets). |
+| **Languages** | UI strings for **tr, en, es, de, fr, ar, zh, ru, pt, ja**; default Turkish; masthead flag picker + optional **`?lang=`** query param. |
+| **Privacy** | Do not commit secrets. Rich mode sends review text to your provider under their terms. |
+| **Run** | Python 3.10+, `pip install -r requirements.txt`, `streamlit run streamlit_app.py`. |
+| **Layout** | Main logic in `streamlit_app.py`; library under `store_review/`; global styles in `store_review/config/theme.py`. |
