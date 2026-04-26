@@ -27,34 +27,46 @@ def flag_png_url(lang_code: str, *, width: int = 160) -> str:
     return f"https://flagcdn.com/w{width}/{cc}.png"
 
 
-def masthead_flag_css_block(current_lang: str) -> str:
-    """Popover tetikleyici + dil düğmeleri: daire içi tam bayrak, metin/emoji görünmez."""
-    # auto + yükseklik %: tek eksenden büyütme yok; oran korunur, üst-alt boşluk kapanır.
-    shared = (
-        "background-size:auto 138%!important;background-position:center!important;"
+def _flag_shared(lang_code: str) -> str:
+    """Bayrak arka planı; TR için flagcdn PNG'de ay–yıldız geometrik merkezin solunda — dairede optik ortala."""
+    pos = (
+        "background-position:58% center!important;"
+        if lang_code == "tr"
+        else "background-position:center!important;"
+    )
+    return (
+        f"{pos}"
+        "background-size:auto 138%!important;"
         "background-repeat:no-repeat!important;background-color:transparent!important;"
         "color:transparent!important;-webkit-text-fill-color:transparent!important;"
     )
+
+
+def masthead_flag_css_block(current_lang: str) -> str:
+    """Popover tetikleyici + dil düğmeleri: daire içi tam bayrak, metin/emoji görünmez."""
+    pop_cls = f"st-key-masthead_lang_pop_{current_lang}"
     cur_u = html.escape(flag_png_url(current_lang), quote=True)
     trig = ",".join(
-        f'{s} .st-key-masthead_lang_slot .st-key-masthead_lang_pop button'
+        f"{s} .st-key-masthead_lang_slot .{pop_cls} button"
         for s in (
             '[data-testid="stVerticalBlock"].st-key-pg_masthead',
             '[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead',
         )
     )
-    chunks: list[str] = [f"{trig}{{{shared}background-image:url({cur_u})!important;}}"]
+    chunks: list[str] = [
+        f"{trig}{{{_flag_shared(current_lang)}background-image:url({cur_u})!important;}}"
+    ]
     for code, _name, _flag in LANGUAGES:
         u = html.escape(flag_png_url(code), quote=True)
         sel = f'div[data-baseweb="popover"] .st-key-masthead_pick_{code} button'
-        chunks.append(f"{sel}{{{shared}background-image:url({u})!important;}}")
+        chunks.append(f"{sel}{{{_flag_shared(code)}background-image:url({u})!important;}}")
     hide = (
-        '[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button p,'
-        '[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button p,'
-        '[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button span,'
-        '[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button span,'
-        '[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button [data-testid="stMarkdownContainer"],'
-        '[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button [data-testid="stMarkdownContainer"],'
+        f'[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .{pop_cls} button p,'
+        f'[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .{pop_cls} button p,'
+        f'[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .{pop_cls} button span,'
+        f'[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .{pop_cls} button span,'
+        f'[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .{pop_cls} button [data-testid="stMarkdownContainer"],'
+        f'[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .{pop_cls} button [data-testid="stMarkdownContainer"],'
         'div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button p,'
         'div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button span,'
         'div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid="stMarkdownContainer"]'

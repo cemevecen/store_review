@@ -92,7 +92,7 @@ def render_masthead() -> None:
                 st.markdown(masthead_flag_css_block(cur), unsafe_allow_html=True)
                 with st.popover(
                     "\u00a0",
-                    key="masthead_lang_pop",
+                    key=f"masthead_lang_pop_{cur}",
                     width=35,
                     help=cur_name,
                     type="secondary",

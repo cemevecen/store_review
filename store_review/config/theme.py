@@ -422,8 +422,8 @@ div[data-testid="stDataFrame"] {
 }
 
 /* Masthead — dil: kare zorunlu; bayrak background-size masthead_flags ile auto + yükseklik % */
-[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button {
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] button,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] button {
   box-sizing: border-box !important;
   position: relative !important;
   aspect-ratio: 1 / 1 !important;
@@ -453,13 +453,18 @@ div[data-testid="stDataFrame"] {
   border: 1px solid rgba(15, 23, 42, 0.1) !important;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1) !important;
 }
-[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button svg,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button svg {
+/* Türk bayrağı (flagcdn PNG): ay–yıldız geometrik merkezin solunda; daire içinde yalnız TR optik ortala */
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop_tr"] button,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop_tr"] button {
+  background-position: 58% center !important;
+}
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] button svg,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] button svg {
   display: none !important;
 }
 /* İç sarmalayıcılar: buton karesini doldurur, flex ile genişlik daralmasın */
-[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button > div,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button > div {
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] button > div,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] button > div {
   position: absolute !important;
   inset: 0 !important;
   margin: 0 !important;
@@ -475,12 +480,12 @@ div[data-testid="stDataFrame"] {
   background: transparent !important;
   background-color: transparent !important;
 }
-[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button p,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button p,
-[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button span,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button span,
-[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button [data-testid="stMarkdownContainer"],
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button [data-testid="stMarkdownContainer"] {
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] button p,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] button p,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] button span,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] button span,
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] button [data-testid="stMarkdownContainer"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] button [data-testid="stMarkdownContainer"] {
   position: absolute !important;
   inset: 0 !important;
   margin: 0 !important;
@@ -548,6 +553,9 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
   border: 1px solid rgba(15, 23, 42, 0.1) !important;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
 }
+div[data-baseweb="popover"] .st-key-masthead_pick_tr button {
+  background-position: 58% center !important;
+}
 div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button > div {
   position: absolute !important;
   inset: 0 !important;
@@ -595,8 +603,8 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   margin-left: auto !important;
   margin-top: 0 !important;
 }
-[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop {
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] {
   width: auto !important;
   max-width: 45px !important;
   min-width: 0 !important;
