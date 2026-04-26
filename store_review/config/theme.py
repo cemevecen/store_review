@@ -419,10 +419,11 @@ div[data-testid="stDataFrame"] {
   align-items: center !important;
 }
 
-/* Masthead — dil: yuvarlak stroke + bayrak daire içinde taşarak çerçeveyi doldurur */
+/* Masthead — dil: kare zorunlu + cover bayrak (elips / yatay basık önleme) */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button {
   box-sizing: border-box !important;
+  position: relative !important;
   aspect-ratio: 1 / 1 !important;
   border-radius: 50% !important;
   overflow: hidden !important;
@@ -432,15 +433,20 @@ div[data-testid="stDataFrame"] {
   max-width: 35px !important;
   min-height: 35px !important;
   max-height: 35px !important;
-  flex: 0 0 auto !important;
+  flex: 0 0 35px !important;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
   align-self: center !important;
   padding: 0 !important;
   margin: 0 !important;
   font-size: 0 !important;
   line-height: 0 !important;
-  display: inline-flex !important;
+  display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
   background-color: transparent !important;
   border: 1px solid rgba(15, 23, 42, 0.1) !important;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1) !important;
@@ -449,18 +455,21 @@ div[data-testid="stDataFrame"] {
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button svg {
   display: none !important;
 }
-/* Bayrak emojisi: büyük punto + dairesel kırpma (iç sarmalayıcılar) */
+/* İç sarmalayıcılar: buton karesini doldurur, flex ile genişlik daralmasın */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button > div,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button > div {
+  position: absolute !important;
+  inset: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
+  width: auto !important;
+  height: auto !important;
   border-radius: 50% !important;
   overflow: hidden !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  pointer-events: none !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button p,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button p,
@@ -468,11 +477,10 @@ div[data-testid="stDataFrame"] {
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button span,
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button [data-testid="stMarkdownContainer"],
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop button [data-testid="stMarkdownContainer"] {
+  position: absolute !important;
+  inset: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 100% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -481,15 +489,17 @@ div[data-testid="stDataFrame"] {
   font-size: 0 !important;
   line-height: 0 !important;
   letter-spacing: 0 !important;
+  pointer-events: none !important;
 }
 
-/* Dil popover: sütun bayrağı yatayda esnetmesin — kare daire */
+/* Dil popover: sütun daireyi sıkıştırmasın (min-width 0 → yatay basık elips) */
 div[data-baseweb="popover"] [data-testid="stColumn"]:has([class*="st-key-masthead_pick_"]) {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  min-width: 0 !important;
+  flex-shrink: 0 !important;
+  min-width: 36px !important;
 }
 div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] {
   display: flex !important;
@@ -497,22 +507,26 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] {
   align-items: center !important;
   width: fit-content !important;
   max-width: 100% !important;
+  flex-shrink: 0 !important;
   margin-left: auto !important;
   margin-right: auto !important;
 }
-/* Dil popover içi (portal): yarı boy — yalnız masthead_pick_* */
+/* Dil popover içi (portal): kare zorunlu + cover bayrak */
 div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
   box-sizing: border-box !important;
+  position: relative !important;
   aspect-ratio: 1 / 1 !important;
   border-radius: 50% !important;
   overflow: hidden !important;
-  width: 29px !important;
-  height: 29px !important;
-  min-width: 29px !important;
-  max-width: 29px !important;
-  min-height: 29px !important;
-  max-height: 29px !important;
-  flex: 0 0 auto !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  flex: 0 0 32px !important;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
   align-self: center !important;
   padding: 0 !important;
   margin: 3px auto !important;
@@ -521,29 +535,34 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
   background-color: transparent !important;
   border: 1px solid rgba(15, 23, 42, 0.1) !important;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
 }
 div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button > div {
+  position: absolute !important;
+  inset: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
+  width: auto !important;
+  height: auto !important;
   border-radius: 50% !important;
   overflow: hidden !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  pointer-events: none !important;
 }
 div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button p,
 div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button span,
 div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid="stMarkdownContainer"] {
+  position: absolute !important;
+  inset: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 100% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -552,6 +571,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   font-size: 0 !important;
   line-height: 0 !important;
   letter-spacing: 0 !important;
+  pointer-events: none !important;
 }
 
 /* Sağ üst dil: marka satırıyla hizalı, fazla dikey boşluk yok */

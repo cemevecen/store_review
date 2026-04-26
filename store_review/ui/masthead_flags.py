@@ -29,9 +29,9 @@ def flag_png_url(lang_code: str, *, width: int = 80) -> str:
 
 def masthead_flag_css_block(current_lang: str) -> str:
     """Popover tetikleyici + dil düğmeleri: daire içi tam bayrak, metin/emoji görünmez."""
-    # Biraz taşır: PNG iç boşluğu / yuvarlak kırpma sonrası üst-alt beyaz çizgi kalmasın
+    # cover: PNG en-boy oranı korunur, kare daireyi doldurur (yüzde iki eksen = basık yumurta).
     shared = (
-        "background-size:120% 120%!important;background-position:center!important;"
+        "background-size:cover!important;background-position:center!important;"
         "background-repeat:no-repeat!important;background-color:transparent!important;"
         "color:transparent!important;-webkit-text-fill-color:transparent!important;"
     )
