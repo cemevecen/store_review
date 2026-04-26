@@ -602,6 +602,13 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   min-width: 0 !important;
 }
 
+@media (min-width: 769px) {
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot {
+    margin-top: 8px !important;
+  }
+}
+
 /* Kaynak pill + Hakkında chip: satır stretch; sütunlar pill yüksekliğine eşit, chip dikey ortada */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about {
