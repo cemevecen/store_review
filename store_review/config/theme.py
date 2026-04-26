@@ -370,6 +370,12 @@ div[data-testid="stDataFrame"] {
   margin-right: auto !important;
 }
 
+/* Masthead: logo + başlık ikilisi 6px aşağı */
+[data-testid="stVerticalBlock"].st-key-pg_masthead .hero-masthead-brand,
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .hero-masthead-brand {
+  margin-top: 6px !important;
+}
+
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"],
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] {
   width: 100% !important;
@@ -445,7 +451,7 @@ div[data-testid="stDataFrame"] {
   align-items: center !important;
   justify-content: center !important;
   background-size: auto 138% !important;
-  background-position: center !important;
+  background-position: calc(50% + 2px) center !important;
   background-repeat: no-repeat !important;
   background-color: transparent !important;
   border: 1px solid rgba(15, 23, 42, 0.1) !important;
@@ -540,7 +546,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
   align-items: center !important;
   justify-content: center !important;
   background-size: auto 138% !important;
-  background-position: center !important;
+  background-position: calc(50% + 2px) center !important;
   background-repeat: no-repeat !important;
   background-color: transparent !important;
   border: 1px solid rgba(15, 23, 42, 0.1) !important;

@@ -31,7 +31,7 @@ def masthead_flag_css_block(current_lang: str) -> str:
     """Popover tetikleyici + dil düğmeleri: daire içi tam bayrak, metin/emoji görünmez."""
     # auto + yükseklik %: tek eksenden büyütme yok; oran korunur, üst-alt boşluk kapanır.
     shared = (
-        "background-size:auto 138%!important;background-position:center!important;"
+        "background-size:auto 138%!important;background-position:calc(50% + 2px) 50%!important;"
         "background-repeat:no-repeat!important;background-color:transparent!important;"
         "color:transparent!important;-webkit-text-fill-color:transparent!important;"
     )
