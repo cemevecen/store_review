@@ -1451,16 +1451,20 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     flex: 1 1 auto !important;
   }
   /*
-   * Marka + dil: dil sütunu masthead köşesine (position relative = .st-key-pg_masthead).
-   * :first-of-type div ile HB eşleşmiyordu → yanlış kutu + right:0 sol üst gibi davranıyordu.
+   * Marka + dil (mobil): Streamlit [data-testid="element-container"] çoğunlukla position:relative;
+   * dil absolute olduğunda CB dar kalıp bayrak solda görünüyor → masthead içi tüm element-container static.
+   * Dil konumu doğrudan .st-key-masthead_lang_slot üzerinden .st-key-pg_masthead padding kutusuna pinlenir.
    */
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="element-container"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="element-container"] {
+    position: static !important;
+  }
   [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand),
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) {
     min-height: 0 !important;
     gap: 0 !important;
     padding-top: 8px !important;
     box-sizing: border-box !important;
-    /* Dil sütunu absolute: iç HB relative olursa CB dar kalır, bayrak solda görünür → CB = .st-key-pg_masthead */
     position: static !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="stColumn"]:has(.hero-masthead-brand),
@@ -1474,28 +1478,32 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="column"]:has(.st-key-masthead_lang_slot),
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="stColumn"]:has(.st-key-masthead_lang_slot),
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="column"]:has(.st-key-masthead_lang_slot) {
-    position: absolute !important;
-    top: 22px !important;
-    right: clamp(12px, 4vw, 20px) !important;
-    left: auto !important;
-    width: auto !important;
-    max-width: 48px !important;
+    position: static !important;
+    height: 0 !important;
     min-height: 0 !important;
-    flex: 0 0 auto !important;
-    margin: 0 !important;
+    overflow: visible !important;
     padding: 0 !important;
+    margin: 0 !important;
+    flex: 0 0 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
     align-items: flex-end !important;
     justify-content: flex-start !important;
-    z-index: 5 !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot {
+    position: absolute !important;
+    top: 14px !important;
+    right: clamp(14px, 4vw, 32px) !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: auto !important;
+    max-width: 52px !important;
+    margin: 0 !important;
+    z-index: 25 !important;
+    direction: ltr !important;
     justify-content: flex-end !important;
     align-items: flex-start !important;
-    max-width: 48px !important;
-    width: 100% !important;
-    margin-left: 0 !important;
-    margin-top: 0 !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about {
