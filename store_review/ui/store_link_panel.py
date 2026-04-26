@@ -99,14 +99,21 @@ def _migrate_date_session(keys: tuple[str, ...]) -> None:
 
 
 def _seed_time_range_from_legacy(new_key: str, legacy_key: str) -> None:
-    """Yeni dil-anahtarı boşsa tek-anahtarlı eski sürümden kopyala."""
+    """Yeni dil-anahtarı boşsa eski tek anahtar veya diğer dil anahtarlarından (ör. sl_time_range_ru) kopyala."""
     if new_key in st.session_state:
         return
-    if legacy_key not in st.session_state:
-        return
-    v = st.session_state.get(legacy_key)
-    if isinstance(v, str) and (code := _resolved_date_code(v)):
-        st.session_state[new_key] = code
+    candidates: list[str] = []
+    if legacy_key in st.session_state:
+        candidates.append(legacy_key)
+    prefix = f"{legacy_key}_"
+    for k in st.session_state.keys():
+        if isinstance(k, str) and k.startswith(prefix) and k != new_key:
+            candidates.append(k)
+    for ckey in candidates:
+        v = st.session_state.get(ckey)
+        if isinstance(v, str) and (code := _resolved_date_code(v)):
+            st.session_state[new_key] = code
+            return
 
 
 def _migrate_scope_session_key(key: str) -> None:
@@ -128,15 +135,22 @@ def scope_state_key() -> str:
 
 
 def _seed_scope_from_legacy(new_key: str, legacy_key: str = "sl_scope") -> None:
-    """Karşılaştırma sekmesi için legacy_key örn. cmp_scope_0 olabilir."""
+    """Karşılaştırma için legacy_key örn. cmp_scope_0; diğer dil anahtarlarından da kopyalanır."""
     if new_key in st.session_state:
         return
-    if legacy_key not in st.session_state:
-        return
-    _migrate_scope_session_key(legacy_key)
-    v = st.session_state.get(legacy_key)
-    if v in ("local", "global"):
-        st.session_state[new_key] = v
+    candidates: list[str] = []
+    if legacy_key in st.session_state:
+        candidates.append(legacy_key)
+    prefix = f"{legacy_key}_"
+    for k in st.session_state.keys():
+        if isinstance(k, str) and k.startswith(prefix) and k != new_key:
+            candidates.append(k)
+    for ckey in candidates:
+        _migrate_scope_session_key(ckey)
+        v = st.session_state.get(ckey)
+        if v in ("local", "global"):
+            st.session_state[new_key] = v
+            return
 
 
 def _run_store_search_with_progress(query: str, platform_filter: str) -> list:
