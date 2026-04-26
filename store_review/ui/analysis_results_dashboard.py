@@ -5,7 +5,7 @@ Analiz sonuçları — nlp-sentiment-project ile uyumlu kart + iki sütun + öze
 from __future__ import annotations
 
 import html
-import random
+import re
 from collections import Counter
 from collections import defaultdict
 
@@ -14,6 +14,65 @@ import plotly.express as px
 import streamlit as st
 
 from store_review.config.i18n import t as _t
+
+# Karşılaştırma kartı başlığı: mağaza / API genelde tam küçük harf döner; Türkçe i/ı için güvenli baş harf
+_TC_FIRST = {
+    "a": "A",
+    "b": "B",
+    "c": "C",
+    "ç": "Ç",
+    "d": "D",
+    "e": "E",
+    "f": "F",
+    "g": "G",
+    "ğ": "Ğ",
+    "h": "H",
+    "i": "İ",
+    "ı": "I",
+    "j": "J",
+    "k": "K",
+    "l": "L",
+    "m": "M",
+    "n": "N",
+    "o": "O",
+    "ö": "Ö",
+    "p": "P",
+    "q": "Q",
+    "r": "R",
+    "s": "S",
+    "ş": "Ş",
+    "t": "T",
+    "u": "U",
+    "ü": "Ü",
+    "v": "V",
+    "w": "W",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+}
+
+
+def _format_compact_section_title(raw: str) -> str:
+    """Örn. 'döviz: canlı kur' → 'Döviz: Canlı Kur' (kelime başları, ayırıcılar korunur)."""
+    s = (raw or "").strip()
+    if not s:
+        return s
+    parts = re.split(r"([^a-zA-ZğüşıöçĞÜŞİÖÇıİ0-9]+)", s)
+    out: list[str] = []
+    for p in parts:
+        if not p:
+            continue
+        if not re.search(r"[a-zA-ZğüşıöçĞÜŞİÖÇıİ]", p):
+            out.append(p)
+            continue
+        if p[0].isdigit():
+            out.append(p)
+            continue
+        fl = p[0].lower()
+        head = _TC_FIRST.get(fl, p[0].upper() if fl.isalpha() else p[0])
+        tail = p[1:].lower()
+        out.append(head + tail)
+    return "".join(out)
 
 
 def _counts(df: pd.DataFrame) -> tuple[int, int, int, int]:
@@ -29,20 +88,6 @@ def _arc_pct(pct: float, circ: float) -> tuple[float, float]:
     filled = round(circ * pct / 100, 1)
     gap = round(circ - filled, 1)
     return filled, gap
-
-
-def _sample_texts(rows: list[dict], verdict: str, n: int = 2, max_len: int = 140) -> list[str]:
-    texts = [str(r.get("Yorum", "")).strip() for r in rows if r.get("Baskın Duygu") == verdict and str(r.get("Yorum", "")).strip()]
-    if not texts:
-        return []
-    pick = texts if len(texts) <= n else random.sample(texts, n)
-    out = []
-    for t in pick:
-        t = t.replace("\n", " ")
-        if len(t) > max_len:
-            t = t[: max_len - 1] + "…"
-        out.append(html.escape(t))
-    return out
 
 
 def _render_concentric_legend(m_olumlu: int, m_olumsuz: int, m_istek: int) -> None:
@@ -249,22 +294,46 @@ def _render_sentiment_summary(
 
     pos_p = int(len(pos_l) / total_all * 100) if total_all else 0
     neg_p = int(len(neg_l) / total_all * 100) if total_all else 0
+    neu_p = int(m_istek / total_all * 100) if total_all else 0
 
     if pos_p >= 55:
         summary_title = _t("dash.summary_pos_title")
-        tone_intro = _t("dash.summary_pos_intro", n=total_all, pos=pos_p)
+        summary_raw = _t(
+            "dash.summary_narrative_positive",
+            total=total_all,
+            pos=m_olumlu,
+            neg=m_olumsuz,
+            neu=m_istek,
+            pos_p=pos_p,
+            neg_p=neg_p,
+            neu_p=neu_p,
+        )
     elif neg_p >= 50:
         summary_title = _t("dash.summary_neg_title")
-        tone_intro = _t("dash.summary_neg_intro", neg=neg_p)
+        summary_raw = _t(
+            "dash.summary_narrative_negative",
+            total=total_all,
+            pos=m_olumlu,
+            neg=m_olumsuz,
+            neu=m_istek,
+            pos_p=pos_p,
+            neg_p=neg_p,
+            neu_p=neu_p,
+        )
     else:
         summary_title = _t("dash.summary_mixed_title")
-        tone_intro = _t("dash.summary_mixed_intro", pos=pos_p, neg=neg_p)
+        summary_raw = _t(
+            "dash.summary_narrative_mixed",
+            total=total_all,
+            pos=m_olumlu,
+            neg=m_olumsuz,
+            neu=m_istek,
+            pos_p=pos_p,
+            neg_p=neg_p,
+            neu_p=neu_p,
+        )
 
-    pos_s = _sample_texts(rows, "Olumlu", 2)
-    neg_s = _sample_texts(rows, "Olumsuz", 2)
-    pos_part = _t("dash.summary_key_phrases", items="; ".join(pos_s)) if pos_s else ""
-    neg_part = _t("dash.summary_neg_samples", items="; ".join(neg_s)) if neg_s else ""
-    summary_body = f"{html.escape(tone_intro)} {pos_part} {neg_part}".strip()
+    summary_body = html.escape(summary_raw.strip())
 
     all_v = [str(r.get("Versiyon", "")).strip() for r in rows if r.get("Versiyon") and str(r.get("Versiyon")).strip() not in ("", "—")]
     top_v = Counter(all_v).most_common(1)
@@ -473,14 +542,20 @@ def render_analysis_results_dashboard(
             unsafe_allow_html=True,
         )
     elif section_title:
+        display_title = _format_compact_section_title(section_title)
         st.markdown(
-            f'<h3 class="sr-analysis-page-title sr-analysis-page-title--sub">{html.escape(section_title)}</h3>',
+            f'<h3 class="sr-analysis-page-title sr-analysis-page-title--sub">{html.escape(display_title)}</h3>',
             unsafe_allow_html=True,
         )
 
+    metric_row_cls = (
+        "sr-analysis-metric-row sr-analysis-metric-row--tight-top"
+        if compact
+        else "sr-analysis-metric-row"
+    )
     st.markdown(
         f"""
-    <div class="sr-analysis-metric-row">
+    <div class="{metric_row_cls}">
         <div class="sr-analysis-metric-pill">
             <div class="sr-analysis-metric-value" style="color:#10b981;">{m_olumlu}</div>
             <div class="sr-analysis-metric-label">{html.escape(_t("dash.sent_pos"))}</div>

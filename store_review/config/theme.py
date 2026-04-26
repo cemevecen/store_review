@@ -1167,9 +1167,11 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
 .sr-analysis-page-title--sub {
   font-size: 1.05rem;
   color: #1f2937;
-  margin: 0.25rem 0 0.55rem;
-  /* Sol: turuncu şerit ile metin arasında ~12px (border padding içinde) */
-  padding: 0.4rem 0.75rem 0.4rem 12px;
+  /* Başlık kutusu ile altındaki metrik hapları arasında 12px */
+  margin: 0.25rem 0 12px;
+  text-transform: none;
+  /* Turuncu çizgi + yaklaşık bir harf genişliği (1ch) metin öncesi boşluk */
+  padding: 0.4rem 0.75rem 0.4rem calc(12px + 1ch);
   background: linear-gradient(135deg, rgba(255,237,213,0.65), rgba(255,255,255,0));
   border-left: 3px solid #fb923c;
   border-radius: 6px;
@@ -1181,6 +1183,10 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   gap: 0.6rem;
   margin: 0.15rem 0 0.75rem;
   flex-wrap: wrap;
+}
+/* Karşılaştırma (compact): alt başlığın 12px margin-bottom'ı tek başına yeter; üst birikme olmasın */
+.sr-analysis-metric-row.sr-analysis-metric-row--tight-top {
+  margin-top: 0;
 }
 .sr-analysis-metric-pill {
   background: #ffffff !important;
