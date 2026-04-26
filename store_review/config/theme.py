@@ -1168,7 +1168,8 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   font-size: 1.05rem;
   color: #1f2937;
   margin: 0.25rem 0 0.55rem;
-  padding: 0.4rem 0.75rem;
+  /* Sol: turuncu şerit ile metin arasında ~12px (border padding içinde) */
+  padding: 0.4rem 0.75rem 0.4rem 12px;
   background: linear-gradient(135deg, rgba(255,237,213,0.65), rgba(255,255,255,0));
   border-left: 3px solid #fb923c;
   border-radius: 6px;
