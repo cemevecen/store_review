@@ -456,7 +456,7 @@ div[data-testid="stDataFrame"] {
 /* Türk bayrağı (flagcdn PNG): ay–yıldız geometrik merkezin solunda; daire içinde yalnız TR optik ortala */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop_tr"] button,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop_tr"] button {
-  background-position: calc(42% - 1px) center !important;
+  background-position: calc(42% - 3px) center !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] button svg,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot [class*="st-key-masthead_lang_pop"] button svg {
@@ -554,7 +554,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button {
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
 }
 div[data-baseweb="popover"] .st-key-masthead_pick_tr button {
-  background-position: calc(42% - 1px) center !important;
+  background-position: calc(42% - 3px) center !important;
 }
 div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button > div {
   position: absolute !important;
