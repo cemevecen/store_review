@@ -12,7 +12,6 @@ Notlar:
 from __future__ import annotations
 
 import io
-import random
 import re
 from collections import Counter, defaultdict
 from datetime import datetime
@@ -234,24 +233,6 @@ def _compute_daily_neg(rows: list[dict]) -> list[tuple[str, float, int]] | None:
             continue
         out.append((labels[d], day_neg[d] / day_total[d], day_total[d]))
     return out or None
-
-
-def _sample_texts(rows: list[dict], verdict: str, n: int = 2, max_len: int = 180) -> list[str]:
-    texts = [
-        str(r.get("Yorum", "")).strip()
-        for r in rows
-        if r.get("Baskın Duygu") == verdict and str(r.get("Yorum", "")).strip()
-    ]
-    if not texts:
-        return []
-    pick = texts if len(texts) <= n else random.sample(texts, n)
-    out: list[str] = []
-    for s in pick:
-        s = s.replace("\n", " ")
-        if len(s) > max_len:
-            s = s[: max_len - 1] + "…"
-        out.append(s)
-    return out
 
 
 def _top_common(rows: list[dict], key: str) -> str:
@@ -503,22 +484,46 @@ def _draw_summary_block(
 
     pos_p = int(pos / total * 100) if total else 0
     neg_p = int(neg / total * 100) if total else 0
+    neu_p = int(neu / total * 100) if total else 0
 
     if pos_p >= 55:
         title_txt = _t("dash.summary_pos_title")
-        intro = _t("dash.summary_pos_intro", n=total, pos=pos_p)
+        intro = _t(
+            "dash.summary_narrative_positive",
+            total=total,
+            pos=pos,
+            neg=neg,
+            neu=neu,
+            pos_p=pos_p,
+            neg_p=neg_p,
+            neu_p=neu_p,
+        )
     elif neg_p >= 50:
         title_txt = _t("dash.summary_neg_title")
-        intro = _t("dash.summary_neg_intro", neg=neg_p)
+        intro = _t(
+            "dash.summary_narrative_negative",
+            total=total,
+            pos=pos,
+            neg=neg,
+            neu=neu,
+            pos_p=pos_p,
+            neg_p=neg_p,
+            neu_p=neu_p,
+        )
     else:
         title_txt = _t("dash.summary_mixed_title")
-        intro = _t("dash.summary_mixed_intro", pos=pos_p, neg=neg_p)
+        intro = _t(
+            "dash.summary_narrative_mixed",
+            total=total,
+            pos=pos,
+            neg=neg,
+            neu=neu,
+            pos_p=pos_p,
+            neg_p=neg_p,
+            neu_p=neu_p,
+        )
 
-    pos_s = _sample_texts(rows, "Olumlu", 2)
-    neg_s = _sample_texts(rows, "Olumsuz", 2)
-    pos_part = _t("dash.summary_key_phrases", items="; ".join(pos_s)) if pos_s else ""
-    neg_part = _t("dash.summary_neg_samples", items="; ".join(neg_s)) if neg_s else ""
-    body = _cell_text(f"{intro} {pos_part} {neg_part}".strip())
+    body = _cell_text(intro.strip())
 
     subtitle = _t("dash.summary_subtitle_fast") if use_fast else _t("dash.summary_subtitle_rich")
     best_v = _top_common(rows, "Versiyon")
@@ -529,7 +534,7 @@ def _draw_summary_block(
     pdf.set_font("NotoSans", "", 9.0)
     inner_w = w - 8
     approx_chars_per_line = max(40, int(inner_w / 1.8))
-    body_lines = max(1, (len(body) // approx_chars_per_line) + 1)
+    body_lines = max(14, (len(body) // approx_chars_per_line) + 4)
     body_h = body_lines * 4.5
 
     card_h = 6 + 5 + 6 + body_h + 18 + 7

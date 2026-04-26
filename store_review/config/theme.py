@@ -396,7 +396,7 @@ div[data-testid="stDataFrame"] {
   min-height: 44px !important;
 }
 
-/* Masthead — st.pills satırı ortada */
+/* Masthead — st.pills satırı ortada (dar ekranda aşağıda flex-start) */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-main_data_source_tab,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-main_data_source_tab {
   display: flex !important;
@@ -405,6 +405,18 @@ div[data-testid="stDataFrame"] {
   width: 100% !important;
   margin-left: auto !important;
   margin-right: auto !important;
+}
+
+/*
+ * Streamlit ButtonGroup (st.pills) — width stretch iken flexWrap:wrap + max-width:100% (kaynak: ButtonGroup.tsx).
+ * width=content ile çoğu durumda tek satır olur; yine de wrap enjekte edildiği için masthead'te nowrap zorunlu.
+ */
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [role="radiogroup"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [role="radiogroup"],
+[data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button-group"],
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-baseweb="button-group"] {
+  flex-wrap: nowrap !important;
+  align-items: center !important;
 }
 
 /* Masthead — dil: yuvarlak stroke + bayrak daire içinde taşarak çerçeveyi doldurur */
@@ -1413,6 +1425,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   /* st.pills kökü: yatay kaydırma burada; iç flex satırı max-content ile taşar */
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab {
+    justify-content: flex-start !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;

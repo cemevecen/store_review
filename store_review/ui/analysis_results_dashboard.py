@@ -345,7 +345,6 @@ def _render_sentiment_summary(
     subtitle = (
         _t("dash.summary_subtitle_fast") if use_fast else _t("dash.summary_subtitle_rich")
     )
-    quote_color = "#818cf8" if use_fast else "#7c3aed"
     title_color = "#6366F1" if use_fast else "#5b21b6"
 
     persona_html = f"""
@@ -362,7 +361,6 @@ def _render_sentiment_summary(
         f"""
 <div style="background:#F8FAFC;border-radius:12px;padding:20px 24px;position:relative;border:1px solid #E2E8F0;">
     <div style="font-size:0.75rem;font-weight:600;color:#64748b;margin-bottom:6px;">{html.escape(subtitle)}</div>
-    <div style="font-size:52px;line-height:0.6;color:{quote_color};font-family:Georgia,serif;opacity:0.35;margin-bottom:10px;user-select:none;">"</div>
     <div style="font-size:0.82rem;font-weight:700;color:{title_color};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">{html.escape(summary_title)}</div>
     <div style="font-size:0.9rem;color:#1E293B;line-height:1.75;margin:0;">{summary_body}</div>
     {persona_html}

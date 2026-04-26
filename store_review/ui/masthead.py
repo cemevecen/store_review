@@ -132,6 +132,8 @@ def render_masthead() -> None:
                     format_func=lambda v: _source_labels.get(v, v),
                     key="main_data_source_tab",
                     label_visibility="collapsed",
-                    width="stretch",
+                    # "stretch" → Streamlit ButtonGroup flex-wrap + %100 genişlik ile pill'leri satır kırar.
+                    # "content" tek satır intrinsic genişlik; dar ekranda yatay kaydırma theme CSS ile.
+                    width="content",
                     on_change=_on_main_nav_change,
                 )
