@@ -30,7 +30,7 @@ def flag_png_url(lang_code: str, *, width: int = 160) -> str:
 def _flag_shared(lang_code: str) -> str:
     """Bayrak arka planı; TR için flagcdn PNG'de ay–yıldız geometrik merkezin solunda — dairede optik ortala."""
     pos = (
-        "background-position:42% center!important;"
+        "background-position:calc(42% + 2px) center!important;"
         if lang_code == "tr"
         else "background-position:center!important;"
     )
