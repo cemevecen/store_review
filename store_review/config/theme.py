@@ -255,15 +255,15 @@ div[data-testid="stDataFrame"] {
   margin-left: 0 !important;
   margin-right: 0 !important;
   margin-top: -1.25rem !important;
-  margin-bottom: 6px !important;
-  padding: 30px clamp(18px, 4vw, 44px) 20px !important;
+  margin-bottom: 4px !important;
+  padding: 16px clamp(16px, 4vw, 40px) 12px !important;
   box-sizing: border-box !important;
-  min-height: 108px !important;
+  min-height: 88px !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 14px !important;
+  gap: 8px !important;
   border: none !important;
   border-radius: 0 0 22px 22px !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.14) !important;
@@ -308,7 +308,7 @@ div[data-testid="stDataFrame"] {
 [data-testid="stVerticalBlock"].st-key-pg_masthead div[data-testid="stMarkdownContainer"]:has(.hero-band-target),
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead div[data-testid="stMarkdownContainer"]:has(.hero-band-target) {
   margin-bottom: 0 !important;
-  margin-top: 14px !important;
+  margin-top: 4px !important;
 }
 
 .hero-masthead-brand {
@@ -317,7 +317,7 @@ div[data-testid="stDataFrame"] {
   flex-wrap: wrap !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 12px !important;
+  gap: 10px !important;
   min-width: 0 !important;
   width: 100% !important;
   max-width: min(100%, 720px) !important;
@@ -374,12 +374,12 @@ div[data-testid="stDataFrame"] {
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"] {
   width: 100% !important;
   align-items: stretch !important;
-  min-height: 78px !important;
+  min-height: 56px !important;
 }
-/* Dil ~35px + margin-top ~23px — ilk satır (marka + dil), önceki boyutun 2/3'ü */
+/* Marka + dil satırı — kompakt yükseklik */
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type {
-  min-height: 63px !important;
+  min-height: 48px !important;
 }
 
 /* Dil sütunu yalnız ilk satır (Hakkında sütununa uygulanmasın) */
@@ -391,9 +391,9 @@ div[data-testid="stDataFrame"] {
   flex-direction: column !important;
   align-items: center !important;
   justify-content: flex-start !important;
-  gap: 12px !important;
+  gap: 6px !important;
   text-align: center !important;
-  min-height: 59px !important;
+  min-height: 44px !important;
 }
 
 /* Masthead — st.pills satırı ortada */
@@ -542,7 +542,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   letter-spacing: 0 !important;
 }
 
-/* Sağ üst dil: margin-top önceki 34px'in 2/3'ü (~23px) */
+/* Sağ üst dil: marka satırıyla hizalı, fazla dikey boşluk yok */
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot {
   display: flex !important;
@@ -551,7 +551,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   width: 100% !important;
   max-width: 45px !important;
   margin-left: auto !important;
-  margin-top: 23px !important;
+  margin-top: 8px !important;
 }
 [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop,
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot .st-key-masthead_lang_pop {
@@ -700,7 +700,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   column-gap: 8px !important;
   row-gap: 8px !important;
   flex-wrap: nowrap !important;
-  min-height: max(calc(var(--masthead-pill-h) + 8px), calc(var(--masthead-chip-h) + 8px)) !important;
+  min-height: max(calc(var(--masthead-pill-h) + 4px), calc(var(--masthead-chip-h) + 4px)) !important;
   overflow-x: auto !important;
   overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch !important;
@@ -914,7 +914,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   flex-shrink: 0 !important;
 }
 
-/* Masthead: başlık dışındaki markdown kutularında üst margin sıfır (başlık kutusu yukarıda 14px alır) */
+/* Masthead: başlık dışındaki markdown kutularında üst margin sıfır */
 [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stMarkdownContainer"]:not(:has(.hero-masthead-brand)),
 [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stMarkdownContainer"]:not(:has(.hero-masthead-brand)) {
   margin-top: 0 !important;
@@ -1361,7 +1361,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     flex-direction: column !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
-    gap: 10px !important;
+    gap: 6px !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-masthead_pills_about"] [data-testid="stHorizontalBlock"])) > [data-testid="stColumn"],
   [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-masthead_pills_about"] [data-testid="stHorizontalBlock"])) > [data-testid="column"],
@@ -1376,6 +1376,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     justify-content: center !important;
     max-width: 100% !important;
     margin-left: 0 !important;
+    margin-top: 6px !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about {
@@ -1403,13 +1404,13 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
-    gap: 10px !important;
-    column-gap: 10px !important;
-    row-gap: 10px !important;
+    gap: 8px !important;
+    column-gap: 8px !important;
+    row-gap: 8px !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
-    padding: 4px 16px 12px 16px !important;
+    padding: 2px 12px 8px 12px !important;
     box-sizing: border-box !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
@@ -1417,7 +1418,7 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     overscroll-behavior-x: contain !important;
     scroll-snap-type: x proximity !important;
     scrollbar-width: none !important;
-    min-height: max(calc(var(--masthead-pill-h) + 8px), calc(var(--masthead-chip-h) + 8px)) !important;
+    min-height: max(calc(var(--masthead-pill-h) + 4px), calc(var(--masthead-chip-h) + 4px)) !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"]))::-webkit-scrollbar,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"]:not(:is([class*="st-key-main_data_source_tab"] [data-testid="stHorizontalBlock"]))::-webkit-scrollbar {
@@ -1477,8 +1478,9 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead {
-    padding: 22px clamp(12px, 4vw, 20px) 16px !important;
+    padding: 14px clamp(12px, 4vw, 20px) 10px !important;
     min-height: 0 !important;
+    gap: 6px !important;
   }
   [data-testid="stTabs"] [data-baseweb="tab-list"] {
     flex-wrap: wrap !important;
