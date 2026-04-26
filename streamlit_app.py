@@ -618,7 +618,7 @@ def main():
             render_analyzed_review_cards(rows, key_prefix="main_analiz")
 
         out_df = df.drop(columns=["Tarih"], errors="ignore") if "Tarih" in df.columns else df
-        d_csv, d_pdf = st.columns(2)
+        d_csv, d_xlsx, d_pdf = st.columns(3)
         with d_csv:
             st.download_button(
                 t("download.analysis_csv"),
@@ -627,6 +627,17 @@ def main():
                 mime="text/csv",
                 use_container_width=True,
             )
+        with d_xlsx:
+            try:
+                st.download_button(
+                    t("download.analysis_excel"),
+                    data=df_to_excel_bytes(out_df),
+                    file_name=f"analiz_{datetime.now():%Y%m%d_%H%M}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True,
+                )
+            except Exception as e:
+                st.caption(f"Excel: {e}")
         with d_pdf:
             try:
                 _analiz_pdf = build_analysis_pdf_bytes(rows, source_label=src_cur)
