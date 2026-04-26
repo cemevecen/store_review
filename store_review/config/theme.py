@@ -1410,27 +1410,39 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     padding-left: 2px !important;
     padding-right: 2px !important;
   }
-  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child,
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child {
-    justify-content: flex-start !important;
-    /* Tek satır st.pills (Hakkında dahil): dış HB olmadan yatay kaydırma bu flex sarmalayıcıda */
+  /* st.pills kökü: yatay kaydırma burada; iç flex satırı max-content ile taşar */
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+    box-sizing: border-box !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior-x: contain !important;
+    scrollbar-width: none !important;
+    padding-bottom: 4px !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab::-webkit-scrollbar,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab::-webkit-scrollbar {
+    display: none !important;
+    height: 0 !important;
+  }
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child,
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    width: max-content !important;
+    min-width: min-content !important;
+    max-width: none !important;
     box-sizing: border-box !important;
     padding-left: 12px !important;
     padding-right: 12px !important;
-    padding-bottom: 6px !important;
-    scrollbar-width: none !important;
-  }
-  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child::-webkit-scrollbar,
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab > div:last-child::-webkit-scrollbar {
-    display: none !important;
-    height: 0 !important;
   }
   /*
    * hero-chip-row (st-key-hero_chip_row): yalnız pill+hakkında dış satırı kayar.
@@ -1473,23 +1485,29 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     min-width: max-content !important;
     scroll-snap-align: start !important;
   }
-  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"],
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] {
+  /*
+   * masthead_pills_about içindeki TÜM stHorizontalBlock kurallarını kaldırdık:
+   * width:100% iç pill satırlarına sızıyordu → pill'ler dikey kırılıyordu.
+   * st.pills iç HB'leri aşağıda masthead kapsamında yeniden sıkılaştırıyoruz.
+   */
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-testid="stHorizontalBlock"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-testid="stHorizontalBlock"] {
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    align-items: center !important;
-    width: 100% !important;
-    max-width: min(100vw, 100%) !important;
-    padding-bottom: 0 !important;
+    align-items: stretch !important;
+    width: max-content !important;
+    min-width: min-content !important;
+    max-width: none !important;
+    flex: 0 0 auto !important;
   }
-  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
-  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="column"],
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about [data-testid="stHorizontalBlock"] > [data-testid="column"] {
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+  [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-testid="stHorizontalBlock"] > [data-testid="column"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-testid="stHorizontalBlock"] > [data-testid="stColumn"],
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab [data-testid="stHorizontalBlock"] > [data-testid="column"] {
     width: auto !important;
     max-width: none !important;
     flex: 0 0 auto !important;
-    min-width: 0 !important;
+    min-width: max-content !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_pills_about .st-key-main_data_source_tab button,
