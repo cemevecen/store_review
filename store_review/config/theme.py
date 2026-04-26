@@ -376,17 +376,17 @@ div[data-testid="stDataFrame"] {
   align-items: stretch !important;
   min-height: 56px !important;
 }
-/* Marka + dil satırı — kompakt yükseklik */
-[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type,
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type {
+/* Marka + dil satırı — kompakt yükseklik (:first-of-type div’de güvenilir değil; marka satırı :has ile) */
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand),
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) {
   min-height: 48px !important;
 }
 
-/* Dil sütunu yalnız ilk satır (Hakkında sütununa uygulanmasın) */
-[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:nth-child(2),
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:nth-child(2),
-[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="column"]:nth-child(2),
-[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="column"]:nth-child(2) {
+/* Dil sütunu — yalnız logo satırındaki sütun (pill satırlarına sızmasın) */
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="stColumn"]:has(.st-key-masthead_lang_slot),
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="stColumn"]:has(.st-key-masthead_lang_slot),
+[data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="column"]:has(.st-key-masthead_lang_slot),
+[data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="column"]:has(.st-key-masthead_lang_slot) {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -1400,27 +1400,29 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     max-width: 100% !important;
     flex: 1 1 auto !important;
   }
-  /* Marka + dil satırı: dil sütunu akıştan çıkar — sağ üst; marka ortada kalır, bayrak için sağ boşluk */
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type,
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type {
-    position: relative !important;
+  /*
+   * Marka + dil: dil sütunu masthead köşesine (position relative = .st-key-pg_masthead).
+   * :first-of-type div ile HB eşleşmiyordu → yanlış kutu + right:0 sol üst gibi davranıyordu.
+   */
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand),
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) {
     min-height: 0 !important;
     gap: 0 !important;
   }
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:first-child,
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="column"]:first-child,
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:first-child,
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="column"]:first-child {
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="stColumn"]:has(.hero-masthead-brand),
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="column"]:has(.hero-masthead-brand),
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="stColumn"]:has(.hero-masthead-brand),
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="column"]:has(.hero-masthead-brand) {
     padding-right: 44px !important;
     box-sizing: border-box !important;
   }
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:nth-child(2),
-  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="column"]:nth-child(2),
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="stColumn"]:nth-child(2),
-  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:first-of-type > [data-testid="column"]:nth-child(2) {
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="stColumn"]:has(.st-key-masthead_lang_slot),
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="column"]:has(.st-key-masthead_lang_slot),
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="stColumn"]:has(.st-key-masthead_lang_slot),
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="column"]:has(.st-key-masthead_lang_slot) {
     position: absolute !important;
-    top: 0 !important;
-    right: 0 !important;
+    top: 14px !important;
+    right: clamp(12px, 4vw, 20px) !important;
     left: auto !important;
     width: auto !important;
     max-width: 48px !important;
