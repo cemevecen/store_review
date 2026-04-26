@@ -638,7 +638,9 @@ def _apply_pending_cmp_store_in(slot: int) -> None:
 
 def _reset_cmp_slot(slot: int) -> None:
     p = _cmp_pick_prefix(slot)
-    st.session_state[f"cmp_store_in_{slot}"] = ""
+    # cmp_store_in_* bu slotta text_input ile bağlı; widget çizildikten sonra doğrudan
+    # atamak StreamlitAPIException üretir. Bir sonraki run başında _apply_pending_cmp_store_in uygular.
+    st.session_state[f"_pending_cmp_store_in_{slot}"] = ""
     st.session_state[f"{p}selected_id"] = None
     st.session_state[f"{p}selected_platform"] = None
     st.session_state[f"{p}selected_title"] = ""
