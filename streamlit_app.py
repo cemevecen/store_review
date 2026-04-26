@@ -40,8 +40,8 @@ from store_review.ui.compare_panel import (
     render_compare_tab,
 )
 from store_review.config.i18n import get_lang, t
+from store_review.ui.about_page import render_about_body
 from store_review.ui.masthead import (
-    SOURCE_OPTIONS,
     SOURCE_POOL_KEY,
     render_masthead,
     session_main_data_source as _session_main_data_source,
@@ -272,6 +272,8 @@ def _init_split_pools() -> None:
 
 def _active_review_pool() -> list:
     label = _session_main_data_source()
+    if label == "Hakkında":
+        return []
     pk = SOURCE_POOL_KEY.get(label, "store")
     if pk == "compare":
         return []
@@ -280,6 +282,8 @@ def _active_review_pool() -> list:
 
 def _havuz_metric_visible(src: str, pool_display_count: int) -> bool:
     """Havuzdaki yorum kutusu: yalnız ilgili sekmede veri / taslak / uygulama girişi varken."""
+    if src == "Hakkında":
+        return False
     if src == "Mağaza":
         typed = (st.session_state.get("sl_store_input") or "").strip()
         if typed or st.session_state.get("sl_selected_id"):
@@ -306,7 +310,20 @@ def main():
     )
     _inject_css()
     _inject_file_uploader_labels_once()
-    render_masthead(on_about=False)
+    render_masthead()
+
+    if "analysis_rows" not in st.session_state:
+        st.session_state.analysis_rows = []
+    _init_split_pools()
+
+    if "_nav_prev_pill" not in st.session_state:
+        st.session_state["_nav_prev_pill"] = _session_main_data_source()
+
+    src = _session_main_data_source()
+    if src == "Hakkında":
+        render_about_body()
+        st.session_state["_nav_prev_pill"] = _session_main_data_source()
+        return
 
     env_settings = Settings.from_env()
     gk, gqk, ok = resolve_api_keys(
@@ -317,12 +334,6 @@ def main():
     )
     rich = RichAnalyzer(gemini_key=gk, groq_key=gqk, openai_key=ok)
     has_llm_keys = bool(gk or gqk or ok)
-
-    if "analysis_rows" not in st.session_state:
-        st.session_state.analysis_rows = []
-    _init_split_pools()
-
-    src = _session_main_data_source()
 
     if src == "Mağaza":
         render_store_link_tab()
@@ -666,6 +677,8 @@ def main():
                 st.caption(str(e))
             except Exception as e:
                 st.caption(f"PDF: {e}")
+
+    st.session_state["_nav_prev_pill"] = _session_main_data_source()
 
 
 if __name__ == "__main__":

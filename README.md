@@ -66,8 +66,8 @@ Streamlit Community Cloud gibi ortamlarda uygulama genelde `streamlit_app.py` gi
 
 ## Sayfa yapısı
 
-- Ana akış: kök URL (`/`).
-- Bilgi sayfası: `pages/about.py` üzerinden `/about` (içerik ve dil seçimi uygulama mantığına bağlıdır).
+- Ana akış: kök URL (`/`). **Hakkında** içeriği masthead’deki pill ile aynı sayfada açılır (tam sayfa `~/+/about` geçişi yok).
+- Eski `/about` veya Streamlit’in `~/+/about` yolu: `pages/about.py` yalnızca ana betiğe yönlendirir (yer imleri kırılmasın diye).
 
 ---
 
