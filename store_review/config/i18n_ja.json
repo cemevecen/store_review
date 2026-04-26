@@ -89,6 +89,7 @@
   "download.analysis_excel": "結果を Excel でダウンロード",
   "download.analysis_pdf": "結果を PDF でダウンロード",
   "dash.page_title": "分析結果と統計",
+  "dash.open_store_listing": "ストアでアプリを開く",
   "dash.sent_dist": "感情の分布",
   "dash.score_dist": "評価の分布",
   "dash.no_data_yet": "まだ十分なデータがありません。",

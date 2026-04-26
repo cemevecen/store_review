@@ -669,6 +669,17 @@ STRINGS: dict[str, dict[str, str]] = {
         "zh": "分析结果与统计", "ru": "Результаты анализа и статистика",
         "pt": "Resultados da análise e estatísticas",
     },
+    "dash.open_store_listing": {
+        "tr": "Uygulamayı mağazada aç",
+        "en": "Open app in store",
+        "es": "Abrir la app en la tienda",
+        "de": "App im Store öffnen",
+        "fr": "Ouvrir l’app dans le store",
+        "ar": "فتح التطبيق في المتجر",
+        "zh": "在商店中打开应用",
+        "ru": "Открыть приложение в магазине",
+        "pt": "Abrir o app na loja",
+    },
     "dash.sent_dist": {
         "tr": "Duygu Dağılımı", "en": "Sentiment distribution",
         "es": "Distribución de sentimiento", "de": "Sentiment-Verteilung",

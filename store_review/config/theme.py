@@ -1164,10 +1164,44 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   margin: 0.35rem 0 0.45rem;
   letter-spacing: -0.02em;
 }
+.sr-analysis-subhead-wrap {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin: 0.25rem 0 12px;
+}
+.sr-analysis-subhead-wrap .sr-analysis-page-title--sub {
+  margin: 0 !important;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.sr-store-listing-link {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  margin-top: 0.2rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  font-size: 1.05rem;
+  line-height: 1;
+  text-decoration: none !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+.sr-store-listing-link:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
 .sr-analysis-page-title--sub {
   font-size: 1.05rem;
   color: #1f2937;
-  /* Başlık kutusu ile altındaki metrik hapları arasında 12px */
+  /* Başlık kutusu ile altındaki metrik hapları arasında 12px (tek başlıkta) */
   margin: 0.25rem 0 12px;
   text-transform: none;
   /* Turuncu şeritten sonra metin: en az ~1 harf (em) + ekstra nefes alanı */
@@ -1180,7 +1214,9 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
 }
 /* Streamlit markdown sarmalayıcısı bazen başlık padding'ini sıfırlar; şerit–metin arası korunsun */
 [data-testid="stAppViewContainer"] .main [data-testid="stMarkdownContainer"] h3.sr-analysis-page-title--sub,
-[data-testid="stAppScrollToBottomContainer"] .main [data-testid="stMarkdownContainer"] h3.sr-analysis-page-title--sub {
+[data-testid="stAppScrollToBottomContainer"] .main [data-testid="stMarkdownContainer"] h3.sr-analysis-page-title--sub,
+[data-testid="stAppViewContainer"] .main [data-testid="stMarkdownContainer"] div.sr-analysis-page-title--sub,
+[data-testid="stAppScrollToBottomContainer"] .main [data-testid="stMarkdownContainer"] div.sr-analysis-page-title--sub {
   padding-left: max(1.35rem, 16px + 1.65em) !important;
   padding-inline-start: max(1.35rem, 16px + 1.65em) !important;
   padding-top: 0.45rem !important;
@@ -1520,7 +1556,9 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     font-size: 1.15rem !important;
   }
   [data-testid="stAppViewContainer"] .main [data-testid="stMarkdownContainer"] h3.sr-analysis-page-title--sub,
-  [data-testid="stAppScrollToBottomContainer"] .main [data-testid="stMarkdownContainer"] h3.sr-analysis-page-title--sub {
+  [data-testid="stAppScrollToBottomContainer"] .main [data-testid="stMarkdownContainer"] h3.sr-analysis-page-title--sub,
+  [data-testid="stAppViewContainer"] .main [data-testid="stMarkdownContainer"] div.sr-analysis-page-title--sub,
+  [data-testid="stAppScrollToBottomContainer"] .main [data-testid="stMarkdownContainer"] div.sr-analysis-page-title--sub {
     padding-left: max(1.2rem, 14px + 1.5em) !important;
     padding-inline-start: max(1.2rem, 14px + 1.5em) !important;
   }

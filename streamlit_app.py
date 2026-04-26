@@ -49,11 +49,23 @@ from store_review.ui.masthead import (
 from store_review.ui.review_cards import render_analyzed_review_cards
 from store_review.ui.store_link_panel import render_store_link_tab
 from store_review.utils.exporters import df_to_csv_bytes, df_to_excel_bytes
+from store_review.utils.store_urls import store_listing_url
 from store_review.utils.pdf_export import (
     build_analysis_pdf_bytes,
     safe_pdf_filename,
 )
 from store_review.utils.validators import is_valid_comment
+
+
+def _cmp_section_store_url(meta: dict, slug: str) -> str | None:
+    """Karşılaştırma kartı: Play / App Store listeleme linki (meta boşsa slug'dan platform:id)."""
+    plat = str(meta.get("platform") or "").strip().lower()
+    app_id = str(meta.get("app_id") or "").strip()
+    if not app_id and ":" in slug:
+        head, tail = slug.split(":", 1)
+        plat = plat or head.strip().lower()
+        app_id = tail.strip()
+    return store_listing_url(platform=plat or "android", app_id=app_id)
 
 
 def _secrets_get(key: str):
@@ -594,6 +606,7 @@ def main():
                     meta = cmp_res.get(slug) or {}
                     rows_slug = cmp_detail.get(slug) or []
                     app_title = str(meta.get("title") or slug)
+                    store_url = _cmp_section_store_url(meta, slug)
                     with col:
                         render_analysis_results_dashboard(
                             rows_slug,
@@ -601,6 +614,7 @@ def main():
                             key_suffix=slug,
                             compact=True,
                             section_title=app_title,
+                            section_store_url=store_url,
                         )
             else:
                 render_analysis_results_dashboard(rows, use_fast=use_fast_last)

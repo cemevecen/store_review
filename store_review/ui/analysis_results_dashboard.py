@@ -516,6 +516,7 @@ def render_analysis_results_dashboard(
     key_suffix: str = "",
     compact: bool = False,
     section_title: str | None = None,
+    section_store_url: str | None = None,
 ) -> None:
     """nlp-sentiment tarzı özet paneli: metrik hapları, sol göstergeler, sağ metin özeti, isteğe bağlı puan grafiği.
 
@@ -525,6 +526,7 @@ def render_analysis_results_dashboard(
         compact: True ise üstteki büyük başlık gizlenir; split (yan yana)
             düzenlerde alt-başlıkla kullanılır.
         section_title: compact modda üste yazılacak alt-başlık (uygulama adı vs.).
+        section_store_url: Varsa mağaza listeleme URL'si (h3 kullanılmaz; Streamlit yanlış köprü eklemez).
     """
     if not rows:
         return
@@ -543,10 +545,24 @@ def render_analysis_results_dashboard(
         )
     elif section_title:
         display_title = _format_compact_section_title(section_title)
-        st.markdown(
-            f'<h3 class="sr-analysis-page-title sr-analysis-page-title--sub">{html.escape(display_title)}</h3>',
-            unsafe_allow_html=True,
-        )
+        esc_title = html.escape(display_title)
+        # h2/h3 Streamlit otomatik köprü (#/...) ekler; div + role=heading ile gerçek mağaza linki verilebilir.
+        if section_store_url:
+            esc_url = html.escape(section_store_url, quote=True)
+            link_lbl = html.escape(_t("dash.open_store_listing"), quote=True)
+            st.markdown(
+                f'<div class="sr-analysis-subhead-wrap">'
+                f'<div class="sr-analysis-page-title sr-analysis-page-title--sub" role="heading" aria-level="3">{esc_title}</div>'
+                f'<a class="sr-store-listing-link" href="{esc_url}" target="_blank" rel="noopener noreferrer" '
+                f'title="{link_lbl}" aria-label="{link_lbl}">↗</a>'
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f'<div class="sr-analysis-page-title sr-analysis-page-title--sub" role="heading" aria-level="3">{esc_title}</div>',
+                unsafe_allow_html=True,
+            )
 
     metric_row_cls = (
         "sr-analysis-metric-row sr-analysis-metric-row--tight-top"
