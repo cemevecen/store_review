@@ -12,7 +12,7 @@ from typing import Any
 
 import streamlit as st
 
-from store_review.config.i18n import t
+from store_review.config.i18n import STRINGS, get_lang, t
 from store_review.fetchers.app_discovery import (
     looks_like_search_keyword,
     resolve_direct_input,
@@ -45,6 +45,40 @@ _LEGACY_DATE_LABELS = {
     "Son 2 yıl": "y2", "son 2 yıl": "y2",
 }
 
+_DATE_LABEL_CF_TO_CODE: dict[str, str] | None = None
+
+
+def _date_label_cf_to_code_map() -> dict[str, str]:
+    """Tüm dillerdeki tarih aralığı etiketleri → kod (session'da ham metin kalmışsa)."""
+    global _DATE_LABEL_CF_TO_CODE
+    if _DATE_LABEL_CF_TO_CODE is None:
+        m: dict[str, str] = {}
+        for code, ikey in _DATE_I18N_KEYS.items():
+            entry = STRINGS.get(ikey) or {}
+            for lbl in entry.values():
+                if isinstance(lbl, str) and lbl.strip():
+                    m[lbl.strip().casefold()] = code
+        _DATE_LABEL_CF_TO_CODE = m
+    return _DATE_LABEL_CF_TO_CODE
+
+
+def time_range_state_key(base: str) -> str:
+    """Dil değişince selectbox iç metni güncellensin diye widget state dil bazlı ayrılır."""
+    return f"{base}_{get_lang()}"
+
+
+def _resolved_date_code(raw: str) -> str | None:
+    s = (raw or "").strip()
+    if s in RANGE_DAYS:
+        return s
+    if s in _LEGACY_DATE_LABELS:
+        return _LEGACY_DATE_LABELS[s]
+    cf = s.casefold()
+    for k, code in _LEGACY_DATE_LABELS.items():
+        if k.casefold() == cf:
+            return code
+    return _date_label_cf_to_code_map().get(cf)
+
 
 def _fmt_date_range(code: str) -> str:
     k = _DATE_I18N_KEYS.get(code)
@@ -52,17 +86,57 @@ def _fmt_date_range(code: str) -> str:
 
 
 def _migrate_date_session(keys: tuple[str, ...]) -> None:
-    """Eski sürümden kalan Türkçe string değerleri dil-nötr koda çevir."""
+    """Session'daki tarih seçimini dil-nötr koda normalize et (Türkçe/İngilizce/Rusça etiket vb.)."""
     for k in keys:
         v = st.session_state.get(k)
-        if isinstance(v, str) and v in _LEGACY_DATE_LABELS:
-            st.session_state[k] = _LEGACY_DATE_LABELS[v]
-        elif isinstance(v, str) and v not in _DATE_I18N_KEYS:
-            # Hiçbirine uymuyorsa temizle; selectbox default'a düşer
-            try:
-                del st.session_state[k]
-            except KeyError:
-                pass
+        if not isinstance(v, str):
+            continue
+        code = _resolved_date_code(v)
+        if code:
+            st.session_state[k] = code
+        else:
+            st.session_state.pop(k, None)
+
+
+def _seed_time_range_from_legacy(new_key: str, legacy_key: str) -> None:
+    """Yeni dil-anahtarı boşsa tek-anahtarlı eski sürümden kopyala."""
+    if new_key in st.session_state:
+        return
+    if legacy_key not in st.session_state:
+        return
+    v = st.session_state.get(legacy_key)
+    if isinstance(v, str) and (code := _resolved_date_code(v)):
+        st.session_state[new_key] = code
+
+
+def _migrate_scope_session_key(key: str) -> None:
+    v = st.session_state.get(key)
+    if v in ("local", "global"):
+        return
+    if v == "Yerel":
+        st.session_state[key] = "local"
+    elif v == "Global":
+        st.session_state[key] = "global"
+    elif isinstance(v, str) and v.casefold() in ("local", "yerel"):
+        st.session_state[key] = "local"
+    elif isinstance(v, str) and v.casefold() in ("global",):
+        st.session_state[key] = "global"
+
+
+def scope_state_key() -> str:
+    return f"sl_scope_{get_lang()}"
+
+
+def _seed_scope_from_legacy(new_key: str, legacy_key: str = "sl_scope") -> None:
+    """Karşılaştırma sekmesi için legacy_key örn. cmp_scope_0 olabilir."""
+    if new_key in st.session_state:
+        return
+    if legacy_key not in st.session_state:
+        return
+    _migrate_scope_session_key(legacy_key)
+    v = st.session_state.get(legacy_key)
+    if v in ("local", "global"):
+        st.session_state[new_key] = v
 
 
 def _run_store_search_with_progress(query: str, platform_filter: str) -> list:
@@ -83,13 +157,13 @@ def _run_store_search_with_progress(query: str, platform_filter: str) -> list:
             while not future.done():
                 elapsed = time.perf_counter() - start
                 staged = min(0.92, 1.0 - (2.71828 ** (-elapsed / 1.35)))
-                status.caption("mağaza sonuçları taranıyor…")
+                status.caption(t("store.search_scanning"))
                 bar.progress(staged)
                 time.sleep(0.12)
             results = future.result()
 
         bar.progress(0.98)
-        status.caption(f"{len(results)} sonuç işlendi…")
+        status.caption(t("store.results_processing", n=len(results)))
         bar.progress(1.0)
         return results
     finally:
@@ -108,13 +182,16 @@ def _fmt_duration(total_seconds: float) -> str:
 
 def _render_fetch_progress_text(slot: st.delta_generator.DeltaGenerator, pct: float, elapsed: float, eta: float) -> None:
     pct_i = int(max(0.0, min(1.0, pct)) * 100)
+    _eta = html.escape(t("store.fetch_eta", dur=_fmt_duration(eta)), quote=True)
+    _elp = html.escape(f"{t('compare.elapsed')} {_fmt_duration(elapsed)}", quote=True)
+    _st = html.escape(t("store.fetch_pool_state"), quote=True)
     slot.markdown(
         (
             '<div class="sl-fetch-progress">'
-            '<span class="sl-fetch-chip sl-fetch-chip--state">yorum havuzu çekiliyor</span>'
+            f'<span class="sl-fetch-chip sl-fetch-chip--state">{_st}</span>'
             f'<span class="sl-fetch-chip sl-fetch-chip--pct">%{pct_i}</span>'
-            f'<span class="sl-fetch-chip sl-fetch-chip--elapsed">geçen {_fmt_duration(elapsed)}</span>'
-            f'<span class="sl-fetch-chip sl-fetch-chip--eta">kalan ~{_fmt_duration(eta)}</span>'
+            f'<span class="sl-fetch-chip sl-fetch-chip--elapsed">{_elp}</span>'
+            f'<span class="sl-fetch-chip sl-fetch-chip--eta">{_eta}</span>'
             "</div>"
         ),
         unsafe_allow_html=True,
@@ -496,7 +573,7 @@ def _stars_html(rating: object) -> tuple[str, str]:
             '<span class="sl-app-stars">'
             + "".join('<span class="sl-star-off">&#9733;</span>' for _ in range(5))
             + "</span>",
-            '<span class="sl-app-banner-score muted">Puan yok</span>',
+            f'<span class="sl-app-banner-score muted">{html.escape(t("store.no_score"), quote=True)}</span>',
         )
     r = max(0.0, min(5.0, float(rating)))
     n_on = int(round(r))
@@ -754,32 +831,36 @@ def render_store_link_tab() -> None:
         else:
             _banner_play(resolved.app_id)
 
-    _migrate_date_session(("sl_time_range",))
+    _sl_tr_key = time_range_state_key("sl_time_range")
+    _migrate_date_session(("sl_time_range", "cmp_time_range", _sl_tr_key))
+    _seed_time_range_from_legacy(_sl_tr_key, "sl_time_range")
     time_label = st.selectbox(
         t("date.range"),
         RANGE_OPTIONS,
         index=1,
-        key="sl_time_range",
+        key=_sl_tr_key,
         format_func=_fmt_date_range,
     )
     days = RANGE_DAYS[time_label]
 
     st.markdown(f'<p class="sl-scope-label">{t("scope.label")}</p>', unsafe_allow_html=True)
-    _scope_opts = ["Yerel", "Global"]
-    _scope_label_map = {"Yerel": t("scope.local"), "Global": t("scope.global")}
+    _sk = scope_state_key()
+    _migrate_scope_session_key("sl_scope")
+    _migrate_scope_session_key(_sk)
+    _seed_scope_from_legacy(_sk, "sl_scope")
     scope_pick = st.segmented_control(
         t("scope.label"),
-        options=_scope_opts,
-        format_func=lambda v: _scope_label_map.get(v, v),
+        options=["local", "global"],
+        format_func=lambda c: t("scope.local") if c == "local" else t("scope.global"),
         selection_mode="single",
-        default="Global",
-        key="sl_scope",
+        default="global",
+        key=_sk,
         label_visibility="collapsed",
         width="stretch",
         help=t("scope.help"),
     )
-    scope_lbl = scope_pick if scope_pick is not None else st.session_state.get("sl_scope", "Global")
-    scope_val = "local" if scope_lbl == "Yerel" else "global"
+    scope_lbl = scope_pick if scope_pick is not None else st.session_state.get(_sk, "global")
+    scope_val = "local" if scope_lbl == "local" else "global"
 
     if st.button(t("common.fetch_reviews"), type="secondary", use_container_width=True, key="sl_fetch_btn"):
         app_id: str | None = None

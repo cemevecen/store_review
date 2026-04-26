@@ -31,6 +31,10 @@ from store_review.ui.store_link_panel import (
     _fmt_date_range,
     _inject_store_search_css,
     _migrate_date_session,
+    _migrate_scope_session_key,
+    _seed_scope_from_legacy,
+    _seed_time_range_from_legacy,
+    time_range_state_key,
 )
 
 _CMP_COMPACT_CSS = """
@@ -289,16 +293,25 @@ def _prepare_pool(rows: list[dict]) -> list[dict]:
     return out
 
 
+def _cmp_scope_state_key(slot: int) -> str:
+    return f"cmp_scope_{slot}_{get_lang()}"
+
+
 def _cmp_scope_for_slot(slot: int) -> str:
     """Slot için yerel/global seçimini canonical ('local'/'global') string'e çevir."""
-    raw = st.session_state.get(f"cmp_scope_{slot}")
-    return "local" if raw == "Yerel" else "global"
+    sk = _cmp_scope_state_key(slot)
+    raw = st.session_state.get(sk)
+    if raw is None:
+        raw = st.session_state.get(f"cmp_scope_{slot}")
+    if raw in ("local", "Yerel"):
+        return "local"
+    return "global"
 
 
 def _cmp_prepared_key() -> str:
     return (
         f"{_cmp_slot_effective_raw(0)}|{_cmp_slot_effective_raw(1)}|"
-        f"{st.session_state.get('cmp_time_range', '')}|"
+        f"{st.session_state.get(time_range_state_key('cmp_time_range'), '')}|"
         f"{_cmp_scope_for_slot(0)}|{_cmp_scope_for_slot(1)}"
     )
 
@@ -740,14 +753,18 @@ def _render_compare_app_picker(slot: int, heading: str) -> None:
                 f'<p class="sl-scope-label">{t("scope.label")}</p>',
                 unsafe_allow_html=True,
             )
-            _scope_label_map = {"Yerel": t("scope.local"), "Global": t("scope.global")}
+            _csk = _cmp_scope_state_key(slot)
+            _legacy_sk = f"cmp_scope_{slot}"
+            _migrate_scope_session_key(_legacy_sk)
+            _migrate_scope_session_key(_csk)
+            _seed_scope_from_legacy(_csk, _legacy_sk)
             st.segmented_control(
                 t("scope.label"),
-                options=["Yerel", "Global"],
-                format_func=lambda v: _scope_label_map.get(v, v),
+                options=["local", "global"],
+                format_func=lambda c: t("scope.local") if c == "local" else t("scope.global"),
                 selection_mode="single",
-                default="Global",
-                key=f"cmp_scope_{slot}",
+                default="global",
+                key=_csk,
                 label_visibility="collapsed",
                 width="stretch",
                 help=t("scope.help"),
@@ -877,7 +894,7 @@ def execute_compare_analysis(
     provider = "Google Gemini"
     model = (default_models.get("Google Gemini") or "").strip() or default_models.get(provider, "")
 
-    time_label = st.session_state.get("cmp_time_range") or RANGE_OPTIONS[1]
+    time_label = st.session_state.get(time_range_state_key("cmp_time_range")) or RANGE_OPTIONS[1]
     if time_label not in RANGE_DAYS:
         time_label = RANGE_OPTIONS[1]
     days = RANGE_DAYS[time_label]
@@ -986,7 +1003,9 @@ def render_compare_tab(
         with cb:
             _render_compare_app_picker(1, t("compare.slot_heading", i=2))
 
-        _migrate_date_session(("cmp_time_range",))
+        _ct_key = time_range_state_key("cmp_time_range")
+        _migrate_date_session(("sl_time_range", "cmp_time_range", _ct_key))
+        _seed_time_range_from_legacy(_ct_key, "cmp_time_range")
         with st.container(key="cmp_date_method_row"):
             tcol, _sp = st.columns([1, 2.2], gap="medium", vertical_alignment="center")
             with tcol:
@@ -995,7 +1014,7 @@ def render_compare_tab(
                     RANGE_OPTIONS,
                     index=None,
                     placeholder=t("date.placeholder"),
-                    key="cmp_time_range",
+                    key=_ct_key,
                     label_visibility="hidden",
                     format_func=_fmt_date_range,
                 )

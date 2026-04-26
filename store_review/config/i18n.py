@@ -377,6 +377,35 @@ STRINGS: dict[str, dict[str, str]] = {
         "fr": "Erreur de récupération : {err}", "ar": "خطأ في الجلب: {err}",
         "zh": "获取错误：{err}", "ru": "Ошибка загрузки: {err}", "pt": "Erro ao buscar: {err}",
     },
+    "store.search_scanning": {
+        "tr": "mağaza sonuçları taranıyor…", "en": "scanning store results…",
+        "es": "escaneando resultados de la tienda…", "de": "Store-Ergebnisse werden durchsucht…",
+        "fr": "analyse des résultats du store…", "ar": "جارٍ مسح نتائج المتجر…",
+        "zh": "正在扫描商店结果…", "ru": "сканируем результаты магазина…", "pt": "varrendo resultados da loja…",
+    },
+    "store.results_processing": {
+        "tr": "{n} sonuç işlendi…", "en": "processed {n} results…",
+        "es": "procesadas {n} entradas…", "de": "{n} Treffer verarbeitet…",
+        "fr": "{n} résultats traités…", "ar": "تمت معالجة {n} نتيجة…",
+        "zh": "已处理 {n} 条结果…", "ru": "обработано результатов: {n}…", "pt": "processados {n} resultados…",
+    },
+    "store.fetch_pool_state": {
+        "tr": "yorum havuzu çekiliyor", "en": "fetching review pool",
+        "es": "obteniendo pool de reseñas", "de": "Review-Pool wird geladen",
+        "fr": "récupération du pool d’avis", "ar": "جلب مجموعة المراجعات",
+        "zh": "正在拉取评论池", "ru": "загрузка пула отзывов", "pt": "baixando pool de avaliações",
+    },
+    "store.fetch_eta": {
+        "tr": "kalan ~{dur}", "en": "~{dur} left",
+        "es": "quedan ~{dur}", "de": "noch ~{dur}",
+        "fr": "reste ~{dur}", "ar": "متبقٍّ ~{dur}",
+        "zh": "剩余 ~{dur}", "ru": "осталось ~{dur}", "pt": "faltam ~{dur}",
+    },
+    "store.no_score": {
+        "tr": "Puan yok", "en": "No rating", "es": "Sin puntuación",
+        "de": "Keine Bewertung", "fr": "Pas de note", "ar": "لا يوجد تقييم",
+        "zh": "无评分", "ru": "Нет оценки", "pt": "Sem nota",
+    },
     # --------- File / paste tabs ---------
     "file.upload_label": {
         "tr": "Dosya seç", "en": "Choose a file", "es": "Elegir archivo",
