@@ -1460,6 +1460,8 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
     gap: 0 !important;
     padding-top: 8px !important;
     box-sizing: border-box !important;
+    /* Dil sütunu absolute: iç HB relative olursa CB dar kalır, bayrak solda görünür → CB = .st-key-pg_masthead */
+    position: static !important;
   }
   [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="stColumn"]:has(.hero-masthead-brand),
   [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) > [data-testid="column"]:has(.hero-masthead-brand),
