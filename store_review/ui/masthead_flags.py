@@ -1,4 +1,4 @@
-"""Masthead dil seçicide yuvarlak bayrak görselleri (flagcdn PNG, cover)."""
+"""Masthead dil seçicide yuvarlak bayrak görselleri (flagcdn PNG, orantılı ölçek)."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ _FLAG_CC: dict[str, str] = {
 }
 
 
-def flag_png_url(lang_code: str, *, width: int = 80) -> str:
+def flag_png_url(lang_code: str, *, width: int = 160) -> str:
     """flagcdn yalnızca belirli ``w*`` genişlikleri sunar (ör. 20, 40, 80, 160, 320); ara değer 404."""
     cc = _FLAG_CC.get(lang_code, lang_code)
     return f"https://flagcdn.com/w{width}/{cc}.png"
@@ -29,9 +29,9 @@ def flag_png_url(lang_code: str, *, width: int = 80) -> str:
 
 def masthead_flag_css_block(current_lang: str) -> str:
     """Popover tetikleyici + dil düğmeleri: daire içi tam bayrak, metin/emoji görünmez."""
-    # cover: PNG en-boy oranı korunur, kare daireyi doldurur (yüzde iki eksen = basık yumurta).
+    # auto + yükseklik %: tek eksenden büyütme yok; oran korunur, üst-alt boşluk kapanır.
     shared = (
-        "background-size:cover!important;background-position:center!important;"
+        "background-size:auto 138%!important;background-position:center!important;"
         "background-repeat:no-repeat!important;background-color:transparent!important;"
         "color:transparent!important;-webkit-text-fill-color:transparent!important;"
     )
