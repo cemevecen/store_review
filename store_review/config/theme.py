@@ -1170,12 +1170,22 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   /* Başlık kutusu ile altındaki metrik hapları arasında 12px */
   margin: 0.25rem 0 12px;
   text-transform: none;
-  /* Turuncu çizgi + yaklaşık bir harf genişliği (1ch) metin öncesi boşluk */
-  padding: 0.4rem 0.75rem 0.4rem calc(12px + 1ch);
+  /* Turuncu şeritten sonra metin: en az ~1 harf (em) + ekstra nefes alanı */
+  padding: 0.45rem 0.75rem 0.45rem max(1.35rem, 16px + 1.65em);
   background: linear-gradient(135deg, rgba(255,237,213,0.65), rgba(255,255,255,0));
   border-left: 3px solid #fb923c;
   border-radius: 6px;
   display: block;
+  box-sizing: border-box;
+}
+/* Streamlit markdown sarmalayıcısı bazen başlık padding'ini sıfırlar; şerit–metin arası korunsun */
+[data-testid="stAppViewContainer"] .main [data-testid="stMarkdownContainer"] h3.sr-analysis-page-title--sub,
+[data-testid="stAppScrollToBottomContainer"] .main [data-testid="stMarkdownContainer"] h3.sr-analysis-page-title--sub {
+  padding-left: max(1.35rem, 16px + 1.65em) !important;
+  padding-inline-start: max(1.35rem, 16px + 1.65em) !important;
+  padding-top: 0.45rem !important;
+  padding-right: 0.75rem !important;
+  padding-bottom: 0.45rem !important;
 }
 .sr-analysis-metric-row {
   display: flex;
@@ -1508,6 +1518,11 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
   }
   .sr-analysis-page-title {
     font-size: 1.15rem !important;
+  }
+  [data-testid="stAppViewContainer"] .main [data-testid="stMarkdownContainer"] h3.sr-analysis-page-title--sub,
+  [data-testid="stAppScrollToBottomContainer"] .main [data-testid="stMarkdownContainer"] h3.sr-analysis-page-title--sub {
+    padding-left: max(1.2rem, 14px + 1.5em) !important;
+    padding-inline-start: max(1.2rem, 14px + 1.5em) !important;
   }
   .sr-analysis-metric-pill {
     flex: 1 1 calc(50% - 0.5rem) !important;
