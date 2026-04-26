@@ -611,6 +611,11 @@ div[data-baseweb="popover"] [class*="st-key-masthead_pick_"] button [data-testid
 }
 
 @media (min-width: 769px) {
+  /* Marka + dil: chip satırı yönünde +4px (yalnız geniş ekran; mobilde HB padding-top 8px kalır) */
+  [data-testid="stVerticalBlock"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand),
+  [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead [data-testid="stHorizontalBlock"]:has(.hero-masthead-brand) {
+    padding-top: 12px !important;
+  }
   [data-testid="stVerticalBlock"].st-key-pg_masthead .st-key-masthead_lang_slot,
   [data-testid="stVerticalBlockBorderWrapper"].st-key-pg_masthead .st-key-masthead_lang_slot {
     margin-top: 8px !important;
